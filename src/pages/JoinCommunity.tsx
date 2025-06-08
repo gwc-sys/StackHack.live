@@ -20,22 +20,28 @@ type Discussion = {
   tags: string[];
 };
 
+type Event = {
+  id: string;
+  title: string;
+  date: string;
+  description: string;
+  prize?: string;
+  participants: number;
+  isOpenToAll: boolean;
+  creator: User;
+};
+
 const JoinCommunity = () => {
   const { user, isAuthenticated } = useAuth();
   const [activeBranch, setActiveBranch] = useState<string>('CSE');
   const [searchQuery, setSearchQuery] = useState<string>('');
   
-  // Sample data - in a real app, this would come from an API
-  const [communityMembers] = useState<User[]>([
-    { id: 'user1', name: 'Rahul K', avatar: '', branch: 'CSE', year: 2023, skills: ['Python', 'ML'] },
-    { id: 'user2', name: 'Priya M', avatar: '', branch: 'ECE', year: 2024, skills: ['Embedded Systems'] },
-  ]);
+  // Remove hardcoded sample data and use empty arrays or placeholders
+  const [communityMembers] = useState<User[]>([]);
 
-  const [discussions] = useState<Discussion[]>([
-    { id: 'd1', title: 'Best approach for ML project with limited dataset', commentCount: 42, 
-      author: { id: 'user3', name: 'Amit S', avatar: '', branch: 'CSE', year: 2022 }, 
-      timestamp: '2 hours ago', tags: ['Machine Learning', 'Project'] },
-  ]);
+  const [discussions] = useState<Discussion[]>([]);
+
+  const [events, setEvents] = useState<Event[]>([]);
 
   const branches = ['CSE', 'ECE', 'Mechanical', 'Civil', 'Electrical', 'Chemical', 'Aerospace'];
 
@@ -68,6 +74,45 @@ const JoinCommunity = () => {
     }
   };
 
+  // Event creation state and handlers
+  const [newEvent, setNewEvent] = useState({
+    title: '',
+    date: '',
+    description: '',
+    prize: '',
+    isOpenToAll: true,
+  });
+  const [showEventForm, setShowEventForm] = useState(false);
+
+  const handleCreateEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEvent.title || !newEvent.date || !newEvent.description) return;
+
+    const createdEvent: Event = {
+      id: `e${events.length + 1}`,
+      title: newEvent.title,
+      date: newEvent.date,
+      description: newEvent.description,
+      prize: newEvent.prize,
+      participants: 0,
+      isOpenToAll: newEvent.isOpenToAll,
+      creator: user || { id: '', name: '', avatar: '', branch: '', year: 0 } // No hardcoded fallback
+    };
+
+    setEvents([...events, createdEvent]);
+    setNewEvent({ title: '', date: '', description: '', prize: '', isOpenToAll: true });
+    setShowEventForm(false);
+  };
+
+  const handleRegisterForEvent = (eventId: string) => {
+    // In a real app, this would make an API call
+    setEvents(events.map(event => 
+      event.id === eventId 
+        ? { ...event, participants: event.participants + 1 } 
+        : event
+    ));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -95,7 +140,8 @@ const JoinCommunity = () => {
               { icon: '📚', title: 'Study Groups', desc: 'Form or join subject-specific study groups' },
               { icon: '👥', title: 'Project Collaboration', desc: 'Find team members for hackathons and projects' },
               { icon: '💡', title: 'Expert Q&A', desc: 'Get answers from top performers and professionals' },
-              { icon: '📁', title: 'Resource Sharing', desc: 'Share and discover the best study materials' }
+              { icon: '📁', title: 'Resource Sharing', desc: 'Share and discover the best study materials' },
+              { icon: '🏆', title: 'Events & Hackathons', desc: 'Participate in or organize events and hackathons' } // <-- Added feature
             ].map((feature, index) => (
               <div key={index} className="bg-gray-50 p-6 rounded-lg text-center hover:shadow-md transition">
                 <div className="text-4xl mb-4">{feature.icon}</div>
@@ -223,32 +269,7 @@ const JoinCommunity = () => {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">What Our Community Says</h2>
           <div className="grid md:grid-cols-2 gap-8">
-            {[
-              { 
-                quote: "Joined EngiPortal for study materials but found my hackathon team here. We won 2nd prize!", 
-                author: "Rahul K.", 
-                branch: "CSE 2023" 
-              },
-              { 
-                quote: "The ECE discussion group helped me solve my toughest signals problems.", 
-                author: "Priya M.", 
-                branch: "ECE 2024" 
-              }
-            ].map((testimonial, index) => (
-              <div key={index} className="bg-gray-50 p-8 rounded-lg">
-                <div className="text-4xl text-gray-300 mb-4">"</div>
-                <p className="text-lg italic mb-6">{testimonial.quote}</p>
-                <div className="flex items-center">
-                  <div className="w-12 h-12 rounded-full bg-indigo-100 mr-4 flex items-center justify-center">
-                    <span className="text-indigo-600 text-xl">{testimonial.author.charAt(0)}</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold">{testimonial.author}</div>
-                    <div className="text-gray-500 text-sm">{testimonial.branch}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {/* No hardcoded testimonials */}
           </div>
         </div>
       </section>
