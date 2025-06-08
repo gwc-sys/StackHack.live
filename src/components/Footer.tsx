@@ -1,58 +1,62 @@
 import { Link } from 'react-router-dom';
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import { MdEngineering } from 'react-icons/md';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-800 text-white py-8">
+    <footer className="bg-gray-900 text-white pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li><Link to="/" className="hover:text-blue-400">Home</Link></li>
-              <li><Link to="/about" className="hover:text-blue-400">About</Link></li>
-              <li><Link to="/colleges" className="hover:text-blue-400">Colleges</Link></li>
-              <li><Link to="/universities" className="hover:text-blue-400">Universities</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Engineering Branches</h3>
-            <ul className="space-y-2">
-              <li><Link to="/" className="hover:text-blue-400">Mechanical</Link></li>
-              <li><Link to="/" className="hover:text-blue-400">Civil</Link></li>
-              <li><Link to="/" className="hover:text-blue-400">Electrical</Link></li>
-              <li><Link to="/" className="hover:text-blue-400">Computer Science</Link></li>
-            </ul>
+            <div className="flex items-center space-x-2 mb-4">
+              <MdEngineering className="w-8 h-8 text-blue-400" />
+              <Link to="/" className="text-xl font-bold">EngiPortal</Link>
+            </div>
+            <p className="text-gray-400">
+              The ultimate resource hub for engineering students worldwide.
+            </p>
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-4">Resources</h3>
             <ul className="space-y-2">
-              <li><Link to="/" className="hover:text-blue-400">Question Papers</Link></li>
-              <li><Link to="/" className="hover:text-blue-400">Study Materials</Link></li>
-              <li><Link to="/" className="hover:text-blue-400">Syllabus</Link></li>
-              <li><Link to="/" className="hover:text-blue-400">Notes</Link></li>
+              <li><Link to="/question-papers" className="text-gray-400 hover:text-white">Question Papers</Link></li>
+              <li><Link to="/study-materials" className="text-gray-400 hover:text-white">Study Materials</Link></li>
+              <li><Link to="/video-lectures" className="text-gray-400 hover:text-white">Video Lectures</Link></li>
+              <li><Link to="/lab-manuals" className="text-gray-400 hover:text-white">Lab Manuals</Link></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-lg font-semibold mb-4">Follow Us</h3>
-            <div className="flex space-x-4">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400">
-                <FaFacebook size={24} />
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400">
-                <FaTwitter size={24} />
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400">
-                <FaInstagram size={24} />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400">
-                <FaLinkedin size={24} />
-              </a>
-            </div>
+            <h3 className="text-lg font-semibold mb-4">Community</h3>
+            <ul className="space-y-2">
+              <li><Link to="/discussions" className="text-gray-400 hover:text-white">Discussion Forums</Link></li>
+              <li><Link to="/study-groups" className="text-gray-400 hover:text-white">Study Groups</Link></li>
+              <li><Link to="/expert-qa" className="text-gray-400 hover:text-white">Expert Q&A</Link></li>
+              <li><Link to="/blog" className="text-gray-400 hover:text-white">Blog</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Contact</h3>
+            <ul className="space-y-2">
+              <li className="text-gray-400">support@engiportal.com</li>
+              <li className="text-gray-400">+91 22224578890</li>
+              <li className="text-gray-400">123 Engineering Lane, Tech City</li>
+            </ul>
           </div>
         </div>
-        <div className="mt-8 border-t border-gray-700 pt-8 text-center">
-          <p>&copy; {new Date().getFullYear()} StudentPortal. All rights reserved.</p>
+        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+          <a
+            href="https://www.linkedin.com/in/mahesh-r-0a109b20a/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 mb-4 md:mb-0 hover:text-white transition-colors"
+            style={{ textDecoration: 'none' }}
+          >
+            © 2023 EngiPortal. Develop by gwc-sys.
+          </a>
+          <div className="flex space-x-6">
+            <Link to="/terms" className="text-gray-400 hover:text-white">Terms</Link>
+            <Link to="/privacy" className="text-gray-400 hover:text-white">Privacy</Link>
+            <Link to="/cookies" className="text-gray-400 hover:text-white">Cookies</Link>
+          </div>
         </div>
       </div>
     </footer>

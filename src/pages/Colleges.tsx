@@ -49,6 +49,22 @@ const colleges = [
     contact: "+91-020-26933333",
     courses: ["Mechanical", "Computer Science", "Civil", "Electronics & Telecommunication"],
     rating: 4.3
+  },
+  {
+    name: "Trinity Academy of Engineering",
+    image: "https://images.pexels.com/photos/5678901/pexels-photo-5678901.jpeg",
+    location: "Pune, Maharashtra",
+    contact: "+91-020-12345678",
+    courses: ["Mechanical", "Computer Science", "IT", "Civil", "E&TC"],
+    rating: 4.2
+  },
+  {
+    name: "Trinity College of Engineering and Management Research",
+    image: "https://images.pexels.com/photos/6789012/pexels-photo-6789012.jpeg",
+    location: "Pune, Maharashtra",
+    contact: "+91-020-87654321",
+    courses: ["Mechanical", "Civil", "Computer Science", "IT"],
+    rating: 4.1
   }
 ];
 
