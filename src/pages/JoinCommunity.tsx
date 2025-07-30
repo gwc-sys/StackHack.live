@@ -74,44 +74,44 @@ const JoinCommunity = () => {
     }
   };
 
-  // Event creation state and handlers
-  const [newEvent, setNewEvent] = useState({
-    title: '',
-    date: '',
-    description: '',
-    prize: '',
-    isOpenToAll: true,
-  });
-  const [showEventForm, setShowEventForm] = useState(false);
+  // // Event creation state and handlers
+  // const [newEvent, setNewEvent] = useState({
+  //   title: '',
+  //   date: '',
+  //   description: '',
+  //   prize: '',
+  //   isOpenToAll: true,
+  // });
+  // const [showEventForm, setShowEventForm] = useState(false);
 
-  const handleCreateEvent = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newEvent.title || !newEvent.date || !newEvent.description) return;
+  // const handleCreateEvent = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (!newEvent.title || !newEvent.date || !newEvent.description) return;
 
-    const createdEvent: Event = {
-      id: `e${events.length + 1}`,
-      title: newEvent.title,
-      date: newEvent.date,
-      description: newEvent.description,
-      prize: newEvent.prize,
-      participants: 0,
-      isOpenToAll: newEvent.isOpenToAll,
-      creator: user || { id: '', name: '', avatar: '', branch: '', year: 0 } // No hardcoded fallback
-    };
+  //   const createdEvent: Event = {
+  //     id: `e${events.length + 1}`,
+  //     title: newEvent.title,
+  //     date: newEvent.date,
+  //     description: newEvent.description,
+  //     prize: newEvent.prize,
+  //     participants: 0,
+  //     isOpenToAll: newEvent.isOpenToAll,
+  //     creator: user || { id: '', name: '', avatar: '', branch: '', year: 0 } // No hardcoded fallback
+  //   };
 
-    setEvents([...events, createdEvent]);
-    setNewEvent({ title: '', date: '', description: '', prize: '', isOpenToAll: true });
-    setShowEventForm(false);
-  };
+  //   setEvents([...events, createdEvent]);
+  //   setNewEvent({ title: '', date: '', description: '', prize: '', isOpenToAll: true });
+  //   setShowEventForm(false);
+  // };
 
-  const handleRegisterForEvent = (eventId: string) => {
-    // In a real app, this would make an API call
-    setEvents(events.map(event => 
-      event.id === eventId 
-        ? { ...event, participants: event.participants + 1 } 
-        : event
-    ));
-  };
+  // const handleRegisterForEvent = (eventId: string) => {
+  //   // In a real app, this would make an API call
+  //   setEvents(events.map(event => 
+  //     event.id === eventId 
+  //       ? { ...event, participants: event.participants + 1 } 
+  //       : event
+  //   ));
+  // };
 
   return (
     <div className="min-h-screen bg-gray-50">
