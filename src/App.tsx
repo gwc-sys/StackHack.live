@@ -8,11 +8,14 @@ import Universities from './pages/Universities.tsx';
 import SignIn from './pages/SignIn.tsx';
 import SignUp from './pages/SignUp.tsx';
 import JoinCommunity from './pages/JoinCommunity.tsx';
+import Header from './components/Header';
+import Resources from './pages/Resources';
 
 export default function App() {
   return (
     <AuthProvider>
       <Router>
+        <Header />
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -22,6 +25,7 @@ export default function App() {
             <Route path="/signup" element={<SignUp />} />
             <Route path="/community" element={<JoinCommunity />} />
             <Route path="/universities" element={<Universities />} />
+            <Route path="/resources" element={<Resources />} />
           </Routes>
         </Layout>
       </Router>
