@@ -20,19 +20,9 @@ type Discussion = {
   tags: string[];
 };
 
-type Event = {
-  id: string;
-  title: string;
-  date: string;
-  description: string;
-  prize?: string;
-  participants: number;
-  isOpenToAll: boolean;
-  creator: User;
-};
 
 const JoinCommunity = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [activeBranch, setActiveBranch] = useState<string>('CSE');
   const [searchQuery, setSearchQuery] = useState<string>('');
   
@@ -41,7 +31,7 @@ const JoinCommunity = () => {
 
   const [discussions] = useState<Discussion[]>([]);
 
-  const [events, setEvents] = useState<Event[]>([]);
+  // const [events, setEvents] = useState<Event[]>([]);
 
   const branches = ['CSE', 'ECE', 'Mechanical', 'Civil', 'Electrical', 'Chemical', 'Aerospace'];
 

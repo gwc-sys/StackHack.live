@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaStar, FaSearch, FaBook, FaGraduationCap, FaUniversity, FaUserGraduate, FaChalkboardTeacher, FaRegCalendarAlt, FaRegClock, FaRegBookmark, FaBookOpen, FaRegNewspaper } from 'react-icons/fa';
 import { MdEngineering, MdComputer, MdOutlineScience, MdConstruction } from 'react-icons/md';
