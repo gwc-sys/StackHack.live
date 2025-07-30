@@ -96,8 +96,8 @@ const features = [
 
 const testimonials = [
   {
-    name: "Rahul Sharma",
-    university: "IIT Delhi",
+    name: "Sankalp Gadakh , Gold Medalist",
+    university: "KJCOMR Pune",
     text: "This platform helped me ace my semester exams with its comprehensive question bank and study materials.",
     rating: 5
   },
@@ -136,7 +136,7 @@ export default function Home() {
 
   const getFilteredBranches = () => {
     if (activeTab === 'all') return filteredBranches;
-    return filteredBranches.filter(branch => 
+    return filteredBranches.filter(branch =>
       branch.name.toLowerCase().includes(activeTab.toLowerCase())
     );
   };
@@ -237,7 +237,7 @@ export default function Home() {
             Our platform provides all the resources engineering students need in one place
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {features.map((feature, index) => (
             <div key={index} className="bg-white rounded-xl shadow-md p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
@@ -265,25 +265,25 @@ export default function Home() {
 
           {/* Filter Tabs */}
           <div className="flex flex-wrap justify-center gap-2 mb-8">
-            <button 
+            <button
               onClick={() => setActiveTab('all')}
               className={`px-4 py-2 rounded-full font-medium ${activeTab === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`}
             >
               All Branches
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('computer')}
               className={`px-4 py-2 rounded-full font-medium ${activeTab === 'computer' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`}
             >
               Computer Related
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('engineering')}
               className={`px-4 py-2 rounded-full font-medium ${activeTab === 'engineering' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`}
             >
               Core Engineering
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('science')}
               className={`px-4 py-2 rounded-full font-medium ${activeTab === 'science' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`}
             >
@@ -339,7 +339,7 @@ export default function Home() {
             Hear from engineering students who've benefited from our resources
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <div key={index} className="bg-white rounded-xl shadow-md p-8 hover:shadow-lg transition-shadow">
