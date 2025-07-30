@@ -96,8 +96,8 @@ const features = [
 
 const testimonials = [
   {
-    name: "Sankalp Gadakh , Gold Medalist",
-    university: "KJCOMR Pune",
+    name: "Sankalp Gadakh ",
+    university: "Amrutvahini College of Polytechnic Sangamner",
     text: "This platform helped me ace my semester exams with its comprehensive question bank and study materials.",
     rating: 5
   },
