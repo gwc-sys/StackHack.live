@@ -73,38 +73,25 @@ const ResourcesPage = () => {
             return;
         }
 
+        const formData = new FormData();
+        formData.append('file', selectedFile); // selectedFile is your PDF file
+        formData.append('title', title);
+        if (branch) formData.append('branch', branch);
+
         try {
             setIsLoading(true);
             setError('');
             setIsUploadSuccess(false);
 
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-            formData.append('title', title);
-            if (branch) {
-                formData.append('branch', branch);
-            }
-
-            const csrfToken = document.cookie.split('; ')
-                .find(row => row.startsWith('csrftoken='))
-                ?.split('=')[1];
-
-            const response = await axios.post('/api/upload/', formData, {
+            await axios.post('http://localhost:8000/api/resources/', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'X-CSRFToken': csrfToken,
                 },
                 withCredentials: true,
             });
 
-            setResources([response.data, ...resources]);
-            setTitle('');
-            setBranch('');
-            setSelectedFile(null);
-            setIsUploadSuccess(true);
-            setTimeout(() => setIsUploadSuccess(false), 3000);
+            // handle success (refresh list, clear form, etc.)
         } catch (err) {
-            console.error('Upload failed:', err);
             setError('File upload failed. Please try again.');
         } finally {
             setIsLoading(false);
