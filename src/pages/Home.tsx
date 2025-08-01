@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   FaStar, FaSearch, FaBook, FaGraduationCap, FaUniversity, 
-  FaUserGraduate, FaChalkboardTeacher, FaRegCalendarAlt, 
-  FaRegClock, FaRegBookmark, FaBookOpen, FaRegNewspaper,
+  FaUserGraduate, FaChalkboardTeacher, 
+  FaRegBookmark, FaBookOpen, FaRegNewspaper,
   FaChevronDown, FaChevronUp
 } from 'react-icons/fa';
 import { 
   MdEngineering, MdComputer, MdOutlineScience, 
-  MdConstruction, MdSchool 
+  MdConstruction, MdSchool, MdPhonelink 
 } from 'react-icons/md';
 import { GiMechanicalArm, GiChemicalDrop } from 'react-icons/gi';
 import { SiFuturelearn } from 'react-icons/si';
@@ -149,6 +149,20 @@ const branches: Branch[] = [
     color: "bg-gray-100",
     borderColor: "border-gray-300",
     isFirstYear: false
+  },
+  {
+    name: "Electronic and Telecommunication Engineering",
+    icon: <MdPhonelink className="w-6 h-6 text-fuchsia-600" />,
+    color: "bg-fuchsia-100",
+    borderColor: "border-fuchsia-300",
+    isFirstYear: false
+  },
+  {
+    name: "Design Engineering",
+    icon: <MdEngineering className="w-6 h-6 text-lime-600" />,
+    color: "bg-lime-100",
+    borderColor: "border-lime-300",
+    isFirstYear: false
   }
 ];
 
@@ -221,7 +235,7 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('all');
   const [expandedBranch, setExpandedBranch] = useState<string | null>(null);
-  const [expandedSemester, setExpandedSemester] = useState<string | null>(null);
+  // Removed unused expandedSemester state
 
   const filteredBranches = branches.filter(branch =>
     branch.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -260,26 +274,1030 @@ const Home = () => {
   const toggleBranch = (branchName: string): void => {
     if (expandedBranch === branchName) {
       setExpandedBranch(null);
-      setExpandedSemester(null);
     } else {
       setExpandedBranch(branchName);
-      setExpandedSemester(null);
     }
   };
 
-  const toggleSemester = (semester: string): void => {
-    if (expandedSemester === semester) {
-      setExpandedSemester(null);
-    } else {
-      setExpandedSemester(semester);
+
+  // SPPU Mechanical Engineering Subjects (example, update as per latest syllabus)
+  const mechanicalSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Second Year": {
+      "Semester 3": {
+        core: [
+          "Engineering Mathematics III",
+          "Thermodynamics",
+          "Strength of Materials",
+          "Manufacturing Processes I",
+          "Fluid Mechanics",
+          "Machine Drawing"
+        ],
+        electives: [
+          "Audit Course 1 (e.g., German Language, Japanese Language, etc.)"
+        ]
+      },
+      "Semester 4": {
+        core: [
+          "Engineering Mathematics IV",
+          "Applied Thermodynamics",
+          "Materials Science",
+          "Theory of Machines I",
+          "Manufacturing Processes II",
+          "Electrical and Electronics Engineering"
+        ],
+        electives: [
+          "Audit Course 2 (e.g., Soft Skills, Cyber Security, etc.)"
+        ]
+      }
+    },
+    "Third Year": {
+      "Semester 5": {
+        core: [
+          "Dynamics of Machinery",
+          "Heat Transfer",
+          "Design of Machine Elements I",
+          "Metrology and Quality Control",
+          "Turbo Machines",
+          "Numerical and Statistical Methods"
+        ],
+        electives: [
+          "Elective I (e.g., Mechatronics, Operations Research, etc.)"
+        ]
+      },
+      "Semester 6": {
+        core: [
+          "Theory of Machines II",
+          "Refrigeration and Air Conditioning",
+          "Design of Machine Elements II",
+          "Manufacturing Process III",
+          "Finite Element Analysis",
+          "Industrial Engineering and Management"
+        ],
+        electives: [
+          "Elective II (e.g., Automobile Engineering, Energy Audit, etc.)"
+        ]
+      }
+    },
+    "Final Year": {
+      "Semester 7": {
+        core: [
+          "CAD/CAM and Automation",
+          "Refrigeration and Air Conditioning",
+          "Energy Engineering",
+          "Mechanical System Design",
+          "Industrial Fluid Power"
+        ],
+        electives: [
+          "Elective III (e.g., Robotics, Product Design, etc.)"
+        ]
+      },
+      "Semester 8": {
+        core: [
+          "Project Work",
+          "Seminar",
+          "Comprehensive Viva"
+        ],
+        electives: [
+          "Elective IV (e.g., Advanced Manufacturing, Renewable Energy, etc.)"
+        ]
+      }
     }
+  };
+
+  // SPPU Civil Engineering Subjects (example, update as per latest syllabus)
+  const civilSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Second Year": {
+      "Semester 3": {
+        core: [
+          "Engineering Mathematics III",
+          "Building Technology and Materials",
+          "Strength of Materials",
+          "Surveying",
+          "Fluid Mechanics I",
+          "Geology for Civil Engineering"
+        ],
+        electives: [
+          "Audit Course 1 (e.g., German Language, Japanese Language, etc.)"
+        ]
+      },
+      "Semester 4": {
+        core: [
+          "Engineering Mathematics IV",
+          "Concrete Technology",
+          "Structural Analysis I",
+          "Surveying II",
+          "Fluid Mechanics II",
+          "Transportation Engineering I"
+        ],
+        electives: [
+          "Audit Course 2 (e.g., Soft Skills, Cyber Security, etc.)"
+        ]
+      }
+    },
+    "Third Year": {
+      "Semester 5": {
+        core: [
+          "Structural Analysis II",
+          "Design of Steel Structures",
+          "Geotechnical Engineering I",
+          "Water Resource Engineering I",
+          "Transportation Engineering II",
+          "Environmental Engineering I"
+        ],
+        electives: [
+          "Elective I (e.g., Remote Sensing, Disaster Management, etc.)"
+        ]
+      },
+      "Semester 6": {
+        core: [
+          "Design of Reinforced Concrete Structures",
+          "Geotechnical Engineering II",
+          "Water Resource Engineering II",
+          "Foundation Engineering",
+          "Environmental Engineering II",
+          "Project Management"
+        ],
+        electives: [
+          "Elective II (e.g., Advanced Surveying, Green Building, etc.)"
+        ]
+      }
+    },
+    "Final Year": {
+      "Semester 7": {
+        core: [
+          "Design of Hydraulic Structures",
+          "Advanced Concrete Technology",
+          "Construction Management",
+          "Elective III (e.g., Finite Element Method, Urban Transport, etc.)"
+        ],
+        electives: [
+          "Open Elective (e.g., Entrepreneurship, Intellectual Property Rights, etc.)"
+        ]
+      },
+      "Semester 8": {
+        core: [
+          "Project Work",
+          "Seminar",
+          "Comprehensive Viva"
+        ],
+        electives: [
+          "Elective IV (e.g., Environmental Impact Assessment, Advanced Foundation Engineering, etc.)"
+        ]
+      }
+    }
+  };
+
+  // SPPU Electrical Engineering Subjects
+  const electricalSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Second Year": {
+      "Semester 3": {
+        core: [
+          "Engineering Mathematics III",
+          "Electrical Machines I",
+          "Network Analysis",
+          "Analog Electronics",
+          "Electromagnetic Fields",
+          "Electrical Measurements"
+        ],
+        electives: [
+          "Audit Course 1 (e.g., German Language, Japanese Language, etc.)"
+        ]
+      },
+      "Semester 4": {
+        core: [
+          "Engineering Mathematics IV",
+          "Electrical Machines II",
+          "Digital Electronics",
+          "Power Generation Technologies",
+          "Signals and Systems",
+          "Control Systems I"
+        ],
+        electives: [
+          "Audit Course 2 (e.g., Soft Skills, Cyber Security, etc.)"
+        ]
+      }
+    },
+    "Third Year": {
+      "Semester 5": {
+        core: [
+          "Power Electronics",
+          "Microprocessors and Microcontrollers",
+          "Control Systems II",
+          "Electrical Machine Design",
+          "Power System I",
+          "Elective I (e.g., Renewable Energy Systems, etc.)"
+        ]
+      },
+      "Semester 6": {
+        core: [
+          "Power System II",
+          "Switchgear and Protection",
+          "Industrial Drives and Control",
+          "Utilization of Electrical Energy",
+          "Elective II (e.g., Electric Vehicle Technology, etc.)"
+        ]
+      }
+    },
+    "Final Year": {
+      "Semester 7": {
+        core: [
+          "High Voltage Engineering",
+          "Power System Operation and Control",
+          "Elective III (e.g., Smart Grid, etc.)",
+          "Project Phase I"
+        ]
+      },
+      "Semester 8": {
+        core: [
+          "Electrical Energy Audit and Conservation",
+          "Elective IV (e.g., Flexible AC Transmission, etc.)",
+          "Project Phase II"
+        ]
+      }
+    }
+  };
+
+  // SPPU Computer Science and Engineering (CSE) Subjects
+  const cseSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Second Year": {
+      "Semester 3": {
+        core: [
+          "Discrete Mathematics",
+          "Data Structures and Algorithms",
+          "Digital Logic Design",
+          "Computer Organization",
+          "Object Oriented Programming",
+          "Principles of Programming Languages"
+        ],
+        electives: [
+          "Audit Course 1 (e.g., German Language, Japanese Language, etc.)"
+        ]
+      },
+      "Semester 4": {
+        core: [
+          "Theory of Computation",
+          "Database Management Systems",
+          "Computer Networks",
+          "Operating Systems",
+          "Software Engineering",
+          "Web Technologies"
+        ],
+        electives: [
+          "Audit Course 2 (e.g., Soft Skills, Cyber Security, etc.)"
+        ]
+      }
+    },
+    "Third Year": {
+      "Semester 5": {
+        core: [
+          "Design and Analysis of Algorithms",
+          "Compiler Design",
+          "Artificial Intelligence",
+          "Mobile Computing",
+          "Elective I (e.g., Cloud Computing, etc.)"
+        ]
+      },
+      "Semester 6": {
+        core: [
+          "Machine Learning",
+          "Distributed Systems",
+          "Information Security",
+          "Data Mining",
+          "Elective II (e.g., Internet of Things, etc.)"
+        ]
+      }
+    },
+    "Final Year": {
+      "Semester 7": {
+        core: [
+          "Big Data Analytics",
+          "Cyber Security",
+          "Elective III (e.g., Blockchain Technology, etc.)",
+          "Project Phase I"
+        ]
+      },
+      "Semester 8": {
+        core: [
+          "Professional Ethics",
+          "Elective IV (e.g., Augmented Reality, etc.)",
+          "Project Phase II"
+        ]
+      }
+    }
+  };
+
+  // SPPU Electronics and Communication Engineering (ECE) Subjects
+  const eceSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Second Year": {
+      "Semester 3": {
+        core: [
+          "Engineering Mathematics III",
+          "Electronic Devices and Circuits",
+          "Network Analysis",
+          "Digital Electronics",
+          "Signals and Systems",
+          "Electromagnetic Fields"
+        ],
+        electives: [
+          "Audit Course 1 (e.g., German Language, Japanese Language, etc.)"
+        ]
+      },
+      "Semester 4": {
+        core: [
+          "Engineering Mathematics IV",
+          "Analog Circuits",
+          "Microprocessors",
+          "Control Systems",
+          "Communication Systems I",
+          "Electronic Instrumentation"
+        ],
+        electives: [
+          "Audit Course 2 (e.g., Soft Skills, Cyber Security, etc.)"
+        ]
+      }
+    },
+    "Third Year": {
+      "Semester 5": {
+        core: [
+          "Digital Communication",
+          "VLSI Design",
+          "Embedded Systems",
+          "Antenna and Wave Propagation",
+          "Elective I (e.g., Biomedical Electronics, etc.)"
+        ]
+      },
+      "Semester 6": {
+        core: [
+          "Microwave Engineering",
+          "Optical Communication",
+          "Wireless Communication",
+          "Digital Signal Processing",
+          "Elective II (e.g., Robotics, etc.)"
+        ]
+      }
+    },
+    "Final Year": {
+      "Semester 7": {
+        core: [
+          "Satellite Communication",
+          "Internet of Things",
+          "Elective III (e.g., Nano Electronics, etc.)",
+          "Project Phase I"
+        ]
+      },
+      "Semester 8": {
+        core: [
+          "Professional Ethics",
+          "Elective IV (e.g., Artificial Intelligence, etc.)",
+          "Project Phase II"
+        ]
+      }
+    }
+  };
+
+  // SPPU Chemical Engineering Subjects
+  const chemicalSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Second Year": {
+      "Semester 3": {
+        core: [
+          "Engineering Mathematics III",
+          "Fluid Flow Operations",
+          "Process Calculations",
+          "Mechanical Operations",
+          "Chemical Engineering Thermodynamics I",
+          "Material Science"
+        ],
+        electives: [
+          "Audit Course 1 (e.g., German Language, Japanese Language, etc.)"
+        ]
+      },
+      "Semester 4": {
+        core: [
+          "Engineering Mathematics IV",
+          "Heat Transfer",
+          "Chemical Engineering Thermodynamics II",
+          "Process Instrumentation",
+          "Organic Chemistry",
+          "Physical Chemistry"
+        ],
+        electives: [
+          "Audit Course 2 (e.g., Soft Skills, Cyber Security, etc.)"
+        ]
+      }
+    },
+    "Third Year": {
+      "Semester 5": {
+        core: [
+          "Mass Transfer I",
+          "Chemical Reaction Engineering I",
+          "Process Dynamics and Control",
+          "Petroleum Refining",
+          "Elective I (e.g., Biochemical Engineering, etc.)"
+        ]
+      },
+      "Semester 6": {
+        core: [
+          "Mass Transfer II",
+          "Chemical Reaction Engineering II",
+          "Process Equipment Design",
+          "Environmental Engineering",
+          "Elective II (e.g., Polymer Technology, etc.)"
+        ]
+      }
+    },
+    "Final Year": {
+      "Semester 7": {
+        core: [
+          "Transport Phenomena",
+          "Process Modeling and Simulation",
+          "Elective III (e.g., Food Technology, etc.)",
+          "Project Phase I"
+        ]
+      },
+      "Semester 8": {
+        core: [
+          "Process Engineering Economics",
+          "Elective IV (e.g., Nanotechnology, etc.)",
+          "Project Phase II"
+        ]
+      }
+    }
+  };
+
+  // SPPU Artificial Intelligence and Machine Learning (AI & ML) Subjects
+  const aimlSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Second Year": {
+      "Semester 3": {
+        core: [
+          "Mathematics for AI",
+          "Data Structures",
+          "Python Programming",
+          "Digital Logic Design",
+          "Database Management Systems",
+          "Probability and Statistics"
+        ],
+        electives: [
+          "Audit Course 1 (e.g., German Language, Japanese Language, etc.)"
+        ]
+      },
+      "Semester 4": {
+        core: [
+          "Object Oriented Programming",
+          "Computer Networks",
+          "Operating Systems",
+          "Artificial Intelligence Fundamentals",
+          "Discrete Mathematics",
+          "Web Technologies"
+        ],
+        electives: [
+          "Audit Course 2 (e.g., Soft Skills, Cyber Security, etc.)"
+        ]
+      }
+    },
+    "Third Year": {
+      "Semester 5": {
+        core: [
+          "Machine Learning",
+          "Natural Language Processing",
+          "Computer Vision",
+          "Data Mining",
+          "Elective I (e.g., Deep Learning, etc.)"
+        ]
+      },
+      "Semester 6": {
+        core: [
+          "Reinforcement Learning",
+          "Big Data Analytics",
+          "Cloud Computing",
+          "Robotics",
+          "Elective II (e.g., AI in Healthcare, etc.)"
+        ]
+      }
+    },
+    "Final Year": {
+      "Semester 7": {
+        core: [
+          "Advanced Machine Learning",
+          "AI Ethics and Society",
+          "Elective III (e.g., Explainable AI, etc.)",
+          "Project Phase I"
+        ]
+      },
+      "Semester 8": {
+        core: [
+          "AI Applications",
+          "Elective IV (e.g., Edge AI, etc.)",
+          "Project Phase II"
+        ]
+      }
+    }
+  };
+
+  // SPPU Data Science and Engineering Subjects
+  const dseSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Second Year": {
+      "Semester 3": {
+        core: [
+          "Mathematics for Data Science",
+          "Data Structures",
+          "Database Management Systems",
+          "Python for Data Science",
+          "Probability and Statistics",
+          "Data Visualization"
+        ],
+        electives: [
+          "Audit Course 1 (e.g., German Language, Japanese Language, etc.)"
+        ]
+      },
+      "Semester 4": {
+        core: [
+          "Object Oriented Programming",
+          "Computer Networks",
+          "Operating Systems",
+          "Data Mining",
+          "Linear Algebra",
+          "Web Technologies"
+        ],
+        electives: [
+          "Audit Course 2 (e.g., Soft Skills, Cyber Security, etc.)"
+        ]
+      }
+    },
+    "Third Year": {
+      "Semester 5": {
+        core: [
+          "Machine Learning",
+          "Big Data Analytics",
+          "Cloud Computing",
+          "Data Warehousing",
+          "Elective I (e.g., Time Series Analysis, etc.)"
+        ]
+      },
+      "Semester 6": {
+        core: [
+          "Deep Learning",
+          "Natural Language Processing",
+          "Data Security and Privacy",
+          "Business Analytics",
+          "Elective II (e.g., Data Science in Healthcare, etc.)"
+        ]
+      }
+    },
+    "Final Year": {
+      "Semester 7": {
+        core: [
+          "Advanced Data Science",
+          "AI for Data Science",
+          "Elective III (e.g., Graph Analytics, etc.)",
+          "Project Phase I"
+        ]
+      },
+      "Semester 8": {
+        core: [
+          "Professional Ethics",
+          "Elective IV (e.g., Data Science for IoT, etc.)",
+          "Project Phase II"
+        ]
+      }
+    }
+  };
+
+  // SPPU Robotics and Automation Subjects
+  const roboticsSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Second Year": {
+      "Semester 3": {
+        core: [
+          "Engineering Mathematics III",
+          "Mechanics of Materials",
+          "Basic Electronics",
+          "Introduction to Robotics",
+          "Sensors and Actuators",
+          "Programming for Robotics"
+        ],
+        electives: [
+          "Audit Course 1 (e.g., German Language, Japanese Language, etc.)"
+        ]
+      },
+      "Semester 4": {
+        core: [
+          "Engineering Mathematics IV",
+          "Microcontrollers",
+          "Control Systems",
+          "Kinematics of Robots",
+          "Mechatronics",
+          "Machine Drawing"
+        ],
+        electives: [
+          "Audit Course 2 (e.g., Soft Skills, Cyber Security, etc.)"
+        ]
+      }
+    },
+    "Third Year": {
+      "Semester 5": {
+        core: [
+          "Robot Dynamics",
+          "Machine Vision",
+          "Embedded Systems",
+          "Automation Systems",
+          "Elective I (e.g., Mobile Robotics, etc.)"
+        ]
+      },
+      "Semester 6": {
+        core: [
+          "Artificial Intelligence for Robotics",
+          "Industrial Automation",
+          "Robotics Simulation",
+          "Flexible Manufacturing Systems",
+          "Elective II (e.g., Human-Robot Interaction, etc.)"
+        ]
+      }
+    },
+    "Final Year": {
+      "Semester 7": {
+        core: [
+          "Advanced Robotics",
+          "Robotics Integration",
+          "Elective III (e.g., Swarm Robotics, etc.)",
+          "Project Phase I"
+        ]
+      },
+      "Semester 8": {
+        core: [
+          "Professional Ethics",
+          "Elective IV (e.g., Service Robotics, etc.)",
+          "Project Phase II"
+        ]
+      }
+    }
+  };
+
+  // SPPU Mechatronics Engineering Subjects
+  const mechatronicsSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Second Year": {
+      "Semester 3": {
+        core: [
+          "Engineering Mathematics III",
+          "Mechanics of Materials",
+          "Basic Electronics",
+          "Mechatronics System Design",
+          "Sensors and Actuators",
+          "Programming for Mechatronics"
+        ],
+        electives: [
+          "Audit Course 1 (e.g., German Language, Japanese Language, etc.)"
+        ]
+      },
+      "Semester 4": {
+        core: [
+          "Engineering Mathematics IV",
+          "Microcontrollers",
+          "Control Systems",
+          "Fluid Power Engineering",
+          "Manufacturing Processes",
+          "Machine Drawing"
+        ],
+        electives: [
+          "Audit Course 2 (e.g., Soft Skills, Cyber Security, etc.)"
+        ]
+      }
+    },
+    "Third Year": {
+      "Semester 5": {
+        core: [
+          "Digital Signal Processing",
+          "Embedded Systems",
+          "Automation Systems",
+          "Mechatronics in Manufacturing",
+          "Elective I (e.g., Industrial Robotics, etc.)"
+        ]
+      },
+      "Semester 6": {
+        core: [
+          "Artificial Intelligence for Mechatronics",
+          "Industrial Automation",
+          "Mechatronics Simulation",
+          "Flexible Manufacturing Systems",
+          "Elective II (e.g., Smart Sensors, etc.)"
+        ]
+      }
+    },
+    "Final Year": {
+      "Semester 7": {
+        core: [
+          "Advanced Mechatronics",
+          "Mechatronics Integration",
+          "Elective III (e.g., Automotive Mechatronics, etc.)",
+          "Project Phase I"
+        ]
+      },
+      "Semester 8": {
+        core: [
+          "Professional Ethics",
+          "Elective IV (e.g., Mechatronics for IoT, etc.)",
+          "Project Phase II"
+        ]
+      }
+    }
+  };
+
+  // SPPU Cybersecurity Engineering Subjects
+  const cyberSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Second Year": {
+      "Semester 3": {
+        core: [
+          "Mathematics for Cybersecurity",
+          "Data Structures",
+          "Computer Networks",
+          "Operating Systems",
+          "Introduction to Cybersecurity",
+          "Programming in C/C++"
+        ],
+        electives: [
+          "Audit Course 1 (e.g., German Language, Japanese Language, etc.)"
+        ]
+      },
+      "Semester 4": {
+        core: [
+          "Cryptography",
+          "Web Security",
+          "Database Security",
+          "Network Security",
+          "Ethical Hacking",
+          "Software Engineering"
+        ],
+        electives: [
+          "Audit Course 2 (e.g., Soft Skills, Cyber Security, etc.)"
+        ]
+      }
+    },
+    "Third Year": {
+      "Semester 5": {
+        core: [
+          "Digital Forensics",
+          "Cloud Security",
+          "Application Security",
+          "Incident Response",
+          "Elective I (e.g., IoT Security, etc.)"
+        ]
+      },
+      "Semester 6": {
+        core: [
+          "Mobile Security",
+          "Blockchain Security",
+          "Security Operations",
+          "Risk Management",
+          "Elective II (e.g., Malware Analysis, etc.)"
+        ]
+      }
+    },
+    "Final Year": {
+      "Semester 7": {
+        core: [
+          "Advanced Cybersecurity",
+          "Cyber Law and Ethics",
+          "Elective III (e.g., AI in Security, etc.)",
+          "Project Phase I"
+        ]
+      },
+      "Semester 8": {
+        core: [
+          "Professional Ethics",
+          "Elective IV (e.g., Security for Cloud Computing, etc.)",
+          "Project Phase II"
+        ]
+      }
+    }
+  };
+
+  // SPPU Electronic and Telecommunication Engineering (ENTC) Subjects (2019 Pattern)
+  const entcSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Second Year": {
+      "Semester 3": {
+        core: [
+          "Engineering Mathematics III",
+          "Electronic Circuits",
+          "Digital Circuits",
+          "Electrical Circuits",
+          "Data Structures and Algorithms",
+
+        ],
+        electives: [
+          "Audit Course 1 (e.g., Road Safety Management, German Language, Japanese Language, etc.)"
+        ]
+      },
+      "Semester 4": {
+        core: [
+          "Object Oriented Programming",
+          "Control Systems",
+          "Signals and Systems",
+          "Principles of Communication Systems",
+          "Business Communication Skills"
+        ],
+        electives: [
+          "Audit Course 2 (e.g., Indian Constitution, Cyber Security, etc.)"
+        ]
+      }
+    },
+    "Third Year": {
+      "Semester 5": {
+        core: [
+          "Digital Communication",
+          "Microcontrollers",
+          "Analog Communication",
+          "Electromagnetics",
+          "Power Electronics and Applications"
+        ],
+        electives: [
+          "Elective I (e.g., Biomedical Electronics, Consumer Electronics, Green Electronics, etc.)",
+          "Audit Course 3 (e.g., Environmental Studies, Leadership and Personality Development, etc.)"
+        ]
+      },
+      "Semester 6": {
+        core: [
+          "Digital Signal Processing",
+          "VLSI Design and Technology",
+          "Computer Networks",
+          "Embedded Processors",
+          "Control Systems II"
+        ],
+        electives: [
+          "Elective II (e.g., Automotive Electronics, Industrial Automation, etc.)",
+          "Audit Course 4 (e.g., Intellectual Property Rights, etc.)"
+        ]
+      }
+    },
+    "Final Year": {
+      "Semester 7": {
+        core: [
+          "Internet of Things and Applications",
+          "Wireless Communication",
+          "Microwave Engineering",
+          "Project Stage I"
+        ],
+        electives: [
+          "Elective III (e.g., Artificial Intelligence, Robotics, Nano Electronics, etc.)",
+          "Open Elective I (e.g., Entrepreneurship Development, etc.)"
+        ]
+      },
+      "Semester 8": {
+        core: [
+          "Mobile Communication",
+          "Broadband Communication Systems",
+          "Project Stage II"
+        ],
+        electives: [
+          "Elective IV (e.g., Machine Learning, Cyber Physical Systems, etc.)",
+          "Open Elective II (e.g., Disaster Management, etc.)"
+        ]
+      }
+    }
+  };
+
+  // Example: Add subject mappings for each branch here
+  const branchSubjects: Record<string, Record<string, { core: string[]; electives?: string[] }>> = {
+    "Mechanical Engineering": {
+      "Semester 3": mechanicalSubjects["Second Year"]["Semester 3"],
+      "Semester 4": mechanicalSubjects["Second Year"]["Semester 4"],
+      "Semester 5": mechanicalSubjects["Third Year"]["Semester 5"],
+      "Semester 6": mechanicalSubjects["Third Year"]["Semester 6"],
+      "Semester 7": mechanicalSubjects["Final Year"]["Semester 7"],
+      "Semester 8": mechanicalSubjects["Final Year"]["Semester 8"],
+    },
+    "Civil Engineering": {
+      "Semester 3": civilSubjects["Second Year"]["Semester 3"],
+      "Semester 4": civilSubjects["Second Year"]["Semester 4"],
+      "Semester 5": civilSubjects["Third Year"]["Semester 5"],
+      "Semester 6": civilSubjects["Third Year"]["Semester 6"],
+      "Semester 7": civilSubjects["Final Year"]["Semester 7"],
+      "Semester 8": civilSubjects["Final Year"]["Semester 8"],
+    },
+    "Electrical Engineering": {
+      "Semester 3": electricalSubjects["Second Year"]["Semester 3"],
+      "Semester 4": electricalSubjects["Second Year"]["Semester 4"],
+      "Semester 5": electricalSubjects["Third Year"]["Semester 5"],
+      "Semester 6": electricalSubjects["Third Year"]["Semester 6"],
+      "Semester 7": electricalSubjects["Final Year"]["Semester 7"],
+      "Semester 8": electricalSubjects["Final Year"]["Semester 8"],
+    },
+    "Computer Science and Engineering (CSE)": {
+      "Semester 3": cseSubjects["Second Year"]["Semester 3"],
+      "Semester 4": cseSubjects["Second Year"]["Semester 4"],
+      "Semester 5": cseSubjects["Third Year"]["Semester 5"],
+      "Semester 6": cseSubjects["Third Year"]["Semester 6"],
+      "Semester 7": cseSubjects["Final Year"]["Semester 7"],
+      "Semester 8": cseSubjects["Final Year"]["Semester 8"],
+    },
+    "Electronics and Communication Engineering (ECE)": {
+      "Semester 3": eceSubjects["Second Year"]["Semester 3"],
+      "Semester 4": eceSubjects["Second Year"]["Semester 4"],
+      "Semester 5": eceSubjects["Third Year"]["Semester 5"],
+      "Semester 6": eceSubjects["Third Year"]["Semester 6"],
+      "Semester 7": eceSubjects["Final Year"]["Semester 7"],
+      "Semester 8": eceSubjects["Final Year"]["Semester 8"],
+    },
+    "Chemical Engineering": {
+      "Semester 3": chemicalSubjects["Second Year"]["Semester 3"],
+      "Semester 4": chemicalSubjects["Second Year"]["Semester 4"],
+      "Semester 5": chemicalSubjects["Third Year"]["Semester 5"],
+      "Semester 6": chemicalSubjects["Third Year"]["Semester 6"],
+      "Semester 7": chemicalSubjects["Final Year"]["Semester 7"],
+      "Semester 8": chemicalSubjects["Final Year"]["Semester 8"],
+    },
+    "Artificial Intelligence and Machine Learning (AI & ML)": {
+      "Semester 3": aimlSubjects["Second Year"]["Semester 3"],
+      "Semester 4": aimlSubjects["Second Year"]["Semester 4"],
+      "Semester 5": aimlSubjects["Third Year"]["Semester 5"],
+      "Semester 6": aimlSubjects["Third Year"]["Semester 6"],
+      "Semester 7": aimlSubjects["Final Year"]["Semester 7"],
+      "Semester 8": aimlSubjects["Final Year"]["Semester 8"],
+    },
+    "Data Science and Engineering": {
+      "Semester 3": dseSubjects["Second Year"]["Semester 3"],
+      "Semester 4": dseSubjects["Second Year"]["Semester 4"],
+      "Semester 5": dseSubjects["Third Year"]["Semester 5"],
+      "Semester 6": dseSubjects["Third Year"]["Semester 6"],
+      "Semester 7": dseSubjects["Final Year"]["Semester 7"],
+      "Semester 8": dseSubjects["Final Year"]["Semester 8"],
+    },
+    "Robotics and Automation": {
+      "Semester 3": roboticsSubjects["Second Year"]["Semester 3"],
+      "Semester 4": roboticsSubjects["Second Year"]["Semester 4"],
+      "Semester 5": roboticsSubjects["Third Year"]["Semester 5"],
+      "Semester 6": roboticsSubjects["Third Year"]["Semester 6"],
+      "Semester 7": roboticsSubjects["Final Year"]["Semester 7"],
+      "Semester 8": roboticsSubjects["Final Year"]["Semester 8"],
+    },
+    "Mechatronics Engineering": {
+      "Semester 3": mechatronicsSubjects["Second Year"]["Semester 3"],
+      "Semester 4": mechatronicsSubjects["Second Year"]["Semester 4"],
+      "Semester 5": mechatronicsSubjects["Third Year"]["Semester 5"],
+      "Semester 6": mechatronicsSubjects["Third Year"]["Semester 6"],
+      "Semester 7": mechatronicsSubjects["Final Year"]["Semester 7"],
+      "Semester 8": mechatronicsSubjects["Final Year"]["Semester 8"],
+    },
+    "Cybersecurity Engineering": {
+      "Semester 3": cyberSubjects["Second Year"]["Semester 3"],
+      "Semester 4": cyberSubjects["Second Year"]["Semester 4"],
+      "Semester 5": cyberSubjects["Third Year"]["Semester 5"],
+      "Semester 6": cyberSubjects["Third Year"]["Semester 6"],
+      "Semester 7": cyberSubjects["Final Year"]["Semester 7"],
+      "Semester 8": cyberSubjects["Final Year"]["Semester 8"],
+    },
+    "Electronic and Telecommunication Engineering": {
+      "Semester 3": entcSubjects["Second Year"]["Semester 3"],
+      "Semester 4": entcSubjects["Second Year"]["Semester 4"],
+      "Semester 5": entcSubjects["Third Year"]["Semester 5"],
+      "Semester 6": entcSubjects["Third Year"]["Semester 6"],
+      "Semester 7": entcSubjects["Final Year"]["Semester 7"],
+      "Semester 8": entcSubjects["Final Year"]["Semester 8"],
+    },
+   
   };
 
   const BranchCard = ({ branch }: { branch: Branch }) => {
     const isFirstYear = branch.isFirstYear;
-    const years = isFirstYear 
-      ? ["Semester 1", "Semester 2"] 
-      : ["Second Year", "Third Year", "Final Year"];
+    const years = isFirstYear
+      ? ["Semester 1", "Semester 2"]
+      : [
+          "Semester 3",
+          "Semester 4",
+          "Semester 5",
+          "Semester 6",
+          "Semester 7",
+          "Semester 8"
+        ];
+
+    // Helper to get subjects by semester for any branch
+    const getSubjectsBySemester = (branchName: string, semester: string) => {
+      return branchSubjects[branchName]?.[semester];
+    };
+
+    // Helper to render subject with years
+    const renderSubjectWithYears = (subject: string) => (
+      <div>
+        <Link
+          to={`/subject/${encodeURIComponent(subject)}`}
+          className="block text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm font-bold"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {subject}
+        </Link>
+        <div className="flex gap-2 mt-1 ml-2">
+          {["2023", "2022", "2021"].map((year) => (
+            <Link
+              key={year}
+              to={`/subject/${encodeURIComponent(subject)}/${year}`}
+              className="text-xs text-blue-500 hover:underline hover:text-blue-700 bg-blue-50 rounded px-2 py-0.5"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {year}
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
 
     return (
       <div className={`bg-white rounded-xl shadow-lg overflow-hidden border-t-4 ${branch.borderColor} hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}>
@@ -289,7 +1307,7 @@ const Home = () => {
           </div>
         </div>
         <div className="p-6">
-          <h2 
+          <h2
             className="text-xl font-semibold mb-4 text-gray-800 cursor-pointer flex justify-between items-center"
             onClick={() => toggleBranch(branch.name)}
           >
@@ -300,73 +1318,51 @@ const Home = () => {
               <FaChevronDown className="text-gray-500" />
             )}
           </h2>
-          
+
           {expandedBranch === branch.name && (
-            <div className="space-y-4">
-              {years.map((year, yearIndex) => (
-                <div key={yearIndex}>
-                  <h3 
-                    className="text-md font-medium text-gray-700 mb-2 flex items-center justify-between cursor-pointer"
-                    onClick={() => toggleSemester(year)}
-                  >
-                    <span className="flex items-center">
-                      <FaRegCalendarAlt className="mr-2 text-blue-500" />
-                      {year}
-                    </span>
-                    {expandedSemester === year ? (
-                      <FaChevronUp className="text-gray-500 text-sm" />
-                    ) : (
-                      <FaChevronDown className="text-gray-500 text-sm" />
-                    )}
-                  </h3>
-                  
-                  {expandedSemester === year && (
-                    <div className="space-y-2 pl-6">
-                      {isFirstYear ? (
-                        firstYearSubjects[year].map((subject, subjectIndex) => (
-                          <div key={subjectIndex} className="flex items-start">
-                            <div className="flex-shrink-0 mt-1">
-                              <FaBookOpen className="w-3 h-3 text-blue-400 mr-2" />
-                            </div>
-                            <div>
-                              <a
-                                href="#"
-                                className="block text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm"
-                              >
-                                {subject}
-                              </a>
-                              <div className="flex mt-1 space-x-2">
-                                {[2023, 2022, 2021].map((paperYear) => (
-                                  <a
-                                    key={paperYear}
-                                    href="#"
-                                    className="text-xs text-gray-500 hover:text-blue-500 border border-gray-200 px-2 py-1 rounded hover:bg-blue-50"
-                                  >
-                                    {paperYear}
-                                  </a>
-                                ))}
-                              </div>
-                            </div>
+            <div className="space-y-2">
+              {/* Add SPPU heading for ENTC branch */}
+              {branch.name === "Electronic and Telecommunication Engineering" && (
+                <div className="font-semibold text-blue-700 mb-2">
+                  SPPU University ENTC Subjects
+                </div>
+              )}
+              {isFirstYear
+                ? years.flatMap((year) =>
+                    firstYearSubjects[year].map((subject, subjectIndex) => (
+                      <div key={year + subjectIndex} className="flex items-start">
+                        <div className="flex-shrink-0 mt-1">
+                          <FaBookOpen className="w-3 h-3 text-blue-400 mr-2" />
+                        </div>
+                        <div>
+                          {renderSubjectWithYears(subject)}
+                        </div>
+                      </div>
+                    ))
+                  )
+                : years.flatMap((year) => {
+                    const details = getSubjectsBySemester(branch.name, year);
+                    if (!details) return [];
+                    const coreSubjects = details.core.map((subject, idx) => (
+                      <div key={year + idx} className="flex items-start">
+                        <div className="flex-shrink-0 mt-1">
+                          <FaBookOpen className="w-3 h-3 text-blue-400 mr-2" />
+                        </div>
+                        <div>
+                          {renderSubjectWithYears(subject)}
+                        </div>
+                      </div>
+                    ));
+                    const electiveSubjects = details.electives
+                      ? details.electives.map((elective, eidx) => (
+                          <div key={year + "elective" + eidx} className="flex items-start ml-2">
+                            <span className="font-medium text-indigo-600 text-sm mr-2">Elective:</span>
+                            <span className="text-gray-600 text-sm">{elective}</span>
                           </div>
                         ))
-                      ) : (
-                        <>
-                          {[2023, 2022, 2021].map((paperYear) => (
-                            <a
-                              key={paperYear}
-                              href="#"
-                              className="block text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center text-sm py-1 hover:bg-blue-50 rounded px-2"
-                            >
-                              <FaRegClock className="mr-2 text-blue-400" />
-                              {paperYear} Papers & Solutions
-                            </a>
-                          ))}
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
+                      : [];
+                    return [...coreSubjects, ...electiveSubjects];
+                  })}
             </div>
           )}
         </div>
