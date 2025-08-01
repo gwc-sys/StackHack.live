@@ -3,61 +3,100 @@ import { Link } from 'react-router-dom';
 import { FaStar, FaSearch, FaBook, FaGraduationCap, FaUniversity, FaUserGraduate, FaChalkboardTeacher, FaRegCalendarAlt, FaRegClock, FaRegBookmark, FaBookOpen, FaRegNewspaper } from 'react-icons/fa';
 import { MdEngineering, MdComputer, MdOutlineScience, MdConstruction } from 'react-icons/md';
 
+// Common first year subjects for all branches
+const firstYearSubjects = {
+  "Semester 1": [
+    "Engineering Mathematics-I",
+    "Engineering Physics",
+    "Engineering Chemistry",
+    "Basic Electrical Engineering",
+    "Programming for Problem Solving",
+    "Engineering Graphics",
+    "Environmental Science"
+  ],
+  "Semester 2": [
+    "Engineering Mathematics-II",
+    "Engineering Mechanics",
+    "Basic Electronics Engineering",
+    "Engineering Thermodynamics",
+    "Workshop Practice",
+    "Communication Skills",
+    "Indian Constitution"
+  ]
+};
+
 const branches = [
+  {
+    name: "First Year Engineering (Common to All Branches)",
+    icon: <FaGraduationCap className="w-6 h-6 text-blue-500" />,
+    color: "bg-blue-100",
+    isFirstYear: true
+  },
   {
     name: "Mechanical Engineering",
     icon: <MdEngineering className="w-6 h-6 text-blue-500" />,
-    color: "bg-orange-100"
+    color: "bg-orange-100",
+    isFirstYear: false
   },
   {
     name: "Civil Engineering",
     icon: <MdConstruction className="w-6 h-6 text-blue-500" />,
-    color: "bg-green-100"
+    color: "bg-green-100",
+    isFirstYear: false
   },
   {
     name: "Electrical Engineering",
     icon: <FaGraduationCap className="w-6 h-6 text-blue-500" />,
-    color: "bg-yellow-100"
+    color: "bg-yellow-100",
+    isFirstYear: false
   },
   {
     name: "Electronics and Communication Engineering (ECE)",
     icon: <MdComputer className="w-6 h-6 text-blue-500" />,
-    color: "bg-purple-100"
+    color: "bg-purple-100",
+    isFirstYear: false
   },
   {
     name: "Computer Science and Engineering (CSE)",
     icon: <MdComputer className="w-6 h-6 text-blue-500" />,
-    color: "bg-blue-100"
+    color: "bg-blue-100",
+    isFirstYear: false
   },
   {
     name: "Chemical Engineering",
     icon: <MdOutlineScience className="w-6 h-6 text-blue-500" />,
-    color: "bg-red-100"
+    color: "bg-red-100",
+    isFirstYear: false
   },
   {
     name: "Artificial Intelligence and Machine Learning (AI & ML)",
     icon: <MdComputer className="w-6 h-6 text-blue-500" />,
-    color: "bg-indigo-100"
+    color: "bg-indigo-100",
+    isFirstYear: false
   },
   {
     name: "Data Science and Engineering",
     icon: <MdOutlineScience className="w-6 h-6 text-blue-500" />,
-    color: "bg-pink-100"
+    color: "bg-pink-100",
+    isFirstYear: false
   },
   {
     name: "Robotics and Automation",
     icon: <MdEngineering className="w-6 h-6 text-blue-500" />,
-    color: "bg-teal-100"
+    color: "bg-teal-100",
+    isFirstYear: false
   },
   {
     name: "Mechatronics Engineering",
     icon: <MdEngineering className="w-6 h-6 text-blue-500" />,
-    color: "bg-cyan-100"
+    color: "bg-cyan-100",
+    isFirstYear: false
   },
   {
     name: "Cybersecurity Engineering",
     icon: <MdComputer className="w-6 h-6 text-blue-500" />,
-    color: "bg-gray-100"
+    color: "bg-gray-100",
+    isFirstYear: false
   }
 ];
 
@@ -96,7 +135,7 @@ const features = [
 
 const testimonials = [
   {
-    name: "Sankalp Gadakh ",
+    name: "Sankalp Gadakh",
     university: "Amrutvahini Polytechnic, Sangamner",
     text: "This platform helped me ace my semester exams with its comprehensive question bank and study materials.",
     rating: 5
@@ -120,15 +159,8 @@ export default function Home() {
   const [hover, setHover] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
-  //const [isScrolled, setIsScrolled] = useState(false);
-
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     setIsScrolled(window.scrollY > 50);
-  //   };
-  //   window.addEventListener('scroll', handleScroll);
-  //   return () => window.removeEventListener('scroll', handleScroll);
-  // }, []);
+  const [expandedBranch, setExpandedBranch] = useState<string | null>(null);
+  const [expandedSemester, setExpandedSemester] = useState<string | null>(null);
 
   const filteredBranches = branches.filter(branch =>
     branch.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -136,8 +168,156 @@ export default function Home() {
 
   const getFilteredBranches = () => {
     if (activeTab === 'all') return filteredBranches;
-    return filteredBranches.filter(branch =>
-      branch.name.toLowerCase().includes(activeTab.toLowerCase())
+    if (activeTab === 'computer') {
+      return filteredBranches.filter(branch => 
+        branch.name.toLowerCase().includes('computer') || 
+        branch.name.toLowerCase().includes('ai') ||
+        branch.name.toLowerCase().includes('data') ||
+        branch.name.toLowerCase().includes('cyber') ||
+        branch.name.toLowerCase().includes('electronics')
+      );
+    }
+    if (activeTab === 'engineering') {
+      return filteredBranches.filter(branch => 
+        (branch.name.toLowerCase().includes('engineering') || 
+         branch.name.toLowerCase().includes('mechanical') ||
+         branch.name.toLowerCase().includes('civil') ||
+         branch.name.toLowerCase().includes('electrical')) && 
+        !branch.name.toLowerCase().includes('computer') &&
+        !branch.name.toLowerCase().includes('science')
+      );
+    }
+    if (activeTab === 'science') {
+      return filteredBranches.filter(branch => 
+        branch.name.toLowerCase().includes('science') || 
+        branch.name.toLowerCase().includes('chemical')
+      );
+    }
+    return filteredBranches;
+  };
+
+  const toggleBranch = (branchName: string) => {
+    if (expandedBranch === branchName) {
+      setExpandedBranch(null);
+      setExpandedSemester(null);
+    } else {
+      setExpandedBranch(branchName);
+      setExpandedSemester(null);
+    }
+  };
+
+  const toggleSemester = (semester: string) => {
+    if (expandedSemester === semester) {
+      setExpandedSemester(null);
+    } else {
+      setExpandedSemester(semester);
+    }
+  };
+
+  const BranchCard = ({ branch }: { branch: typeof branches[0] }) => {
+    const isFirstYear = branch.isFirstYear;
+    const years = isFirstYear 
+      ? ["Semester 1", "Semester 2"] 
+      : ["Second Year", "Third Year", "Final Year"];
+
+    return (
+      <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <div className={`${branch.color} p-6 flex items-center justify-center`}>
+          <div className="bg-white p-4 rounded-full shadow-md">
+            {branch.icon}
+          </div>
+        </div>
+        <div className="p-6">
+          <h2 
+            className="text-xl font-semibold mb-4 text-gray-800 cursor-pointer flex justify-between items-center"
+            onClick={() => toggleBranch(branch.name)}
+          >
+            {branch.name}
+            <svg
+              className={`w-5 h-5 transition-transform ${expandedBranch === branch.name ? 'transform rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </h2>
+          
+          {expandedBranch === branch.name && (
+            <div className="space-y-4">
+              {years.map((year, yearIndex) => (
+                <div key={yearIndex}>
+                  <h3 
+                    className="text-md font-medium text-gray-700 mb-2 flex items-center justify-between cursor-pointer"
+                    onClick={() => toggleSemester(year)}
+                  >
+                    <span className="flex items-center">
+                      <FaRegCalendarAlt className="mr-2 text-blue-500" />
+                      {year}
+                    </span>
+                    <svg
+                      className={`w-4 h-4 transition-transform ${expandedSemester === year ? 'transform rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </h3>
+                  
+                  {expandedSemester === year && (
+                    <div className="space-y-2 pl-6">
+                      {isFirstYear ? (
+                        firstYearSubjects[year as keyof typeof firstYearSubjects].map((subject, subjectIndex) => (
+                          <div key={subjectIndex} className="flex items-start">
+                            <div className="flex-shrink-0 mt-1">
+                              <FaBookOpen className="w-3 h-3 text-blue-400 mr-2" />
+                            </div>
+                            <div>
+                              <a
+                                href="#"
+                                className="block text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm"
+                              >
+                                {subject}
+                              </a>
+                              <div className="flex mt-1 space-x-2">
+                                {[2023, 2022, 2021].map((paperYear) => (
+                                  <a
+                                    key={paperYear}
+                                    href="#"
+                                    className="text-xs text-gray-500 hover:text-blue-500"
+                                  >
+                                    {paperYear}
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <>
+                          {[2023, 2022, 2021].map((paperYear) => (
+                            <a
+                              key={paperYear}
+                              href="#"
+                              className="block text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center text-sm"
+                            >
+                              <FaRegClock className="mr-2 text-blue-400" />
+                              {paperYear} Papers & Solutions
+                            </a>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     );
   };
 
@@ -294,38 +474,7 @@ export default function Home() {
           {/* Branches Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {getFilteredBranches().map((branch, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className={`${branch.color} p-6 flex items-center justify-center`}>
-                  <div className="bg-white p-4 rounded-full shadow-md">
-                    {branch.icon}
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h2 className="text-xl font-semibold mb-4 text-gray-800">{branch.name}</h2>
-                  <div className="space-y-4">
-                    {["First Year", "Second Year", "Third Year", "Final Year"].map((year, yearIndex) => (
-                      <div key={yearIndex}>
-                        <h3 className="text-md font-medium text-gray-700 mb-2 flex items-center">
-                          <FaRegCalendarAlt className="mr-2 text-blue-500" />
-                          {year}
-                        </h3>
-                        <div className="space-y-2 pl-6">
-                          {[2023, 2022, 2021].map((paperYear) => (
-                            <a
-                              key={paperYear}
-                              href="#"
-                              className="block text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center text-sm"
-                            >
-                              <FaRegClock className="mr-2 text-blue-400" />
-                              {paperYear} Papers & Solutions
-                            </a>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <BranchCard key={index} branch={branch} />
             ))}
           </div>
         </div>
