@@ -5,17 +5,16 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173, // or any port you want for local dev
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000', // Django default port
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    },
+    port: 5173, // Vite default port
   },
 })
 
-// server: {
-//     proxy: {
-//       '/api': {
-//         target: 'http://localhost:8000', // Django default port
-//         changeOrigin: true,
-//         secure: false,
-//         rewrite: (path) => path.replace(/^\/api/, '')
-//       }
-//     }
-//   }
+// 
