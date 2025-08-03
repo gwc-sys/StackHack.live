@@ -46,8 +46,19 @@ const ResourcesPage = () => {
         setIsLoading(true);
         setError('');
         const response = await axios.get('/api/resources/');
-        setResources(response.data);
-        setFilteredResources(response.data);
+        // Map backend response to Resource interface
+        const mappedResources = response.data.map((doc: any) => ({
+          id: doc.id,
+          title: doc.name || doc.title || 'Untitled',
+          file_url: doc.file_url || doc.file,
+          upload_date: doc.uploaded_at || doc.upload_date,
+          file_type: doc.resource_type || doc.file_type || 'pdf',
+          size: doc.size || 'Unknown',
+          branch: doc.branch || '',
+          description: doc.description || '',
+        }));
+        setResources(mappedResources);
+        setFilteredResources(mappedResources);
       } catch (err) {
         console.error('Error fetching resources:', err);
         setError('Failed to load resources. Please try again later.');
