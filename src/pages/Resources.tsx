@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+// Configure axios base URL - adjust according to your backend
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+axios.defaults.baseURL = API_BASE_URL;
+
 interface Resource {
   id: number;
   title: string;
@@ -55,11 +59,11 @@ const ResourcesPage = () => {
     fetchResources();
   }, []);
 
-  // Fetch documents and get the first document's ID
+  // Fetch documents and get the first document's ID (if needed)
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const response = await axios.get('/api/documents/');
+        const response = await axios.get('/api/upload/file/');
         if (response.data && response.data.length > 0) {
           setDocumentId(response.data[0].id);
         }
@@ -109,8 +113,8 @@ const ResourcesPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile || !title) {
-        setError('Please select a file and provide a title');
-        return;
+      setError('Please select a file and provide a title');
+      return;
     }
 
     const formData = new FormData();
@@ -121,40 +125,41 @@ const ResourcesPage = () => {
 
     // If no documentId, let the backend create a new Document
     if (documentId !== null) {
-        formData.append('document_id', documentId.toString());
+      formData.append('document_id', documentId.toString());
     }
 
     try {
-        setIsUploading(true);
-        setError('');
-        setUploadSuccess(false);
+      setIsUploading(true);
+      setError('');
+      setUploadSuccess(false);
 
-        await axios.post('/api/resources/upload/', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+      // Upload file to correct endpoint
+      await axios.post('/api/upload/file/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
 
-        // Refresh resources after successful upload
-        const resourcesResponse = await axios.get('/api/resources/');
-        setResources(resourcesResponse.data);
-        setFilteredResources(resourcesResponse.data);
+      // Refresh resources after successful upload
+      const resourcesResponse = await axios.get('/api/resources/');
+      setResources(resourcesResponse.data);
+      setFilteredResources(resourcesResponse.data);
 
-        // Reset form
-        setTitle('');
-        setDescription('');
-        setBranch('');
-        setSelectedFile(null);
-        setUploadSuccess(true);
+      // Reset form
+      setTitle('');
+      setDescription('');
+      setBranch('');
+      setSelectedFile(null);
+      setUploadSuccess(true);
     } catch (err) {
-        let errorMessage = 'File upload failed. Please try again.';
-        if (axios.isAxiosError(err)) {
-            errorMessage = err.response?.data?.detail || errorMessage;
-        }
-        setError(errorMessage);
-        console.error('Upload error:', err);
-        setIsUploading(false);
-        return;
+      let errorMessage = 'File upload failed. Please try again.';
+      if (axios.isAxiosError(err)) {
+        errorMessage = err.response?.data?.detail || errorMessage;
+      }
+      setError(errorMessage);
+      console.error('Upload error:', err);
+      setIsUploading(false);
+      return;
     } finally {
-        setIsUploading(false);
+      setIsUploading(false);
     }
   };
 
