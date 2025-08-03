@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8000', // Django default port
+        target: 'http://127.0.0.1:8000/', // Django default port
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, '')
@@ -17,4 +17,4 @@ export default defineConfig({
   },
 })
 
-// 
+//
