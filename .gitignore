@@ -23,3 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 .AuthContext.tsx
+VITE_API_BASE_URL=*
+VITE_API_BASE_URL=http://0.0.0.0:8000
