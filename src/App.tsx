@@ -10,6 +10,7 @@ import SignUp from './pages/SignUp.tsx';
 import JoinCommunity from './pages/JoinCommunity.tsx';
 import Header from './components/Header';
 import Resources from './pages/Resources';
+import Roadmaps from './pages/Roadmaps';
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
             <Route path="/community" element={<JoinCommunity />} />
             <Route path="/universities" element={<Universities />} />
             <Route path="/resources" element={<Resources />} />
+            <Route path="/roadmaps" element={<Roadmaps />} />
           </Routes>
         </Layout>
       </Router>
