@@ -45,7 +45,7 @@ const ResourcesPage = () => {
       try {
         setIsLoading(true);
         setError('');
-        const response = await axios.get('/api/resources/');
+        const response = await axios.get('https://engiportal.onrender.com/api/resources/');
         // Map backend response to Resource interface
         const mappedResources = response.data.map((doc: any) => ({
           id: doc.id,
@@ -74,7 +74,9 @@ const ResourcesPage = () => {
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const response = await axios.get('/api/upload/file/');
+        // const response = await axios.get('/api/upload/file/'); 
+        const response = await axios.get('https://engiportal.onrender.com/api/upload/file/'); 
+
         if (response.data && response.data.length > 0) {
           setDocumentId(response.data[0].id);
         }
@@ -145,12 +147,12 @@ const ResourcesPage = () => {
       setUploadSuccess(false);
 
       // Upload file to correct endpoint
-      await axios.post('/api/upload/file/', formData, {
+      await axios.post('https://engiportal.onrender.com/api/upload/file/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       // Refresh resources after successful upload
-      const resourcesResponse = await axios.get('/api/resources/');
+      const resourcesResponse = await axios.get('https://engiportal.onrender.com/api/resources/');
       setResources(resourcesResponse.data);
       setFilteredResources(resourcesResponse.data);
 
