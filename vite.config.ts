@@ -20,10 +20,15 @@
 
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+// import fs from 'fs' // https support
 
 export default defineConfig({
   plugins: [react()],
   server: {
+    // https: { // https support
+    //   key: fs.readFileSync('key.pem'),
+    //   cert: fs.readFileSync('cert.pem'),
+    // },
     proxy: {
       '/api': {
         target: 'https://engiportal.onrender.com', // Production Django

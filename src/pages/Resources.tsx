@@ -12,9 +12,52 @@ interface Resource {
   upload_date: string;
   file_type: string;
   size: string;
+  college?: string;
   branch?: string;
+  resource_type?: string;
   description: string;
 }
+
+const COLLEGES = [
+  'IIT Bombay', 'IIT Delhi', 'IIT Madras', 'IIT Kanpur', 'IIT Kharagpur',
+  'IIT Roorkee', 'IIT Guwahati', 'IIT Hyderabad', 'NIT Trichy', 'NIT Surathkal',
+  'NIT Warangal', 'BITS Pilani', 'DTU Delhi', 'NSUT Delhi', 'IIIT Hyderabad',
+  'Government College of Engineering, Karad (GCEK) – Autonomous',
+  'Government College of Engineering, Jalgaon (GCOEJ)',
+  'Government College of Engineering, Chandrapur (GCEC)',
+  'Government College of Engineering, Amravati (GCOEA)',
+  'Vishwakarma Institute of Technology (VIT, Pune) – Autonomous',
+  'Maharashtra Institute of Technology (MIT, Pune) – Autonomous',
+  'D.Y. Patil College of Engineering, Pune (DYPCoE) – Autonomous',
+  'AISSMS College of Engineering (AISSMSCOE, Pune)',
+  'Army Institute of Technology (AIT, Pune) – For defense personnel',
+  'Sinhgad College of Engineering (SCOE, Vadgaon)',
+  'Pimpri Chinchwad College of Engineering (PCCOE, Pune)',
+  'JSPMs Rajarshi Shahu College of Engineering (RSCOE, Tathawade)',
+  'MKSSSs Cummins College of Engineering for Women (CCEW, Pune)',
+  'All India Shri Shivaji Memorial Societys COE (AISSMSCOE, Pune)',
+  'Zeal College of Engineering & Research (ZCOER, Narhe)',
+  'International Institute of Information Technology (I²IT, Pune)',
+  'Sinhgad Academy of Engineering (SAOE, Kondhwa)',
+  'Marathwada Mitra Mandals College of Engineering (MMCOE, Pune)',
+  'D.Y. Patil College of Engineering, Akurdi (DYPCOE)',
+  'JSPMMs Imperial College of Engineering & Research (ICoER, Wagholi)',
+  'Indira College of Engineering & Management (ICEM, Pune)',
+  'SIT College of Engineering (SIT, Lonavala)',
+  'Sandip Institute of Engineering & Management (SIEM, Nashik)',
+  'NBN Sinhgad School of Engineering (NBNSSOE, Pune)',
+  'G.H. Raisoni College of Engineering & Management (GHRCEM, Pune)',
+  'Sinhgad Institute of Technology & Science (SITS, Narhe)',
+  'Vishwakarma Institute of Information Technology (VIIT, Pune)',
+  'Sinhgad College of Engineering, Pandharpur',
+  'Jayawantrao Sawant College of Engineering (JSCOE, Pune)',
+  'TSSMMs Bhivarabai Sawant College of Engineering (BSCOE, Pune)',
+  'Dattakala Group of Institutions, Pune',
+  'Suman Ramesh Tulsiani Technical Campus (SRTTC, Pune)',
+  'KJ College of Engineering & Management Research (KJCOEMR) – Pune',
+  'Trinity Academy of Engineering (TAE)',
+  'Trinity College of Engineering & Research (TCER)'
+];
 
 const BRANCHES = [
   'CSE', 'ECE', 'EEE', 'ME', 'CE', 
@@ -22,15 +65,22 @@ const BRANCHES = [
   'BIOTECH', 'CHEM', 'META', 'MINING', 'PROD'
 ];
 
+const RESOURCE_TYPES = [
+  'Assignment', 'Learning Notes', 'Lab Manual', 'Resources', 'Question Paper',
+  'Project Report', 'Tutorial', 'Presentation', 'Research Paper'
+];
+
 const MAX_FILE_SIZE_MB = 10;
-const ALLOWED_FILE_TYPES = ['pdf', 'docx', 'pptx', 'txt'];
+const ALLOWED_FILE_TYPES = ['pdf', 'docx', 'pptx', 'txt', 'zip'];
 
 const ResourcesPage = () => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [filteredResources, setFilteredResources] = useState<Resource[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
+  const [college, setCollege] = useState('');
   const [branch, setBranch] = useState('');
+  const [resourceType, setResourceType] = useState('');
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -38,6 +88,11 @@ const ResourcesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [documentId, setDocumentId] = useState<number | null>(null);
+  const [filters, setFilters] = useState({
+    college: '',
+    branch: '',
+    resourceType: ''
+  });
 
   // Fetch resources from backend
   useEffect(() => {
@@ -54,7 +109,9 @@ const ResourcesPage = () => {
           upload_date: doc.uploaded_at || doc.upload_date,
           file_type: doc.resource_type || doc.file_type || 'pdf',
           size: doc.size || 'Unknown',
+          college: doc.college || '',
           branch: doc.branch || '',
+          resource_type: doc.resource_type || '',
           description: doc.description || '',
         }));
         setResources(mappedResources);
@@ -74,9 +131,7 @@ const ResourcesPage = () => {
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        // const response = await axios.get('/api/upload/file/'); 
         const response = await axios.get('https://engiportal.onrender.com/api/upload/file/'); 
-
         if (response.data && response.data.length > 0) {
           setDocumentId(response.data[0].id);
         }
@@ -87,19 +142,44 @@ const ResourcesPage = () => {
     fetchDocuments();
   }, []);
 
-  // Filter resources based on search query
+  // Filter resources based on search query and filters
   useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredResources(resources);
-    } else {
-      const filtered = resources.filter(resource =>
+    let filtered = resources;
+    
+    // Apply search query filter
+    if (searchQuery.trim() !== '') {
+      filtered = filtered.filter(resource =>
         resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (resource.college && resource.college.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (resource.branch && resource.branch.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (resource.resource_type && resource.resource_type.toLowerCase().includes(searchQuery.toLowerCase())) ||
         resource.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setFilteredResources(filtered);
     }
-  }, [searchQuery, resources]);
+    
+    // Apply college filter
+    if (filters.college) {
+      filtered = filtered.filter(resource => 
+        resource.college === filters.college
+      );
+    }
+    
+    // Apply branch filter
+    if (filters.branch) {
+      filtered = filtered.filter(resource => 
+        resource.branch === filters.branch
+      );
+    }
+    
+    // Apply resource type filter
+    if (filters.resourceType) {
+      filtered = filtered.filter(resource => 
+        resource.resource_type === filters.resourceType
+      );
+    }
+    
+    setFilteredResources(filtered);
+  }, [searchQuery, resources, filters]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -134,7 +214,9 @@ const ResourcesPage = () => {
     formData.append('file', selectedFile);
     formData.append('title', title);
     formData.append('description', description);
+    if (college) formData.append('college', college);
     if (branch) formData.append('branch', branch);
+    if (resourceType) formData.append('resource_type', resourceType);
 
     // If no documentId, let the backend create a new Document
     if (documentId !== null) {
@@ -159,7 +241,9 @@ const ResourcesPage = () => {
       // Reset form
       setTitle('');
       setDescription('');
+      setCollege('');
       setBranch('');
+      setResourceType('');
       setSelectedFile(null);
       setUploadSuccess(true);
     } catch (err) {
@@ -181,7 +265,7 @@ const ResourcesPage = () => {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
   };
 
   const formatDate = (dateString: string) => {
@@ -215,11 +299,31 @@ const ResourcesPage = () => {
         return <svg className={`${iconClass} text-orange-500`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
         </svg>;
+      case 'zip':
+        return <svg className={`${iconClass} text-purple-500`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8v16m16-8v8m0 0v-8a2 2 0 00-2-2h-6m0 0l-3-3m0 0l-3 3m3-3v12" />
+        </svg>;
       default:
         return <svg className={`${iconClass} text-gray-500`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
         </svg>;
     }
+  };
+
+  const applyFilter = (type: 'college' | 'branch' | 'resourceType', value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [type]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      college: '',
+      branch: '',
+      resourceType: ''
+    });
+    setSearchQuery('');
   };
 
   return (
@@ -253,12 +357,60 @@ const ResourcesPage = () => {
               </div>
               <input
                 type="text"
-                placeholder="Search resources by title, branch, or keyword..."
+                placeholder="Search resources by title, college, branch, or keyword..."
                 className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+
+            {/* Active filters */}
+            {(filters.college || filters.branch || filters.resourceType) && (
+              <div className="mb-4">
+                <div className="flex items-center flex-wrap gap-2">
+                  <span className="text-sm text-gray-500">Filters:</span>
+                  {filters.college && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      College: {filters.college}
+                      <button 
+                        onClick={() => applyFilter('college', '')}
+                        className="ml-1 text-blue-600 hover:text-blue-800"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  )}
+                  {filters.branch && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Branch: {filters.branch}
+                      <button 
+                        onClick={() => applyFilter('branch', '')}
+                        className="ml-1 text-green-600 hover:text-green-800"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  )}
+                  {filters.resourceType && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      Type: {filters.resourceType}
+                      <button 
+                        onClick={() => applyFilter('resourceType', '')}
+                        className="ml-1 text-purple-600 hover:text-purple-800"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  )}
+                  <button 
+                    onClick={clearFilters}
+                    className="text-sm text-blue-600 hover:text-blue-800 ml-2"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Resource Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -267,14 +419,12 @@ const ResourcesPage = () => {
                 <p className="text-2xl font-bold text-blue-600">{resources.length}</p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-                <p className="text-sm font-medium text-green-800">Branches</p>
-                <p className="text-2xl font-bold text-green-600">{BRANCHES.length}</p>
+                <p className="text-sm font-medium text-green-800">Colleges</p>
+                <p className="text-2xl font-bold text-green-600">{COLLEGES.length}</p>
               </div>
               <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                <p className="text-sm font-medium text-purple-800">This Week</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  {resources.filter(r => new Date(r.upload_date) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
-                </p>
+                <p className="text-sm font-medium text-purple-800">Resource Types</p>
+                <p className="text-2xl font-bold text-purple-600">{RESOURCE_TYPES.length}</p>
               </div>
               <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
                 <p className="text-sm font-medium text-amber-800">Downloads</p>
@@ -282,27 +432,46 @@ const ResourcesPage = () => {
               </div>
             </div>
 
-            {/* Quick Branch Filters */}
-            <div className="mb-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Filter by Branch</h3>
-              <div className="flex flex-wrap gap-2">
-                {BRANCHES.slice(0, 6).map((br) => (
-                  <button
-                    key={br}
-                    onClick={() => setSearchQuery(br)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${searchQuery === br ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
-                  >
-                    {br}
-                  </button>
-                ))}
-                {BRANCHES.length > 6 && (
-                  <button 
-                    onClick={() => setSearchQuery('')}
-                    className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200"
-                  >
-                    View All
-                  </button>
-                )}
+            {/* Quick Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Filter by College</h3>
+                <select
+                  value={filters.college}
+                  onChange={(e) => applyFilter('college', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                >
+                  <option value="">All Colleges</option>
+                  {COLLEGES.map(college => (
+                    <option key={college} value={college}>{college}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Filter by Branch</h3>
+                <select
+                  value={filters.branch}
+                  onChange={(e) => applyFilter('branch', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                >
+                  <option value="">All Branches</option>
+                  {BRANCHES.map(br => (
+                    <option key={br} value={br}>{br}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Filter by Type</h3>
+                <select
+                  value={filters.resourceType}
+                  onChange={(e) => applyFilter('resourceType', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                >
+                  <option value="">All Types</option>
+                  {RESOURCE_TYPES.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
@@ -331,19 +500,57 @@ const ResourcesPage = () => {
                 />
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="college" className="block text-sm font-medium text-gray-700 mb-1">
+                    College*
+                  </label>
+                  <select
+                    id="college"
+                    value={college}
+                    onChange={(e) => setCollege(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">Select College</option>
+                    {COLLEGES.map(col => (
+                      <option key={col} value={col}>{col}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="branch" className="block text-sm font-medium text-gray-700 mb-1">
+                    Branch*
+                  </label>
+                  <select
+                    id="branch"
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">Select Branch</option>
+                    {BRANCHES.map(br => (
+                      <option key={br} value={br}>{br}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div>
-                <label htmlFor="branch" className="block text-sm font-medium text-gray-700 mb-1">
-                  Branch
+                <label htmlFor="resourceType" className="block text-sm font-medium text-gray-700 mb-1">
+                  Resource Type*
                 </label>
                 <select
-                  id="branch"
-                  value={branch}
-                  onChange={(e) => setBranch(e.target.value)}
+                  id="resourceType"
+                  value={resourceType}
+                  onChange={(e) => setResourceType(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  required
                 >
-                  <option value="">Select Branch</option>
-                  {BRANCHES.map((br) => (
-                    <option key={br} value={br}>{br}</option>
+                  <option value="">Select Type</option>
+                  {RESOURCE_TYPES.map(type => (
+                    <option key={type} value={type}>{type}</option>
                   ))}
                 </select>
               </div>
@@ -378,7 +585,7 @@ const ResourcesPage = () => {
                           id="file-upload"
                           name="file-upload"
                           type="file"
-                          accept=".pdf,.docx,.pptx,.txt"
+                          accept=".pdf,.docx,.pptx,.txt,.zip"
                           onChange={handleFileChange}
                           className="sr-only"
                           required
@@ -408,10 +615,11 @@ const ResourcesPage = () => {
                 </label>
                 <textarea
                   id="description"
-                  placeholder="Description"
+                  placeholder="Brief description of the resource..."
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  rows={3}
                 />
               </div>
 
@@ -492,10 +700,22 @@ const ResourcesPage = () => {
                           <p className="text-sm font-medium text-blue-600 truncate">
                             {resource.title}
                           </p>
-                          <div className="ml-2 flex-shrink-0 flex">
-                            <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                              {resource.branch || 'General'}
-                            </p>
+                          <div className="ml-2 flex-shrink-0 flex space-x-1">
+                            {resource.resource_type && (
+                              <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                {resource.resource_type}
+                              </p>
+                            )}
+                            {resource.branch && (
+                              <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                {resource.branch}
+                              </p>
+                            )}
+                            {resource.college && (
+                              <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                {resource.college}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="mt-1 flex items-center text-sm text-gray-500">
