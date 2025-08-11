@@ -100,8 +100,8 @@ const ResourcesPage = () => {
       try {
         setIsLoading(true);
         setError('');
-        const response = await axios.get('https://engiportal.onrender.com/api/resources/');
-        // Map backend response to Resource interface
+        const response = await axios.get('api/upload/view/');   
+        // https://engiportal.onrender.com/api/resources/
         const mappedResources = response.data.map((doc: any) => ({
           id: doc.id,
           title: doc.name || doc.title || 'Untitled',
@@ -131,7 +131,8 @@ const ResourcesPage = () => {
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const response = await axios.get('https://engiportal.onrender.com/api/upload/file/'); 
+        const response = await axios.get('api/upload/file/'); 
+        //https://engiportal.onrender.com/api/upload/file/
         if (response.data && response.data.length > 0) {
           setDocumentId(response.data[0].id);
         }
@@ -210,33 +211,46 @@ const ResourcesPage = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('title', title);
-    formData.append('description', description);
-    if (college) formData.append('college', college);
-    if (branch) formData.append('branch', branch);
-    if (resourceType) formData.append('resource_type', resourceType);
-
-    // If no documentId, let the backend create a new Document
-    if (documentId !== null) {
-      formData.append('document_id', documentId.toString());
-    }
-
     try {
       setIsUploading(true);
       setError('');
       setUploadSuccess(false);
 
-      // Upload file to correct endpoint
-      await axios.post('https://engiportal.onrender.com/api/upload/file/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      // Create FormData with all fields
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('title', title);
+      formData.append('description', description);
+      formData.append('college', college);
+      formData.append('branch', branch);
+      formData.append('resource_type', resourceType);
+
+      // Send all data to your Django backend
+      const response = await axios.post('api/upload/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          // Add authorization header if needed
+          // 'Authorization': `Bearer ${yourToken}`
+        }
       });
 
-      // Refresh resources after successful upload
-      const resourcesResponse = await axios.get('https://engiportal.onrender.com/api/resources/');
-      setResources(resourcesResponse.data);
-      setFilteredResources(resourcesResponse.data);
+      // Handle response from Django backend
+      const newResource = {
+        id: response.data.id,
+        title: response.data.title,
+        file_url: response.data.file_url,
+        upload_date: response.data.upload_date || new Date().toISOString(),
+        file_type: response.data.file_type || selectedFile.name.split('.').pop()?.toLowerCase(),
+        size: formatFileSize(response.data.size || selectedFile.size),
+        college: response.data.college,
+        branch: response.data.branch,
+        resource_type: response.data.resource_type,
+        description: response.data.description,
+      };
+
+      // Update state
+      setResources(prev => [newResource, ...prev]);
+      setFilteredResources(prev => [newResource, ...prev]);
 
       // Reset form
       setTitle('');
@@ -246,15 +260,17 @@ const ResourcesPage = () => {
       setResourceType('');
       setSelectedFile(null);
       setUploadSuccess(true);
+
     } catch (err) {
-      let errorMessage = 'File upload failed. Please try again.';
+      let errorMessage = 'Upload failed. Please try again.';
       if (axios.isAxiosError(err)) {
-        errorMessage = err.response?.data?.detail || errorMessage;
+        errorMessage = err.response?.data?.message || 
+                      err.response?.data?.detail ||
+                      JSON.stringify(err.response?.data) || 
+                      errorMessage;
       }
       setError(errorMessage);
       console.error('Upload error:', err);
-      setIsUploading(false);
-      return;
     } finally {
       setIsUploading(false);
     }
@@ -679,7 +695,7 @@ const ResourcesPage = () => {
           ) : filteredResources.length === 0 ? (
             <div className="p-6 text-center">
               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 005.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <h3 className="mt-2 text-sm font-medium text-gray-900">No resources found</h3>
               <p className="mt-1 text-sm text-gray-500">
