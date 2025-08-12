@@ -87,7 +87,7 @@ const ResourcesPage = () => {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [documentId, setDocumentId] = useState<number | null>(null);
+  //const [documentId, setDocumentId] = useState<number | null>(null);
   const [filters, setFilters] = useState({
     college: '',
     branch: '',
