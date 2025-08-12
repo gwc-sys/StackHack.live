@@ -87,7 +87,7 @@ const ResourcesPage = () => {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  //const [documentId, setDocumentId] = useState<number | null>(null);
+  const [, setDocumentId] = useState<number | null>(null); // remove this documentId 
   const [filters, setFilters] = useState({
     college: '',
     branch: '',
@@ -133,9 +133,9 @@ const ResourcesPage = () => {
       try {
         const response = await axios.get('api/upload/file/'); 
         //https://engiportal.onrender.com/api/upload/file/
-        //if (response.data && response.data.length > 0) {
-        //  setDocumentId(response.data[0].id);
-        //}
+        if (response.data && response.data.length > 0) {
+         setDocumentId(response.data[0].id);
+        }
       } catch (err) {
         console.error('Error fetching documents:', err);
       }
