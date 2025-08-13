@@ -60,7 +60,7 @@ const COLLEGES = [
 ];
 
 const BRANCHES = [
-  'CSE', 'ECE', 'EEE', 'ME', 'CE', 
+  'ENTC','CSE', 'ECE', 'EEE', 'ME', 'CE', 
   'IT', 'AIML', 'DS', 'AERO', 'AUTO',
   'BIOTECH', 'CHEM', 'META', 'MINING', 'PROD'
 ];
@@ -87,7 +87,7 @@ const ResourcesPage = () => {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [documentId, setDocumentId] = useState<number | null>(null);
+  // const [documentId, setDocumentId] = useState<number | null>(null);
   const [filters, setFilters] = useState({
     college: '',
     branch: '',
@@ -100,8 +100,9 @@ const ResourcesPage = () => {
       try {
         setIsLoading(true);
         setError('');
-        const response = await axios.get('api/upload/view/');   
-        // https://engiportal.onrender.com/api/resources/
+        // const response = await axios.get('api/documents/<str:pk>/');   
+        const response = await axios.get('https://engiportal.onrender.com/api/documents/<str:pk>/'); 
+      
         const mappedResources = response.data.map((doc: any) => ({
           id: doc.id,
           title: doc.name || doc.title || 'Untitled',
@@ -127,21 +128,6 @@ const ResourcesPage = () => {
     fetchResources();
   }, []);
 
-  // Fetch documents and get the first document's ID (if needed)
-  useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        const response = await axios.get('api/upload/file/'); 
-        //https://engiportal.onrender.com/api/upload/file/
-        if (response.data && response.data.length > 0) {
-          setDocumentId(response.data[0].id);
-        }
-      } catch (err) {
-        console.error('Error fetching documents:', err);
-      }
-    };
-    fetchDocuments();
-  }, []);
 
   // Filter resources based on search query and filters
   useEffect(() => {
@@ -194,7 +180,7 @@ const ResourcesPage = () => {
       }
 
       // Validate file size
-      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024 ) {
         setError(`File size exceeds ${MAX_FILE_SIZE_MB}MB limit`);
         return;
       }
@@ -226,7 +212,8 @@ const ResourcesPage = () => {
       formData.append('resource_type', resourceType);
 
       // Send all data to your Django backend
-      const response = await axios.post('api/upload/', formData, {
+      // const response = await axios.post('api/upload/', formData, {
+      const response = await axios.post('https://engiportal.onrender.com/api/upload/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           // Add authorization header if needed
