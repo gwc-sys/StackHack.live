@@ -13,6 +13,7 @@ import Resources from './pages/Resources';
 import Roadmaps from './pages/Roadmaps';
 import EventsHackathons from './pages/EventsHackathons';
 import FrontendRoadmapsPage from './RoadmapsPages/frontendRoadmapsPage.tsx';
+import Collaboration from './pages/Collaboration';
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="/roadmaps" element={<Roadmaps />} />
             <Route path="/events-hackathons" element={<EventsHackathons />} />
             <Route path="/roadmaps/role/frontend" element={<FrontendRoadmapsPage />} />
+            <Route path="/collaboration" element={<Collaboration />} />
           </Routes>
         </Layout>
       </Router>
