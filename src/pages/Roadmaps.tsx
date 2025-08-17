@@ -184,7 +184,7 @@ const Roadmaps = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12 -mt-10">
         {/* Floating Card */}
-        <div className="bg-gray-800 rounded-xl shadow-xl p-6 mb-8 max-w-4xl mx-auto text-white">
+        <div className="bg-gray-950 rounded-xl shadow-xl p-6 mb-8 max-w-4xl mx-auto text-white">
           {/* Tabs */}
           <div className="flex overflow-x-auto pb-2 mb-6 scrollbar-hide">
             {[
