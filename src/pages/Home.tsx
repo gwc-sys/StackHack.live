@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  FaStar, FaSearch, FaBook, FaGraduationCap, FaUniversity, 
+  FaStar, FaSearch, FaGraduationCap, FaUniversity, 
   FaUserGraduate, FaChalkboardTeacher, 
   FaRegBookmark, FaBookOpen, FaRegNewspaper,
   FaChevronDown, FaChevronUp
@@ -1373,36 +1373,36 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-blue-700 to-indigo-900 text-white pt-32 pb-24 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white pt-32 pb-24 overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-900"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900 dark:to-gray-950"></div>
         </div>
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-          <div className="absolute top-20 left-10 w-64 h-64 bg-blue-400 rounded-full filter blur-3xl opacity-20 animate-blob"></div>
-          <div className="absolute top-40 right-20 w-80 h-80 bg-indigo-400 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-          <div className="absolute bottom-20 left-1/4 w-72 h-72 bg-purple-400 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+          <div className="absolute top-20 left-10 w-64 h-64 bg-gray-900 dark:bg-gray-950 rounded-full filter blur-3xl opacity-20 animate-blob"></div>
+          <div className="absolute top-40 right-20 w-80 h-80 bg-gray-800 dark:bg-gray-900 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute bottom-20 left-1/4 w-72 h-72 bg-gray-700 dark:bg-gray-800 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h1 className="text-5xl font-bold mb-6 leading-tight">
+              <h1 className="text-5xl font-bold mb-6 leading-tight text-white dark:text-gray-100">
                 Engineering Resources <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-400 dark:from-gray-300 dark:to-gray-500">
                   Reimagined
                 </span>
               </h1>
-              <p className="text-xl mb-8 max-w-2xl text-blue-100">
+              <p className="text-xl mb-8 max-w-2xl text-gray-200 dark:text-gray-300">
                 The most comprehensive platform for engineering students with thousands of question papers, study materials, video lectures, and a thriving community.
               </p>
               <div className="max-w-xl relative mb-8">
-                <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-lg shadow-lg border border-white/20">
-                  <FaSearch className="ml-4 text-blue-200" />
+                <div className="flex items-center bg-gray-800/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/40 dark:border-gray-800/40">
+                  <FaSearch className="ml-4 text-gray-400 dark:text-gray-500" />
                   <input
                     type="text"
                     placeholder="Search for your branch..."
-                    className="w-full p-4 bg-transparent text-white placeholder-blue-200 rounded-lg focus:outline-none"
+                    className="w-full p-4 bg-transparent text-white dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:outline-none"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -1411,13 +1411,13 @@ const Home = () => {
               <div className="flex flex-wrap gap-4">
                 <Link 
                   to="/resources" 
-                  className="bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                  className="bg-gray-900 dark:bg-gray-800 text-gray-100 px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 dark:hover:bg-gray-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
                 >
                   Explore Resources
                 </Link>
                 <Link 
                   to="/community" 
-                  className="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                  className="bg-transparent border-2 border-gray-400 dark:border-gray-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-gray-900 dark:hover:bg-gray-100 dark:hover:text-gray-900 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
                 >
                   Join Community
                 </Link>
@@ -1425,22 +1425,18 @@ const Home = () => {
             </div>
             <div className="hidden lg:block">
               <div className="relative">
-                <div className="absolute -top-8 -left-8 w-64 h-64 bg-yellow-300 rounded-lg opacity-20 animate-pulse"></div>
-                <div className="absolute -bottom-8 -right-8 w-64 h-64 bg-purple-300 rounded-lg opacity-20 animate-pulse delay-300"></div>
-                <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
+                <div className="absolute -top-8 -left-8 w-64 h-64 bg-gray-300 dark:bg-gray-700 rounded-lg opacity-20 animate-pulse"></div>
+                <div className="absolute -bottom-8 -right-8 w-64 h-64 bg-gray-400 dark:bg-gray-800 rounded-lg opacity-20 animate-pulse delay-300"></div>
+                <div className="relative bg-gray-100 dark:bg-gray-900 rounded-xl shadow-2xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
                   <img
-                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80"
+                    src="https://images.unsplash.com/photo-1625838144804-300f3907c110?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="Students studying"
                     className="w-full h-auto object-cover"
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
                     <div className="flex items-center">
-                      <div className="bg-blue-600 text-white p-3 rounded-full mr-3 shadow-md">
-                        <FaBook className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-semibold">Latest: CSE 2023 Papers</h3>
-                        <p className="text-blue-200 text-sm">Added 2 days ago</p>
+                      <div className={`bg-gradient-to-br ${features[0].gradient} p-4 rounded-full text-white shadow-md`}>
+                        {features[0].icon}
                       </div>
                     </div>
                   </div>
@@ -1455,24 +1451,24 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 -mt-16 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
-            <div className="text-4xl font-bold text-blue-600 mb-2">10K+</div>
+            <div className="text-4xl font-bold text-gray-900 mb-2">10K+</div>
             <div className="text-gray-600">Question Papers</div>
-            <div className="mt-2 h-1 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full"></div>
+            <div className="mt-2 h-1 bg-gradient-to-r from-gray-700 to-gray-900 rounded-full"></div>
           </div>
           <div className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
-            <div className="text-4xl font-bold text-blue-600 mb-2">50+</div>
+            <div className="text-4xl font-bold text-gray-900 mb-2">50+</div>
             <div className="text-gray-600">Universities</div>
-            <div className="mt-2 h-1 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full"></div>
+            <div className="mt-2 h-1 bg-gradient-to-r from-gray-700 to-gray-900 rounded-full"></div>
           </div>
           <div className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
-            <div className="text-4xl font-bold text-blue-600 mb-2">100K+</div>
+            <div className="text-4xl font-bold text-gray-900 mb-2">100K+</div>
             <div className="text-gray-600">Students</div>
-            <div className="mt-2 h-1 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full"></div>
+            <div className="mt-2 h-1 bg-gradient-to-r from-gray-700 to-gray-900 rounded-full"></div>
           </div>
           <div className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
-            <div className="text-4xl font-bold text-blue-600 mb-2">5K+</div>
+            <div className="text-4xl font-bold text-gray-900 mb-2">5K+</div>
             <div className="text-gray-600">Study Materials</div>
-            <div className="mt-2 h-1 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full"></div>
+            <div className="mt-2 h-1 bg-gradient-to-r from-gray-700 to-gray-900 rounded-full"></div>
           </div>
         </div>
       </div>
@@ -1485,15 +1481,14 @@ const Home = () => {
             Our platform provides all the resources engineering students need in one place
           </p>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {features.map((feature, index) => (
             <div 
               key={index} 
-              className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-transparent hover:border-blue-500"
+              className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-transparent hover:border-gray-700"
             >
               <div className="flex justify-center mb-6">
-                <div className={`bg-gradient-to-br ${feature.gradient} p-4 rounded-full text-white shadow-md`}>
+                <div className={`bg-gradient-to-br from-gray-700 to-gray-900 p-4 rounded-full text-white shadow-md`}>
                   {feature.icon}
                 </div>
               </div>
@@ -1520,7 +1515,7 @@ const Home = () => {
               onClick={() => setActiveTab('all')}
               className={`px-5 py-2 rounded-full font-medium transition-all duration-300 ${
                 activeTab === 'all' 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
+                  ? 'bg-gradient-to-r from-gray-700 to-gray-900 text-white shadow-md' 
                   : 'bg-white text-gray-700 hover:bg-gray-100 shadow-sm'
               }`}
             >
@@ -1530,7 +1525,7 @@ const Home = () => {
               onClick={() => setActiveTab('computer')}
               className={`px-5 py-2 rounded-full font-medium transition-all duration-300 ${
                 activeTab === 'computer' 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
+                  ? 'bg-gradient-to-r from-gray-700 to-gray-900 text-white shadow-md' 
                   : 'bg-white text-gray-700 hover:bg-gray-100 shadow-sm'
               }`}
             >
@@ -1540,7 +1535,7 @@ const Home = () => {
               onClick={() => setActiveTab('engineering')}
               className={`px-5 py-2 rounded-full font-medium transition-all duration-300 ${
                 activeTab === 'engineering' 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
+                  ? 'bg-gradient-to-r from-gray-700 to-gray-900 text-white shadow-md' 
                   : 'bg-white text-gray-700 hover:bg-gray-100 shadow-sm'
               }`}
             >
@@ -1550,7 +1545,7 @@ const Home = () => {
               onClick={() => setActiveTab('science')}
               className={`px-5 py-2 rounded-full font-medium transition-all duration-300 ${
                 activeTab === 'science' 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
+                  ? 'bg-gradient-to-r from-gray-700 to-gray-900 text-white shadow-md' 
                   : 'bg-white text-gray-700 hover:bg-gray-100 shadow-sm'
               }`}
             >
@@ -1595,7 +1590,7 @@ const Home = () => {
           {testimonials.map((testimonial, index) => (
             <div 
               key={index} 
-              className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-300 border-t-4 border-blue-500"
+              className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-300 border-t-4 border-gray-700"
             >
               <div className="flex mb-4">
                 {[...Array(5)].map((_, i) => (
@@ -1605,11 +1600,11 @@ const Home = () => {
                   />
                 ))}
               </div>
-              <p className="text-gray-600 mb-6 italic relative pl-4 border-l-4 border-blue-200">
+              <p className="text-gray-600 mb-6 italic relative pl-4 border-l-4 border-gray-200">
                 "{testimonial.text}"
               </p>
               <div className="flex items-center">
-                <div className={`${testimonial.avatarColor} text-white rounded-full w-12 h-12 flex items-center justify-center font-bold mr-4 shadow-md`}>
+                <div className={`${testimonial.avatarColor.replace('bg-purple-600', 'bg-gray-900')} text-white rounded-full w-12 h-12 flex items-center justify-center font-bold mr-4 shadow-md`}>
                   {testimonial.name.charAt(0)}
                 </div>
                 <div>
@@ -1623,7 +1618,7 @@ const Home = () => {
       </div>
 
       {/* Rating Section */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 py-16">
+      <div className="bg-gradient-to-r from-gray-100 to-gray-300 py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4 text-gray-800">How would you rate EngiPortal?</h2>
           <p className="text-xl text-gray-600 mb-8">
@@ -1656,11 +1651,11 @@ const Home = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="relative bg-gradient-to-br from-blue-700 to-indigo-900 text-white py-20 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-slate-900 to-purple-900 text-white py-20 overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-          <div className="absolute top-20 left-10 w-64 h-64 bg-blue-400 rounded-full filter blur-3xl opacity-20 animate-blob"></div>
-          <div className="absolute top-40 right-20 w-80 h-80 bg-indigo-400 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-          <div className="absolute bottom-20 left-1/4 w-72 h-72 bg-purple-400 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+          <div className="absolute top-20 left-10 w-64 h-64 bg-slate-900 rounded-full filter blur-3xl opacity-20 animate-blob"></div>
+          <div className="absolute top-40 right-20 w-80 h-80 bg-purple-900 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute bottom-20 left-1/4 w-72 h-72 bg-purple-700 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
