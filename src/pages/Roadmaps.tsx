@@ -114,8 +114,6 @@ const Roadmaps = () => {
     { id: 's38', title: 'Create your own Roadmap', type: 'skill', icon: <FaRocket className="text-indigo-500" size={24} /> }
   ];
 
-  // ... (rest of your roadmap data arrays with added icons)
-
   // Guides and Questions arrays
   const guides: Roadmap[] = [
     { id: 'g1', title: 'How to Learn React', type: 'guide', format: 'textual', icon: <FaBook className="text-blue-500" size={24} /> },
@@ -161,9 +159,9 @@ const Roadmaps = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20">
+      <section className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white pt-32 pb-24 overflow-hidden">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 animate-fade-in">Developer Roadmaps</h1>
           <p className="text-xl mb-8 max-w-3xl mx-auto animate-fade-in delay-100">
@@ -172,7 +170,7 @@ const Roadmaps = () => {
           <div className="flex justify-center gap-4 animate-fade-in delay-200">
             <Link 
               to={isAuthenticated ? "/my-roadmaps" : "/signup"}
-              className="bg-white text-blue-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 transform hover:scale-105 shadow-lg"
+              className="bg-white text-gray-900 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 transform hover:scale-105 shadow-lg"
             >
               {isAuthenticated ? 'My Roadmaps' : 'Get Started'}
             </Link>
@@ -186,7 +184,7 @@ const Roadmaps = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12 -mt-10">
         {/* Floating Card */}
-        <div className="bg-white rounded-xl shadow-xl p-6 mb-8 max-w-4xl mx-auto">
+        <div className="bg-gray-900 rounded-xl shadow-xl p-6 mb-8 max-w-4xl mx-auto text-white">
           {/* Tabs */}
           <div className="flex overflow-x-auto pb-2 mb-6 scrollbar-hide">
             {[
@@ -199,7 +197,11 @@ const Roadmaps = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center px-6 py-3 whitespace-nowrap font-medium text-sm rounded-lg mr-2 transition-all ${activeTab === tab.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                className={`flex items-center px-6 py-3 whitespace-nowrap font-medium text-sm rounded-lg mr-2 transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                }`}
               >
                 {tab.icon}
                 {tab.title}
@@ -215,7 +217,7 @@ const Roadmaps = () => {
             <input
               type="text"
               placeholder={`Search ${activeTab.replace('-', ' ')}...`}
-              className="w-full pl-10 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 p-4 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-gray-900 text-white"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -227,19 +229,19 @@ const Roadmaps = () => {
           {filteredRoadmaps.map(roadmap => (
             <div 
               key={roadmap.id} 
-              className={`bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 border border-gray-100 hover:border-blue-200 hover:shadow-lg transform hover:-translate-y-1 ${hoveredCard === roadmap.id ? 'ring-2 ring-blue-500' : ''}`}
+              className={`bg-gray-900 rounded-xl shadow-md overflow-hidden transition-all duration-300 border border-gray-800 hover:border-gray-600 hover:shadow-lg transform hover:-translate-y-1 ${hoveredCard === roadmap.id ? 'ring-2 ring-gray-500' : ''}`}
               onMouseEnter={() => setHoveredCard(roadmap.id)}
               onMouseLeave={() => setHoveredCard(null)}
             >
               <div className="p-6">
                 <div className="flex items-center mb-4">
-                  <div className="p-3 rounded-lg bg-blue-50 mr-4">
+                  <div className="p-3 rounded-lg bg-gray-800 mr-4">
                     {roadmap.icon || getIconForRoadmap(roadmap.title)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-semibold truncate">{roadmap.title}</h3>
                     {roadmap.isNew && (
-                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                      <span className="bg-green-900 text-green-200 text-xs px-2 py-1 rounded-full">
                         New
                       </span>
                     )}
@@ -247,19 +249,19 @@ const Roadmaps = () => {
                 </div>
                 
                 {roadmap.format === 'textual' && (
-                  <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mb-3">
+                  <span className="inline-block bg-gray-800 text-gray-200 text-xs px-2 py-1 rounded-full mb-3">
                     Guide
                   </span>
                 )}
                 
                 {roadmap.format === 'questions' && (
-                  <span className="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full mb-3">
+                  <span className="inline-block bg-purple-900 text-purple-200 text-xs px-2 py-1 rounded-full mb-3">
                     Interview Questions
                   </span>
                 )}
                 
                 {roadmap.type === 'video' && (
-                  <div className="flex items-center text-sm text-gray-500 mb-3">
+                  <div className="flex items-center text-sm text-gray-400 mb-3">
                     <FaRegClock className="mr-1" />
                     <span>{roadmap.length}</span>
                   </div>
@@ -267,7 +269,7 @@ const Roadmaps = () => {
                 
                 <Link
                   to={`/roadmaps/${roadmap.type}/${roadmap.id.toLowerCase()}`}
-                  className="mt-4 inline-flex items-center justify-center w-full text-center bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-4 rounded-lg transition duration-300 text-sm"
+                  className="mt-4 inline-flex items-center justify-center w-full text-center bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-2 px-4 rounded-lg transition duration-300 text-sm hover:bg-gray-800"
                 >
                   {roadmap.type === 'video' ? 'Watch Video' : 'View Details'}
                   <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -281,13 +283,13 @@ const Roadmaps = () => {
 
         {/* Empty State */}
         {filteredRoadmaps.length === 0 && (
-          <div className="text-center py-16 bg-white rounded-xl shadow-sm">
+          <div className="text-center py-16 bg-gray-900 rounded-xl shadow-sm">
             <div className="text-5xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold mb-2">No {activeTab.replace('-', ' ')} found</h3>
-            <p className="text-gray-600 mb-4">Try adjusting your search query</p>
+            <h3 className="text-xl font-semibold mb-2 text-white">No {activeTab.replace('-', ' ')} found</h3>
+            <p className="text-gray-400 mb-4">Try adjusting your search query</p>
             <button 
               onClick={() => setSearchQuery('')}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-white hover:underline font-medium"
             >
               Clear search
             </button>
@@ -299,7 +301,7 @@ const Roadmaps = () => {
           <div className="mt-12 text-center">
             <Link 
               to={`/${activeTab}`} 
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition duration-300"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-gradient-to-br from-gray-900 to-gray-800 hover:bg-gray-800 transition duration-300"
             >
               View All {activeTab === 'role' ? 'Role-based' : activeTab === 'skill' ? 'Skill-based' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Roadmaps
               <svg className="ml-2 -mr-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -311,7 +313,7 @@ const Roadmaps = () => {
       </div>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-16">
+      <section className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to accelerate your learning?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
@@ -320,12 +322,12 @@ const Roadmaps = () => {
           <div className="flex flex-wrap justify-center gap-4">
             <Link 
               to={isAuthenticated ? "/my-roadmaps" : "/signup"}
-              className="bg-white text-blue-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 transform hover:scale-105 shadow-lg"
+              className="bg-white text-gray-900 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 transform hover:scale-105 shadow-lg"
             >
               {isAuthenticated ? 'Continue Learning' : 'Start for Free'}
             </Link>
             <Link 
-              to="/community" 
+              to="/community"
               className="border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:bg-opacity-10 transition duration-300 transform hover:scale-105"
             >
               Join Our Community
