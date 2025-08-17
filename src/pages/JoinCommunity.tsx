@@ -54,7 +54,7 @@ const JoinCommunity = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-20">
+      <section className="bg-gray-950 text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Connect, Collaborate, Create</h1>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
@@ -261,7 +261,7 @@ const JoinCommunity = () => {
         </div>
       </section>
       {/* Final CTA */}
-      <section className="py-16 bg-indigo-600 text-white">
+      <section className="bg-gray-950 text-white py-16relative bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white pt-32 pb-24 overflow-hidden">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to join the conversation?</h2>
           <div className="flex flex-wrap justify-center gap-4">

@@ -159,9 +159,9 @@ const Roadmaps = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white">
+    <div className="min-h-screen bg-white text-gray-900">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white pt-32 pb-24 overflow-hidden">
+      <section className="bg-gray-950 text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 animate-fade-in">Developer Roadmaps</h1>
           <p className="text-xl mb-8 max-w-3xl mx-auto animate-fade-in delay-100">
@@ -170,11 +170,11 @@ const Roadmaps = () => {
           <div className="flex justify-center gap-4 animate-fade-in delay-200">
             <Link 
               to={isAuthenticated ? "/my-roadmaps" : "/signup"}
-              className="bg-white text-gray-900 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 transform hover:scale-105 shadow-lg"
+              className="bg-gray-900 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-800 transition duration-300 transform hover:scale-105 shadow-lg"
             >
               {isAuthenticated ? 'My Roadmaps' : 'Get Started'}
             </Link>
-            <button className="border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:bg-opacity-10 transition duration-300 transform hover:scale-105">
+            <button className="border-2 border-gray-900 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-900 hover:text-white hover:bg-opacity-10 transition duration-300 transform hover:scale-105">
               Contribute
             </button>
           </div>
@@ -184,7 +184,7 @@ const Roadmaps = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12 -mt-10">
         {/* Floating Card */}
-        <div className="bg-gray-900 rounded-xl shadow-xl p-6 mb-8 max-w-4xl mx-auto text-white">
+        <div className="bg-gray-800 rounded-xl shadow-xl p-6 mb-8 max-w-4xl mx-auto text-white">
           {/* Tabs */}
           <div className="flex overflow-x-auto pb-2 mb-6 scrollbar-hide">
             {[
@@ -224,77 +224,78 @@ const Roadmaps = () => {
           </div>
         </div>
 
-        {/* Roadmaps Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredRoadmaps.map(roadmap => (
-            <div 
-              key={roadmap.id} 
-              className={`bg-gray-900 rounded-xl shadow-md overflow-hidden transition-all duration-300 border border-gray-800 hover:border-gray-600 hover:shadow-lg transform hover:-translate-y-1 ${hoveredCard === roadmap.id ? 'ring-2 ring-gray-500' : ''}`}
-              onMouseEnter={() => setHoveredCard(roadmap.id)}
-              onMouseLeave={() => setHoveredCard(null)}
-            >
-              <div className="p-6">
-                <div className="flex items-center mb-4">
-                  <div className="p-3 rounded-lg bg-gray-800 mr-4">
-                    {roadmap.icon || getIconForRoadmap(roadmap.title)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold truncate">{roadmap.title}</h3>
-                    {roadmap.isNew && (
-                      <span className="bg-green-900 text-green-200 text-xs px-2 py-1 rounded-full">
-                        New
+        {/* White background for all cards and empty state */}
+        <div className="bg-white rounded-xl shadow-xl p-8">
+          {filteredRoadmaps.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredRoadmaps.map(roadmap => (
+                <div 
+                  key={roadmap.id} 
+                  className={`rounded-xl shadow-md overflow-hidden transition-all duration-300 border border-gray-700 hover:border-gray-500 hover:shadow-lg transform hover:-translate-y-1 ${hoveredCard === roadmap.id ? 'ring-2 ring-gray-400' : ''} text-white bg-gray-800`}
+                  onMouseEnter={() => setHoveredCard(roadmap.id)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                >
+                  <div className="p-6">
+                    <div className="flex items-center mb-4">
+                      <div className="p-3 rounded-lg bg-gray-800 mr-4">
+                        {roadmap.icon || getIconForRoadmap(roadmap.title)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold truncate">{roadmap.title}</h3>
+                        {roadmap.isNew && (
+                          <span className="bg-green-900 text-green-200 text-xs px-2 py-1 rounded-full">
+                            New
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {roadmap.format === 'textual' && (
+                      <span className="inline-block bg-gray-800 text-gray-200 text-xs px-2 py-1 rounded-full mb-3">
+                        Guide
                       </span>
                     )}
+                    
+                    {roadmap.format === 'questions' && (
+                      <span className="inline-block bg-purple-900 text-purple-200 text-xs px-2 py-1 rounded-full mb-3">
+                        Interview Questions
+                      </span>
+                    )}
+                    
+                    {roadmap.type === 'video' && (
+                      <div className="flex items-center text-sm text-gray-400 mb-3">
+                        <FaRegClock className="mr-1" />
+                        <span>{roadmap.length}</span>
+                      </div>
+                    )}
+                    
+                    <Link
+                      to={`/roadmaps/${roadmap.type}/${roadmap.id.toLowerCase()}`}
+                      className="mt-4 inline-flex items-center justify-center w-full text-center bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-2 px-4 rounded-lg transition duration-300 text-sm hover:bg-gray-800"
+                    >
+                      {roadmap.type === 'video' ? 'Watch Video' : 'View Details'}
+                      <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </Link>
                   </div>
                 </div>
-                
-                {roadmap.format === 'textual' && (
-                  <span className="inline-block bg-gray-800 text-gray-200 text-xs px-2 py-1 rounded-full mb-3">
-                    Guide
-                  </span>
-                )}
-                
-                {roadmap.format === 'questions' && (
-                  <span className="inline-block bg-purple-900 text-purple-200 text-xs px-2 py-1 rounded-full mb-3">
-                    Interview Questions
-                  </span>
-                )}
-                
-                {roadmap.type === 'video' && (
-                  <div className="flex items-center text-sm text-gray-400 mb-3">
-                    <FaRegClock className="mr-1" />
-                    <span>{roadmap.length}</span>
-                  </div>
-                )}
-                
-                <Link
-                  to={`/roadmaps/${roadmap.type}/${roadmap.id.toLowerCase()}`}
-                  className="mt-4 inline-flex items-center justify-center w-full text-center bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-2 px-4 rounded-lg transition duration-300 text-sm hover:bg-gray-800"
-                >
-                  {roadmap.type === 'video' ? 'Watch Video' : 'View Details'}
-                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </Link>
-              </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            <div className="text-center py-16 bg-white rounded-xl shadow-sm">
+              <div className="text-5xl mb-4">🔍</div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">No {activeTab.replace('-', ' ')} found</h3>
+              <p className="text-gray-400 mb-4">Try adjusting your search query</p>
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="text-gray-900 hover:underline font-medium"
+              >
+                Clear search
+              </button>
+            </div>
+          )}
         </div>
-
-        {/* Empty State */}
-        {filteredRoadmaps.length === 0 && (
-          <div className="text-center py-16 bg-gray-900 rounded-xl shadow-sm">
-            <div className="text-5xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold mb-2 text-white">No {activeTab.replace('-', ' ')} found</h3>
-            <p className="text-gray-400 mb-4">Try adjusting your search query</p>
-            <button 
-              onClick={() => setSearchQuery('')}
-              className="text-white hover:underline font-medium"
-            >
-              Clear search
-            </button>
-          </div>
-        )}
 
         {/* View All Buttons */}
         {filteredRoadmaps.length > 0 && (
@@ -313,7 +314,7 @@ const Roadmaps = () => {
       </div>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-16">
+      <section className="bg-gray-950 text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to accelerate your learning?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
@@ -322,13 +323,13 @@ const Roadmaps = () => {
           <div className="flex flex-wrap justify-center gap-4">
             <Link 
               to={isAuthenticated ? "/my-roadmaps" : "/signup"}
-              className="bg-white text-gray-900 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 transform hover:scale-105 shadow-lg"
+              className="bg-gray-900 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-800 transition duration-300 transform hover:scale-105 shadow-lg"
             >
               {isAuthenticated ? 'Continue Learning' : 'Start for Free'}
             </Link>
             <Link 
               to="/community"
-              className="border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:bg-opacity-10 transition duration-300 transform hover:scale-105"
+              className="border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-gray-900 hover:bg-opacity-10 transition duration-300 transform hover:scale-105"
             >
               Join Our Community
             </Link>
