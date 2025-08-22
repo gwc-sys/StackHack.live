@@ -1620,7 +1620,7 @@ const Home = () => {
       {/* Rating Section */}
       <div className="bg-gradient-to-r from-gray-100 to-gray-300 py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-4 text-gray-800">How would you rate EngiPortal?</h2>
+          <h2 className="text-3xl font-bold mb-4 text-gray-800">How would you rate StackHack?</h2>
           <p className="text-xl text-gray-600 mb-8">
             Your feedback helps us improve the platform for all engineering students
           </p>

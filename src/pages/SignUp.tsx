@@ -75,7 +75,7 @@ const SignUp = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-5">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">DevHub</h1>
+        <h1 className="text-3xl font-bold mb-2">StackHack</h1>
         <p className="text-gray-600">The most comprehensive platform for Developers</p>
       </div>
 

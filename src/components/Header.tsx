@@ -57,7 +57,7 @@ export default function Header() {
             <div className="flex items-center space-x-2">
               <MdEngineering className="w-8 h-8 text-gray-100 hover:text-gray-300 transition-colors duration-200" />
               <Link to="/" className="text-xl font-bold text-gray-100 hover:text-gray-300 transition-colors duration-200">
-                EngiPortal
+                StackHack
               </Link>
             </div>
             
@@ -111,7 +111,7 @@ export default function Header() {
                 <div className="flex items-center space-x-2">
                   <MdEngineering className="w-8 h-8 text-gray-100 hover:text-gray-300 transition-colors duration-200" />
                   <Link to="/" className="text-xl font-bold text-gray-100 hover:text-gray-300 transition-colors duration-200" onClick={handleLinkClick}>
-                    EngiPortal
+                    StackHack
                   </Link>
                 </div>
               )}
@@ -137,7 +137,7 @@ export default function Header() {
                 <div className="flex items-center space-x-2 mb-8">
                   <MdEngineering className="w-8 h-8 text-gray-100 hover:text-gray-300 transition-colors duration-200" />
                   <Link to="/" className="text-xl font-bold text-gray-100 hover:text-gray-300 transition-colors duration-200" onClick={handleLinkClick}>
-                    EngiPortal
+                    StackHack
                   </Link>
                 </div>
                 

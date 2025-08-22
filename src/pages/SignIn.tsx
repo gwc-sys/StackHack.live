@@ -45,7 +45,7 @@ const SignIn = () => {
         <Link to="/" className="text-blue-600 hover:underline inline-block mb-2">
           &larr; Back to Home
         </Link>
-        <h1 className="text-3xl font-bold mb-2">Engineering Resources Reimagined</h1>
+        <h1 className="text-3xl font-bold mb-2">StackHack</h1>
         <p className="text-gray-600">The most comprehensive platform for engineering students</p>
       </div>
 

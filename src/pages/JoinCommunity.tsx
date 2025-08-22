@@ -43,8 +43,8 @@ const JoinCommunity = () => {
   const handleShareCommunity = () => {
     if (navigator.share) {
       navigator.share({
-        title: 'Join EngiPortal Community',
-        text: 'Connect, collaborate, and create with engineering students on EngiPortal!',
+        title: 'Join StackHack Community',
+        text: 'Connect, collaborate, and create with engineering students on StackHack!',
         url: window.location.href,
       });
     } else {

@@ -9,7 +9,7 @@ export default function Footer() {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <MdEngineering className="w-8 h-8 text-blue-400" />
-              <Link to="/" className="text-xl font-bold">EngiPortal</Link>
+              <Link to="/" className="text-xl font-bold">StackHack</Link>
             </div>
             <p className="text-gray-400">
               The ultimate resource hub for engineering students worldwide.
@@ -36,7 +36,7 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Contact</h3>
             <ul className="space-y-2">
-              <li className="text-gray-400">support@engiportal.com</li>
+              <li className="text-gray-400">support@StackHack.com</li>
               <li className="text-gray-400">+91 22224578890</li>
               <li className="text-gray-400">123 Engineering Lane, Tech City</li>
             </ul>
@@ -50,7 +50,7 @@ export default function Footer() {
             className="text-gray-400 mb-4 md:mb-0 hover:text-white transition-colors"
             style={{ textDecoration: 'none' }}
           >
-            © 2023 EngiPortal. Develop by gwc-sys.
+            © 2025 StackHack. Developed by StackHack Team.
           </a>
           <div className="flex space-x-6">
             <Link to="/terms" className="text-gray-400 hover:text-white">Terms</Link>
