@@ -50,7 +50,7 @@ export default function Footer() {
             className="text-gray-400 mb-4 md:mb-0 hover:text-white transition-colors"
             style={{ textDecoration: 'none' }}
           >
-            © 2025 StackHack. Developed by StackHack Team.
+            Copyright © 2025 stackhack.live. Developed by StackHack Team.
           </a>
           <div className="flex space-x-6">
             <Link to="/terms" className="text-gray-400 hover:text-white">Terms</Link>
