@@ -70,10 +70,7 @@ export default function Header() {
               <Link to="/events-hackathons" className="text-gray-100 hover:text-gray-300 font-medium transition-colors duration-200">Hackathons</Link>
             </nav>
             
-            <div className="flex items-center space-x-4">
-              <button className="text-gray-100 hover:text-gray-300 transition-colors duration-200" aria-label="Search">
-                <FaSearch className="w-5 h-5" />
-              </button>
+            <div className="flex items-center space-x-4">    
               <Link to="/signin" className="bg-gray-800 text-gray-100 px-4 py-2 rounded-lg font-medium border border-gray-700 hover:bg-gray-700 hover:text-gray-300 transition-colors duration-200">
                 Sign In
               </Link>
