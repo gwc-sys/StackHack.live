@@ -4,28 +4,34 @@ import axios from 'axios';
 
 const SignUp = () => {
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [branch, setBranch] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   // Django backend API endpoints
-  const DJANGO_API = 'http://localhost:8000/api'; // Update with your Django server URL
+  const DJANGO_API = 'http://localhost:8000/api';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
+    if (!username.trim()) {
+      setError('Username is required');
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await axios.post(`${DJANGO_API}/auth/register/`, {
-        username: name,  // Django often uses 'username' field
-        email,
+        username: username.trim(),
+        name: name.trim(),
+        email: email.trim(),
         password,
-        branch,
-        auth_provider: 'email'  // Django backend will expect snake_case
+        auth_provider: 'email'
       }, {
         headers: {
           'Content-Type': 'application/json'
@@ -34,17 +40,14 @@ const SignUp = () => {
 
       console.log('Signup successful:', response.data);
       
-      // If using token authentication
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         navigate('/dashboard');
       }
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        // Handle Django error response format
         const errorData = err.response?.data;
         if (typeof errorData === 'object') {
-          // Django often returns errors in this format: { "email": ["This field is required."] }
           const errorMessages = Object.values(errorData).flat().join('\n');
           setError(errorMessages || 'Registration failed');
         } else {
@@ -58,17 +61,17 @@ const SignUp = () => {
     }
   };
 
-  // Initialize Google OAuth2 flow
-  const handleGoogleAuth = () => {
+  const handleGoogleAuth = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setLoading(true);
-    // Replace with your Django backend Google OAuth2 endpoint
     window.location.href = `${DJANGO_API}/auth/google/login/`;
   };
 
-  // Initialize GitHub OAuth2 flow
-  const handleGitHubAuth = () => {
+  const handleGitHubAuth = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setLoading(true);
-    // Replace with your Django backend GitHub OAuth2 endpoint
     window.location.href = `${DJANGO_API}/auth/github/login/`;
   };
 
@@ -140,6 +143,19 @@ const SignUp = () => {
             />
           </div>
           <div className="mb-4">
+            <label htmlFor="username" className="block text-gray-700 font-medium mb-2">
+              Username
+            </label>
+            <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-950"
+            />
+          </div>
+          <div className="mb-4">
             <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
               Email
             </label>
@@ -161,20 +177,6 @@ const SignUp = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-950"
-            />
-          </div>
-          <div className="mb-6">
-            <label htmlFor="branch" className="block text-gray-700 font-medium mb-2">
-              Your Branch
-            </label>
-            <input
-              type="text"
-              id="branch"
-              value={branch}
-              onChange={(e) => setBranch(e.target.value)}
-              placeholder="Search for your branch..."
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-950"
             />
