@@ -26,7 +26,7 @@ const SignUp = () => {
     }
 
     try {
-      const response = await axios.post(`${DJANGO_API}/auth/register/`, {
+      const response = await axios.post(`${DJANGO_API}/register/`, {
         username: username.trim(),
         name: name.trim(),
         email: email.trim(),
