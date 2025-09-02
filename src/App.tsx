@@ -14,6 +14,7 @@ import Roadmaps from './pages/Roadmaps';
 import EventsHackathons from './pages/EventsHackathons';
 import FrontendRoadmapsPage from './RoadmapsPages/frontendRoadmapsPage.tsx';
 import Collaboration from './pages/Collaboration';
+import UserProfile from './pages/UserProfile';
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/events-hackathons" element={<EventsHackathons />} />
             <Route path="/roadmaps/role/frontend" element={<FrontendRoadmapsPage />} />
             <Route path="/collaboration" element={<Collaboration />} />
+            <Route path="/profile" element={<UserProfile />} />
           </Routes>
         </Layout>
       </Router>

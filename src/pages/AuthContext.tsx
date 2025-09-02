@@ -38,8 +38,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const token = Cookies.get("token");
     if (token) {
       api.get<User>("/me/")
-        .then((res: { data: User }) => setUser(res.data))
-        .catch((): void => {
+        .then((res) => setUser(res.data))
+        .catch(() => {
           Cookies.remove("token");
           setUser(null);
         });
@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (err: any) {
       console.error("Login failed:", err.response?.data || err);
       logout();
-      throw err; // optional: propagate error to UI
+      throw err; // This allows the SignIn UI to handle error & loading
     }
   };
 
@@ -89,4 +89,3 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 // ---------------- Custom hook for easy usage ----------------
 export const useAuth = () => useContext(AuthContext);
-

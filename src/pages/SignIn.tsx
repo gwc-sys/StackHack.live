@@ -1,38 +1,27 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { Link } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
 const SignIn = () => {
   const [loginIdentifier, setLoginIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(""); // <-- success message state
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
-      const response = await axios.post("api/login/", {
-        username: loginIdentifier,
-        password,
-      });
-
-      // Save tokens
-      localStorage.setItem("token", response.data.access);
-      localStorage.setItem("refreshToken", response.data.refresh);
-
-      navigate("/dashboard");
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        setError(
-          err.response?.data?.error || "Sign in failed. Please try again."
-        );
-      } else {
-        setError("An unexpected error occurred.");
-      }
+      await login(loginIdentifier, password);
+      setSuccess("Successfully logged in!"); // <-- set success message
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Sign in failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -41,21 +30,31 @@ const SignIn = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 p-5">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
+        {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="mb-2 text-3xl font-extrabold text-gray-800">
-            Welcome Back
+            SᴛᴀᴄᴋHᴀᴄᴋ
           </h1>
           <p className="text-gray-500">
-            Sign in to continue to <span className="font-semibold">SᴛᴀᴄᴋHᴀᴄᴋ</span>
+            Welcome Back in <span className="font-semibold">SᴛᴀᴄᴋHᴀᴄᴋ</span>
           </p>
         </div>
 
+        {/* Error Message */}
         {error && (
           <div className="mb-4 rounded-lg border-l-4 border-red-500 bg-red-100 p-3 text-red-700">
             {error}
           </div>
         )}
 
+        {/* Success Message */}
+        {success && (
+          <div className="mb-4 rounded-lg border-l-4 border-green-500 bg-green-100 p-3 text-green-700">
+            {success}
+          </div>
+        )}
+
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label
@@ -140,6 +139,7 @@ const SignIn = () => {
           </button>
         </div>
 
+        {/* Sign Up Link */}
         <p className="mt-6 text-center text-sm text-gray-600">
           Don’t have an account?{" "}
           <Link

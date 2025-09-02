@@ -164,7 +164,7 @@ export default function Header() {
                 to="/"
                 className="text-xl font-bold text-gray-100 hover:text-gray-300"
               >
-                StackHack
+                SᴛᴀᴄᴋHᴀᴄᴋ
               </Link>
 
               {/* Profile (right) */}
@@ -193,7 +193,7 @@ export default function Header() {
                     className="text-xl font-bold text-gray-100 hover:text-gray-300"
                     onClick={handleLinkClick}
                   >
-                    StackHack
+                    SᴛᴀᴄᴋHᴀᴄᴋ
                   </Link>
                 </div>
 
