@@ -1,73 +1,92 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from "react";
+import Cookies from "js-cookie";
+import api from "../utils/api"; // pre-configured Axios instance
 
+// ---------------- User type ----------------
 interface User {
   id: string;
   username: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
+  fullName: string;
   avatar?: string;
-  branch?: string;
-  year?: number;
-  skills?: string[];
 }
 
+// ---------------- Auth Context type ----------------
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (user: User, token: string) => void;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  getInitials: () => string;
 }
 
+// ---------------- Default context ----------------
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
-  login: () => {},
+  login: async () => {},
   logout: () => {},
+  getInitials: () => "?",
 });
 
+// ---------------- AuthProvider ----------------
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
+  // ---------------- Fetch current user on app start ----------------
   useEffect(() => {
-    // Load user from localStorage on component mount
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Failed to parse stored user data:", error);
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-      }
+    const token = Cookies.get("token");
+    if (token) {
+      api.get<User>("/me/")
+        .then((res: { data: User }) => setUser(res.data))
+        .catch((): void => {
+          Cookies.remove("token");
+          setUser(null);
+        });
     }
   }, []);
 
-  const login = (userData: User, token: string) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", token);
+  // ---------------- Login function ----------------
+  const login = async (username: string, password: string) => {
+    try {
+      const res = await api.post("/login/", { username, password });
+
+      // Save JWT token in cookie
+      Cookies.set("token", res.data.access, { expires: 7, sameSite: "Lax" });
+
+      // Fetch current user
+      const userRes = await api.get("/me/");
+      setUser(userRes.data);
+    } catch (err: any) {
+      console.error("Login failed:", err.response?.data || err);
+      logout();
+      throw err; // optional: propagate error to UI
+    }
   };
 
+  // ---------------- Logout function ----------------
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    Cookies.remove("token");
+  };
+
+  // ---------------- Helper: get initials from fullName ----------------
+  const getInitials = () => {
+    if (!user?.fullName) return "?";
+    const parts = user.fullName.trim().split(" ");
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    return parts[0][0].toUpperCase();
   };
 
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, getInitials }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+// ---------------- Custom hook for easy usage ----------------
+export const useAuth = () => useContext(AuthContext);
+
