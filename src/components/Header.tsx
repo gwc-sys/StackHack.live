@@ -15,7 +15,6 @@ export default function Header() {
   const [isMobile, setIsMobile] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
@@ -37,7 +36,6 @@ export default function Header() {
     };
   }, []);
 
-
   useEffect(() => {
     if (!menuOpen) return;
 
@@ -53,7 +51,6 @@ export default function Header() {
 
   const handleMenuToggle = () => setMenuOpen((prev) => !prev);
   const handleLinkClick = () => setMenuOpen(false);
-
 
   const renderProfile = () => {
     if (user?.fullName) {
@@ -81,26 +78,26 @@ export default function Header() {
       {!isMobile && (
         <header
           className={`fixed w-full z-10 transition-all duration-300
-          bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900
+          bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white
           ${isScrolled ? "shadow-lg py-2" : "py-4"}`}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
             {/* Logo */}
             <Link
               to="/"
-              className="text-xl font-bold text-gray-100 hover:text-gray-300 transition-colors duration-200"
+              className="text-xl font-bold text-white hover:text-gray-300 transition-colors duration-200"
             >
               SᴛᴀᴄᴋHᴀᴄᴋ
             </Link>
 
             {/* Navigation */}
             <nav className="flex space-x-6">
-              <Link to="/" className="text-gray-100 hover:text-gray-300 font-medium">Home</Link>
-              <Link to="/resources" className="text-gray-100 hover:text-gray-300 font-medium">Resources</Link>
-              <Link to="/roadmaps" className="text-gray-100 hover:text-gray-300 font-medium">Roadmaps</Link>
-              <Link to="/community" className="text-gray-100 hover:text-gray-300 font-medium">Community</Link>
-              <Link to="/collaboration" className="text-gray-100 hover:text-gray-300 font-medium">Collaboration</Link>
-              <Link to="/events-hackathons" className="text-gray-100 hover:text-gray-300 font-medium">Hackathons</Link>
+              <Link to="/" className="text-white hover:text-gray-300 font-medium">Home</Link>
+              <Link to="/resources" className="text-white hover:text-gray-300 font-medium">Resources</Link>
+              <Link to="/roadmaps" className="text-white hover:text-gray-300 font-medium">Roadmaps</Link>
+              <Link to="/community" className="text-white hover:text-gray-300 font-medium">Community</Link>
+              <Link to="/collaboration" className="text-white hover:text-gray-300 font-medium">Collaboration</Link>
+              <Link to="/events-hackathons" className="text-white hover:text-gray-300 font-medium">Hackathons</Link>
             </nav>
 
             {/* Auth / Profile */}
@@ -111,23 +108,26 @@ export default function Header() {
                 <>
                   <Link
                     to="/signin"
-                    className="bg-gray-800 text-gray-100 px-4 py-2 rounded-lg font-medium border border-gray-700 hover:bg-gray-700 transition-colors duration-200"
+                    className="bg-blue-800 text-white px-4 py-2 rounded-lg font-medium border border-blue-700 hover:bg-blue-700 transition-colors duration-200"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/auth/github"
-                    className="flex items-center bg-gray-800 text-gray-100 px-3 py-2 rounded-lg font-medium border border-gray-700 hover:bg-gray-700 transition-colors duration-200"
+                    className="flex items-center bg-gray-800 text-white px-3 py-2 rounded-lg font-medium border border-gray-700 hover:bg-gray-700 transition-colors duration-200"
                   >
                     <FaGithub className="w-5 h-5 mr-2" />
                     GitHub
                   </Link>
                   <Link
                     to="/auth/google"
-                    className="flex items-center bg-gray-800 text-gray-100 px-3 py-2 rounded-lg font-medium border border-gray-700 hover:bg-gray-700 transition-colors duration-200"
+                    className="flex items-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white px-3 py-2 rounded-lg font-medium border border-blue-700 hover:opacity-90 transition-all duration-200 relative overflow-hidden group"
                   >
-                    <FaGoogle className="w-5 h-5 mr-2" />
-                    Google
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-700 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
+                    <FaGoogle className="w-5 h-5 mr-2 text-[#EA4335]" />
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#34A853] to-[#FBBC05]">
+                      Google
+                    </span>
                   </Link>
                 </>
               )}
@@ -141,14 +141,14 @@ export default function Header() {
         <>
           <header
             className={`fixed w-full z-10 transition-all duration-300
-            bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900
+            bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white
             ${isScrolled ? "shadow-lg py-2" : "py-4"}`}
           >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
               {/* Menu Icon (left) */}
               <button
                 onClick={handleMenuToggle}
-                className="text-gray-100 hover:text-gray-300 focus:outline-none"
+                className="text-white hover:text-gray-300 focus:outline-none"
                 aria-label="Toggle menu"
                 aria-expanded={menuOpen}
               >
@@ -162,7 +162,7 @@ export default function Header() {
               {/* Logo (center) */}
               <Link
                 to="/"
-                className="text-xl font-bold text-gray-100 hover:text-gray-300"
+                className="text-xl font-bold text-white hover:text-gray-300"
               >
                 SᴛᴀᴄᴋHᴀᴄᴋ
               </Link>
@@ -184,13 +184,13 @@ export default function Header() {
               {/* Sidebar */}
               <aside
                 ref={menuRef}
-                className="fixed top-0 left-0 h-auto min-h-screen w-64 bg-gray-900 shadow-xl z-20 animate-slideIn"
+                className="fixed top-0 left-0 h-auto min-h-screen w-64 bg-gradient-to-b from-gray-900 via-blue-900 to-purple-900 shadow-xl z-20 animate-slideIn"
               >
                 {/* Logo */}
-                <div className="px-6 py-4 border-b border-gray-800">
+                <div className="px-6 py-4 border-b border-blue-800">
                   <Link
                     to="/"
-                    className="text-xl font-bold text-gray-100 hover:text-gray-300"
+                    className="text-xl font-bold text-white hover:text-gray-300"
                     onClick={handleLinkClick}
                   >
                     SᴛᴀᴄᴋHᴀᴄᴋ
@@ -209,11 +209,11 @@ export default function Header() {
 
                 {/* Auth Buttons (only if not logged in) */}
                 {!user && (
-                  <div className="px-6 py-4 flex flex-col gap-3 border-t border-gray-800">
+                  <div className="px-6 py-4 flex flex-col gap-3 border-t border-blue-800">
                     <Link
                       to="/signin"
                       onClick={handleLinkClick}
-                      className="w-full py-2 px-4 bg-gray-800 text-white border border-gray-700 rounded-lg font-medium hover:bg-gray-700 text-center transition-colors duration-200"
+                      className="w-full py-2 px-4 bg-blue-800 text-white border border-blue-700 rounded-lg font-medium hover:bg-blue-700 text-center transition-colors duration-200"
                     >
                       Sign In
                     </Link>
@@ -228,10 +228,13 @@ export default function Header() {
                     <Link
                       to="/auth/google"
                       onClick={handleLinkClick}
-                      className="w-full py-2 px-4 bg-gray-800 text-white border border-gray-700 rounded-lg font-medium hover:bg-gray-700 flex items-center justify-center transition-colors duration-200"
+                      className="w-full py-2 px-4 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white border border-blue-700 rounded-lg font-medium hover:opacity-90 flex items-center justify-center transition-all duration-200 relative overflow-hidden group"
                     >
-                      <FaGoogle className="w-5 h-5 mr-2" />
-                      Google
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-700 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
+                      <FaGoogle className="w-5 h-5 mr-2 text-[#EA4335]" />
+                      <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#34A853] to-[#FBBC05]">
+                        Google
+                      </span>
                     </Link>
                   </div>
                 )}
