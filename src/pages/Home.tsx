@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   FaStar, FaSearch, FaRobot, FaTrophy, FaCertificate,
-  FaChevronDown, FaChevronUp, FaCode, FaRoad
+  FaCode, FaRoad
 } from 'react-icons/fa';
 import { SiGooglescholar } from 'react-icons/si';
 
@@ -37,8 +37,8 @@ type Challenge = {
 };
 
 const Home = () => {
-  const [rating, setRating] = useState<number>(0);
-  const [hover, setHover] = useState<number>(0);
+  // const [rating, setRating] = useState<number>(0);
+  // const [hover, setHover] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [chatbotOpen, setChatbotOpen] = useState<boolean>(false);
   const [chatMessage, setChatMessage] = useState<string>('');
