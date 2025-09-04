@@ -25,8 +25,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://engiportal.onrender.com',
-        // target: 'https://stackhack.live', // Production Django
+        target: 'https://stackhack-live.onrender.com',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, '')

@@ -101,7 +101,7 @@ const ResourcesPage = () => {
         setIsLoading(true);
         setError('');
         // const response = await axios.get('api/documents/<str:pk>/');   
-        const response = await axios.get('https://engiportal.onrender.com/api/documents/<str:pk>/'); 
+        const response = await axios.get('https://stackhack-live.onrender.com/api/documents/<str:pk>/'); 
       
         const mappedResources = response.data.map((doc: any) => ({
           id: doc.id,
@@ -213,7 +213,7 @@ const ResourcesPage = () => {
 
       // Send all data to your Django backend
       // const response = await axios.post('api/upload/', formData, {
-      const response = await axios.post('https://engiportal.onrender.com/api/upload/', formData, {
+      const response = await axios.post('https://stackhack-live.onrender.com/api/upload/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           // Add authorization header if needed
