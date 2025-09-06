@@ -15,7 +15,7 @@ export default function Header() {
   const [isMobile, setIsMobile] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const { user } = useContext(AuthContext);
+  const { user, getInitials } = useContext(AuthContext);
 
   useEffect(() => {
     const checkIfMobile = () => window.innerWidth <= 850;
@@ -53,23 +53,18 @@ export default function Header() {
   const handleLinkClick = () => setMenuOpen(false);
 
   const renderProfile = () => {
-    if (user?.fullName) {
-      const parts = user.fullName.trim().split(" ");
-      const initials =
-        parts.length >= 2
-          ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
-          : parts[0][0].toUpperCase();
+    const initials = getInitials();
+    const displayName = user?.fullName || user?.full_name || user?.username;
 
-      return (
-        <Link
-          to="/profile"
-          className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold hover:bg-gray-600 transition-colors duration-200"
-        >
-          {initials}
-        </Link>
-      );
-    }
-    return <FaUserCircle className="w-10 h-10 text-gray-300" />;
+    return (
+      <Link
+        to="/profile"
+        className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold hover:bg-gray-600 transition-colors duration-200"
+        title={displayName}
+      >
+        {initials}
+      </Link>
+    );
   };
 
   return (
@@ -168,7 +163,7 @@ export default function Header() {
               </Link>
 
               {/* Profile (right) */}
-              {renderProfile()}
+              {user ? renderProfile() : <FaUserCircle className="w-10 h-10 text-gray-300" />}
             </div>
           </header>
 
