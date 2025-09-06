@@ -42,7 +42,7 @@ export const AuthContext = createContext<AuthContextType>({
 
 // ---------------- Configure axios instance ----------------
 const api = axios.create({
-  baseURL: "http://localhost:8000/api/",
+  baseURL: "https://stackhack-live.onrender.com/api/",
   timeout: 10000,
 });
 
