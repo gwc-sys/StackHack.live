@@ -101,7 +101,8 @@ const ResourcesPage = () => {
       try {
         setIsLoading(true);
         setError('');
-        const response = await axios.get(`http://localhost:8000/api/documents/recent/`);
+        // const response = await axios.get(`http://localhost:8000/api/documents/recent/`);
+        const response = await axios.get(`https://stackhack-live.onrender.com/api/documents/recent/`);
         const mappedResources = response.data.slice(0, 10).map((doc: any) => ({
           id: doc.id,
           title: doc.name || doc.title || 'Untitled',
@@ -202,8 +203,8 @@ const ResourcesPage = () => {
       formData.append('branch', branch);
       formData.append('resource_type', resourceType);
 
-      // const response = await axios.post('https://stackhack-live.onrender.com/api/upload/', formData, {
-         const response = await axios.post('http://localhost:8000/api/upload/', formData, {
+      const response = await axios.post('https://stackhack-live.onrender.com/api/upload/', formData, {
+        //  const response = await axios.post('http://localhost:8000/api/upload/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }
