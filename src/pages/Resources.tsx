@@ -73,8 +73,10 @@ const RESOURCE_TYPES = [
   'Project Report', 'Tutorial', 'Presentation', 'Research Paper'
 ];
 
-const MAX_FILE_SIZE_MB = 10;
-const ALLOWED_FILE_TYPES = ['pdf', 'docx', 'pptx', 'txt', 'zip'];
+const ALLOWED_FILE_TYPES = [
+  'pdf', 'doc', 'docx', 'txt', 'ppt', 'pptx', 'zip', 
+  'jpg', 'jpeg', 'png', 'gif', 'webp', 'xls', 'xlsx', 'csv'
+];
 
 const FILE_TYPE_MAP: { [key: string]: string } = {
   'pdf': 'pdf',
@@ -86,6 +88,8 @@ const FILE_TYPE_MAP: { [key: string]: string } = {
   'gif': 'gif', 'webp': 'webp',
   'xls': 'xls', 'xlsx': 'xlsx', 'csv': 'csv'
 };
+
+const MAX_FILE_SIZE_MB = 10; // Must match backend (10MB)
 
 const ResourcesPage = () => {
   const { user, isAuthenticated, isSuperUser, logout } = useAuth();
@@ -113,7 +117,7 @@ const ResourcesPage = () => {
       try {
         setIsLoading(true);
         setError('');
-        const response = await axios.get(`http://localhost:8000/api/documents/recent/`);
+        const response = await axios.get(`https://stackhack-live.onrender.com/api/documents/recent/`);
         const mappedResources = response.data.slice(0, 10).map((doc: any) => ({
           id: doc.id,
           title: doc.name || doc.title || 'Untitled',
@@ -218,7 +222,7 @@ const ResourcesPage = () => {
         console.log(key, value);
       }
 
-      const response = await axios.post('http://localhost:8000/api/upload/', formData, {
+      const response = await axios.post('https://stackhack-live.onrender.com/api/upload/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }
@@ -325,7 +329,7 @@ const ResourcesPage = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:8000/api/documents/${resourceId}/`);
+      await axios.delete(`https://stackhack-live.onrender.com/api/documents/${resourceId}/`);
       setResources(prev => prev.filter(resource => resource.id !== resourceId));
       setFilteredResources(prev => prev.filter(resource => resource.id !== resourceId));
     } catch (error) {
