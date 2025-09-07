@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useAuth } from './AuthContext';
 
 // Configure axios base URL - adjust according to your backend
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://0.0.0.0:8000';
@@ -74,6 +75,7 @@ const MAX_FILE_SIZE_MB = 10;
 const ALLOWED_FILE_TYPES = ['pdf', 'docx', 'pptx', 'txt', 'zip'];
 
 const ResourcesPage = () => {
+  const { user, isAuthenticated, isSuperUser, logout } = useAuth();
   const [resources, setResources] = useState<Resource[]>([]);
   const [filteredResources, setFilteredResources] = useState<Resource[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -87,7 +89,6 @@ const ResourcesPage = () => {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  // const [documentId, setDocumentId] = useState<number | null>(null);
   const [filters, setFilters] = useState({
     college: '',
     branch: '',
@@ -100,10 +101,8 @@ const ResourcesPage = () => {
       try {
         setIsLoading(true);
         setError('');
-        // const response = await axios.get('api/documents/<str:pk>/');   
-        const response = await axios.get('https://stackhack-live.onrender.com/api/documents/<str:pk>/'); 
-      
-        const mappedResources = response.data.map((doc: any) => ({
+        const response = await axios.get(`http://localhost:8000/api/documents/recent/`);
+        const mappedResources = response.data.slice(0, 10).map((doc: any) => ({
           id: doc.id,
           title: doc.name || doc.title || 'Untitled',
           file_url: doc.file_url || doc.file,
@@ -128,12 +127,10 @@ const ResourcesPage = () => {
     fetchResources();
   }, []);
 
-
   // Filter resources based on search query and filters
   useEffect(() => {
     let filtered = resources;
     
-    // Apply search query filter
     if (searchQuery.trim() !== '') {
       filtered = filtered.filter(resource =>
         resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -144,21 +141,18 @@ const ResourcesPage = () => {
       );
     }
     
-    // Apply college filter
     if (filters.college) {
       filtered = filtered.filter(resource => 
         resource.college === filters.college
       );
     }
     
-    // Apply branch filter
     if (filters.branch) {
       filtered = filtered.filter(resource => 
         resource.branch === filters.branch
       );
     }
     
-    // Apply resource type filter
     if (filters.resourceType) {
       filtered = filtered.filter(resource => 
         resource.resource_type === filters.resourceType
@@ -173,13 +167,11 @@ const ResourcesPage = () => {
       const file = e.target.files[0];
       const fileExt = file.name.split('.').pop()?.toLowerCase();
 
-      // Validate file type
       if (fileExt && !ALLOWED_FILE_TYPES.includes(fileExt)) {
         setError(`Invalid file type. Allowed types: ${ALLOWED_FILE_TYPES.join(', ')}`);
         return;
       }
 
-      // Validate file size
       if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024 ) {
         setError(`File size exceeds ${MAX_FILE_SIZE_MB}MB limit`);
         return;
@@ -202,7 +194,6 @@ const ResourcesPage = () => {
       setError('');
       setUploadSuccess(false);
 
-      // Create FormData with all fields
       const formData = new FormData();
       formData.append('file', selectedFile);
       formData.append('title', title);
@@ -211,17 +202,13 @@ const ResourcesPage = () => {
       formData.append('branch', branch);
       formData.append('resource_type', resourceType);
 
-      // Send all data to your Django backend
-      // const response = await axios.post('api/upload/', formData, {
-      const response = await axios.post('https://stackhack-live.onrender.com/api/upload/', formData, {
+      // const response = await axios.post('https://stackhack-live.onrender.com/api/upload/', formData, {
+         const response = await axios.post('http://localhost:8000/api/upload/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          // Add authorization header if needed
-          // 'Authorization': `Bearer ${yourToken}`
         }
       });
 
-      // Handle response from Django backend
       const newResource = {
         id: response.data.id,
         title: response.data.title,
@@ -235,11 +222,9 @@ const ResourcesPage = () => {
         description: response.data.description,
       };
 
-      // Update state
       setResources(prev => [newResource, ...prev]);
       setFilteredResources(prev => [newResource, ...prev]);
 
-      // Reset form
       setTitle('');
       setDescription('');
       setCollege('');
@@ -329,6 +314,29 @@ const ResourcesPage = () => {
     setSearchQuery('');
   };
 
+  const handleDeleteResource = async (resourceId: number) => {
+    if (!window.confirm('Are you sure you want to delete this resource?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`https://stackhack-live.onrender.com/api/documents/${resourceId}/`);
+      setResources(prev => prev.filter(resource => resource.id !== resourceId));
+      setFilteredResources(prev => prev.filter(resource => resource.id !== resourceId));
+    } catch (error) {
+      console.error('Failed to delete resource:', error);
+      setError('Failed to delete resource. Please try again.');
+    }
+  };
+
+  const handleOpenDocument = (resource: Resource) => {
+    if (!isAuthenticated) {
+      setError('Please log in to view documents');
+      return;
+    }
+    window.open(resource.file_url, '_blank');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -338,6 +346,7 @@ const ResourcesPage = () => {
             {uploadSuccess ? 'Resource uploaded successfully!' : error}
           </div>
         )}
+        
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-extrabold text-gray-900 mb-3 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
@@ -346,6 +355,27 @@ const ResourcesPage = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Discover, share, and collaborate on the best engineering resources
           </p>
+          
+          {/* User Status */}
+          <div className="mt-4">
+            {isAuthenticated ? (
+              <div className="inline-flex items-center bg-white rounded-full px-4 py-2 shadow-sm border border-gray-200">
+                <span className="text-sm text-gray-700 mr-3">
+                  Welcome, {user?.username} {isSuperUser && '(Super User)'}
+                </span>
+                <button
+                  onClick={logout}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="text-sm text-gray-600">
+                Guest user - <span className="text-blue-600">Log in to access more features</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Search and Upload Section */}
@@ -479,12 +509,12 @@ const ResourcesPage = () => {
             </div>
           </div>
 
-          {/* Upload Panel */}
+          {/* Upload Panel - Visible to everyone, but only superusers can upload */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload New Resource</h2>
-            {uploadSuccess && (
-              <div className="mb-4 p-3 bg-green-50 text-green-800 rounded-lg text-sm">
-                Resource uploaded successfully!
+            {!isSuperUser && (
+              <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 rounded-lg text-sm">
+                Only Admin can upload resources. The form is disabled for your account.
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -500,6 +530,7 @@ const ResourcesPage = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                   placeholder="e.g. Data Structures Notes"
                   required
+                  disabled={!isSuperUser}
                 />
               </div>
 
@@ -514,6 +545,7 @@ const ResourcesPage = () => {
                     onChange={(e) => setCollege(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                     required
+                    disabled={!isSuperUser}
                   >
                     <option value="">Select College</option>
                     {COLLEGES.map(col => (
@@ -531,6 +563,7 @@ const ResourcesPage = () => {
                     onChange={(e) => setBranch(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                     required
+                    disabled={!isSuperUser}
                   >
                     <option value="">Select Branch</option>
                     {BRANCHES.map(br => (
@@ -550,6 +583,7 @@ const ResourcesPage = () => {
                   onChange={(e) => setResourceType(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                   required
+                  disabled={!isSuperUser}
                 >
                   <option value="">Select Type</option>
                   {RESOURCE_TYPES.map(type => (
@@ -572,7 +606,7 @@ const ResourcesPage = () => {
                       aria-hidden="true"
                     >
                       <path
-                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v-8a4 4 0 00-4-4H12a4 4 0 01-4 4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -634,7 +668,7 @@ const ResourcesPage = () => {
 
               <button
                 type="submit"
-                disabled={isUploading}
+                disabled={isUploading || !isSuperUser}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
                 {isUploading ? (
@@ -734,7 +768,22 @@ const ResourcesPage = () => {
                           </p>
                         )}
                       </div>
-                      <div className="ml-4 flex-shrink-0">
+                      <div className="ml-4 flex-shrink-0 flex space-x-2">
+                        {/* View/Open Button */}
+                        <button
+                          onClick={() => handleOpenDocument(resource)}
+                          disabled={!isAuthenticated}
+                          className={`inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md ${
+                            isAuthenticated 
+                              ? 'text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                              : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                          }`}
+                          title={isAuthenticated ? "Open document" : "Please log in to view documents"}
+                        >
+                          {isAuthenticated ? 'Open' : 'Log in to View'}
+                        </button>
+
+                        {/* Download Button */}
                         <a
                           href={resource.file_url}
                           download
@@ -742,6 +791,17 @@ const ResourcesPage = () => {
                         >
                           Download
                         </a>
+
+                        {/* Delete Button - Only for Super Users */}
+                        {isSuperUser && (
+                          <button
+                            onClick={() => handleDeleteResource(resource.id)}
+                            className="inline-flex items-center px-3 py-1 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            title="Delete resource"
+                          >
+                            Delete
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -3,9 +3,11 @@ import axios from "axios";
 
 // ---------------- User type ----------------
 interface User {
-  id: string;
+  id: number;
   username: string;
   email: string;
+  is_superuser: boolean; // <-- Add this
+  is_staff: boolean;     // <-- And this
   fullName?: string;    // camelCase
   full_name?: string;   // snake_case (backend might send this)
   name?: string;        // generic fallback
@@ -24,6 +26,8 @@ interface LoginResponse {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isSuperUser: boolean;
+  isStaff: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   getInitials: () => string;
@@ -34,6 +38,8 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
+  isSuperUser: false,
+  isStaff: false,
   login: async () => {},
   logout: () => {},
   getInitials: () => "?",
@@ -42,7 +48,7 @@ export const AuthContext = createContext<AuthContextType>({
 
 // ---------------- Configure axios instance ----------------
 const api = axios.create({
-  baseURL: "https://stackhack-live.onrender.com/api/",
+  baseURL: "http://localhost:8000/api/",
   timeout: 10000,
 });
 
@@ -171,10 +177,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return parts[0][0].toUpperCase();
   };
 
+  // Add isSuperUser and isStaff detection
   const isAuthenticated = !!user;
+  const isSuperUser = !!user?.is_superuser;
+  const isStaff = !!user?.is_staff;
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, getInitials, loading }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isSuperUser, isStaff, login, logout, getInitials, loading }}>
       {children}
     </AuthContext.Provider>
   );
