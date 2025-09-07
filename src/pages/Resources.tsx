@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuth } from './AuthContext';
 
 // Configure axios base URL - adjust according to your backend
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://0.0.0.0:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 axios.defaults.baseURL = API_BASE_URL;
 
 interface Resource {
@@ -17,6 +17,9 @@ interface Resource {
   branch?: string;
   resource_type?: string;
   description: string;
+  year?: string;
+  semester?: string;
+  subject?: string;
 }
 
 const COLLEGES = [
@@ -60,11 +63,10 @@ const COLLEGES = [
   'Trinity College of Engineering & Research (TCER)'
 ];
 
-const BRANCHES = [
-  'ENTC','CSE', 'ECE', 'EEE', 'ME', 'CE', 
-  'IT', 'AIML', 'DS', 'AERO', 'AUTO',
-  'BIOTECH', 'CHEM', 'META', 'MINING', 'PROD'
-];
+// Engineering Year select 
+const YEARS = ['1', '2', '3', '4'];
+// Engineering Semester select
+const SEMESTERS = ['1', '2'];
 
 const RESOURCE_TYPES = [
   'Assignment', 'Learning Notes', 'Lab Manual', 'Resources', 'Question Paper',
@@ -74,6 +76,17 @@ const RESOURCE_TYPES = [
 const MAX_FILE_SIZE_MB = 10;
 const ALLOWED_FILE_TYPES = ['pdf', 'docx', 'pptx', 'txt', 'zip'];
 
+const FILE_TYPE_MAP: { [key: string]: string } = {
+  'pdf': 'pdf',
+  'doc': 'doc', 'docx': 'docx',
+  'txt': 'txt',
+  'ppt': 'ppt', 'pptx': 'pptx',
+  'zip': 'zip',
+  'jpg': 'jpg', 'jpeg': 'jpeg', 'png': 'png',
+  'gif': 'gif', 'webp': 'webp',
+  'xls': 'xls', 'xlsx': 'xlsx', 'csv': 'csv'
+};
+
 const ResourcesPage = () => {
   const { user, isAuthenticated, isSuperUser, logout } = useAuth();
   const [resources, setResources] = useState<Resource[]>([]);
@@ -82,6 +95,9 @@ const ResourcesPage = () => {
   const [title, setTitle] = useState('');
   const [college, setCollege] = useState('');
   const [branch, setBranch] = useState('');
+  const [year, setYear] = useState('');
+  const [semester, setSemester] = useState('');
+  const [subject, setSubject] = useState('');
   const [resourceType, setResourceType] = useState('');
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -89,11 +105,7 @@ const ResourcesPage = () => {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [filters, setFilters] = useState({
-    college: '',
-    branch: '',
-    resourceType: ''
-  });
+  const [fileType, setFileType] = useState<string>('');
 
   // Fetch resources from backend
   useEffect(() => {
@@ -101,8 +113,7 @@ const ResourcesPage = () => {
       try {
         setIsLoading(true);
         setError('');
-        // const response = await axios.get(`http://localhost:8000/api/documents/recent/`);
-        const response = await axios.get(`https://stackhack-live.onrender.com/api/documents/recent/`);
+        const response = await axios.get(`http://localhost:8000/api/documents/recent/`);
         const mappedResources = response.data.slice(0, 10).map((doc: any) => ({
           id: doc.id,
           title: doc.name || doc.title || 'Untitled',
@@ -112,6 +123,9 @@ const ResourcesPage = () => {
           size: doc.size || 'Unknown',
           college: doc.college || '',
           branch: doc.branch || '',
+          year: doc.year || '',
+          semester: doc.semester || '',
+          subject: doc.subject || '',
           resource_type: doc.resource_type || '',
           description: doc.description || '',
         }));
@@ -128,57 +142,49 @@ const ResourcesPage = () => {
     fetchResources();
   }, []);
 
-  // Filter resources based on search query and filters
+  // Filter resources based only on search query
   useEffect(() => {
     let filtered = resources;
-    
     if (searchQuery.trim() !== '') {
       filtered = filtered.filter(resource =>
         resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (resource.college && resource.college.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (resource.branch && resource.branch.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (resource.year && resource.year.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (resource.semester && resource.semester.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (resource.subject && resource.subject.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (resource.resource_type && resource.resource_type.toLowerCase().includes(searchQuery.toLowerCase())) ||
         resource.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    
-    if (filters.college) {
-      filtered = filtered.filter(resource => 
-        resource.college === filters.college
-      );
-    }
-    
-    if (filters.branch) {
-      filtered = filtered.filter(resource => 
-        resource.branch === filters.branch
-      );
-    }
-    
-    if (filters.resourceType) {
-      filtered = filtered.filter(resource => 
-        resource.resource_type === filters.resourceType
-      );
-    }
-    
     setFilteredResources(filtered);
-  }, [searchQuery, resources, filters]);
+  }, [searchQuery, resources]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      const fileExt = file.name.split('.').pop()?.toLowerCase();
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) {
+      setError('No file selected');
+      return;
+    }
+    
+    const selectedFile = files[0];
+    console.log('Selected file:', selectedFile, 'Size:', selectedFile.size);
 
-      if (fileExt && !ALLOWED_FILE_TYPES.includes(fileExt)) {
-        setError(`Invalid file type. Allowed types: ${ALLOWED_FILE_TYPES.join(', ')}`);
+    if (selectedFile) {
+      const fileExt = selectedFile.name.split('.').pop()?.toLowerCase();
+
+      if (fileExt && !Object.keys(FILE_TYPE_MAP).includes(fileExt)) {
+        setError(`Invalid file type. Allowed types: ${Object.keys(FILE_TYPE_MAP).join(', ')}`);
         return;
       }
 
-      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024 ) {
+      if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
         setError(`File size exceeds ${MAX_FILE_SIZE_MB}MB limit`);
         return;
       }
 
-      setSelectedFile(file);
+      setSelectedFile(selectedFile);
+      setFileType(fileExt ? FILE_TYPE_MAP[fileExt] : '');
       setError('');
     }
   };
@@ -201,10 +207,18 @@ const ResourcesPage = () => {
       formData.append('description', description);
       formData.append('college', college);
       formData.append('branch', branch);
+      formData.append('year', year);
+      formData.append('semester', semester);
+      formData.append('subject', subject);
       formData.append('resource_type', resourceType);
+      formData.append('file_type', fileType);
 
-      const response = await axios.post('https://stackhack-live.onrender.com/api/upload/', formData, {
-        //  const response = await axios.post('http://localhost:8000/api/upload/', formData, {
+      // Debug: Log form data entries
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+
+      const response = await axios.post('http://localhost:8000/api/upload/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }
@@ -219,6 +233,9 @@ const ResourcesPage = () => {
         size: formatFileSize(response.data.size || selectedFile.size),
         college: response.data.college,
         branch: response.data.branch,
+        year: response.data.year,
+        semester: response.data.semester,
+        subject: response.data.subject,
         resource_type: response.data.resource_type,
         description: response.data.description,
       };
@@ -230,6 +247,9 @@ const ResourcesPage = () => {
       setDescription('');
       setCollege('');
       setBranch('');
+      setYear('');
+      setSemester('');
+      setSubject('');
       setResourceType('');
       setSelectedFile(null);
       setUploadSuccess(true);
@@ -299,29 +319,13 @@ const ResourcesPage = () => {
     }
   };
 
-  const applyFilter = (type: 'college' | 'branch' | 'resourceType', value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [type]: value
-    }));
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      college: '',
-      branch: '',
-      resourceType: ''
-    });
-    setSearchQuery('');
-  };
-
   const handleDeleteResource = async (resourceId: number) => {
     if (!window.confirm('Are you sure you want to delete this resource?')) {
       return;
     }
 
     try {
-      await axios.delete(`https://stackhack-live.onrender.com/api/documents/${resourceId}/`);
+      await axios.delete(`http://localhost:8000/api/documents/${resourceId}/`);
       setResources(prev => prev.filter(resource => resource.id !== resourceId));
       setFilteredResources(prev => prev.filter(resource => resource.id !== resourceId));
     } catch (error) {
@@ -347,7 +351,7 @@ const ResourcesPage = () => {
             {uploadSuccess ? 'Resource uploaded successfully!' : error}
           </div>
         )}
-        
+
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-extrabold text-gray-900 mb-3 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
@@ -356,7 +360,6 @@ const ResourcesPage = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Discover, share, and collaborate on the best engineering resources
           </p>
-          
           {/* User Status */}
           <div className="mt-4">
             {isAuthenticated ? (
@@ -391,60 +394,12 @@ const ResourcesPage = () => {
               </div>
               <input
                 type="text"
-                placeholder="Search resources by title, college, branch, or keyword..."
+                placeholder="Search resources by title, college, branch, year, semester, subject, or keyword..."
                 className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-
-            {/* Active filters */}
-            {(filters.college || filters.branch || filters.resourceType) && (
-              <div className="mb-4">
-                <div className="flex items-center flex-wrap gap-2">
-                  <span className="text-sm text-gray-500">Filters:</span>
-                  {filters.college && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      College: {filters.college}
-                      <button 
-                        onClick={() => applyFilter('college', '')}
-                        className="ml-1 text-blue-600 hover:text-blue-800"
-                      >
-                        &times;
-                      </button>
-                    </span>
-                  )}
-                  {filters.branch && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Branch: {filters.branch}
-                      <button 
-                        onClick={() => applyFilter('branch', '')}
-                        className="ml-1 text-green-600 hover:text-green-800"
-                      >
-                        &times;
-                      </button>
-                    </span>
-                  )}
-                  {filters.resourceType && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                      Type: {filters.resourceType}
-                      <button 
-                        onClick={() => applyFilter('resourceType', '')}
-                        className="ml-1 text-purple-600 hover:text-purple-800"
-                      >
-                        &times;
-                      </button>
-                    </span>
-                  )}
-                  <button 
-                    onClick={clearFilters}
-                    className="text-sm text-blue-600 hover:text-blue-800 ml-2"
-                  >
-                    Clear all
-                  </button>
-                </div>
-              </div>
-            )}
 
             {/* Resource Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -463,49 +418,6 @@ const ResourcesPage = () => {
               <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
                 <p className="text-sm font-medium text-amber-800">Downloads</p>
                 <p className="text-2xl font-bold text-amber-600">1.2K+</p>
-              </div>
-            </div>
-
-            {/* Quick Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Filter by College</h3>
-                <select
-                  value={filters.college}
-                  onChange={(e) => applyFilter('college', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  <option value="">All Colleges</option>
-                  {COLLEGES.map(college => (
-                    <option key={college} value={college}>{college}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Filter by Branch</h3>
-                <select
-                  value={filters.branch}
-                  onChange={(e) => applyFilter('branch', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  <option value="">All Branches</option>
-                  {BRANCHES.map(br => (
-                    <option key={br} value={br}>{br}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Filter by Type</h3>
-                <select
-                  value={filters.resourceType}
-                  onChange={(e) => applyFilter('resourceType', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  <option value="">All Types</option>
-                  {RESOURCE_TYPES.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
               </div>
             </div>
           </div>
@@ -558,20 +470,72 @@ const ResourcesPage = () => {
                   <label htmlFor="branch" className="block text-sm font-medium text-gray-700 mb-1">
                     Branch*
                   </label>
-                  <select
+                  <input
+                    type="text"
                     id="branch"
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter branch name"
+                    required
+                    disabled={!isSuperUser}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">
+                    Year*
+                  </label>
+                  <select
+                    id="year"
+                    value={year}
+                    onChange={(e) => setYear(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                     required
                     disabled={!isSuperUser}
                   >
-                    <option value="">Select Branch</option>
-                    {BRANCHES.map(br => (
-                      <option key={br} value={br}>{br}</option>
+                    <option value="">Select Year</option>
+                    {YEARS.map(y => (
+                      <option key={y} value={y}>Year {y}</option>
                     ))}
                   </select>
                 </div>
+                <div>
+                  <label htmlFor="semester" className="block text-sm font-medium text-gray-700 mb-1">
+                    Semester*
+                  </label>
+                  <select
+                    id="semester"
+                    value={semester}
+                    onChange={(e) => setSemester(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    required
+                    disabled={!isSuperUser}
+                  >
+                    <option value="">Select Semester</option>
+                    {SEMESTERS.map(sem => (
+                      <option key={sem} value={sem}>Semester {sem}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+                  Subject*
+                </label>
+                <input
+                  type="text"
+                  id="subject"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter subject name"
+                  required
+                  disabled={!isSuperUser}
+                />
               </div>
 
               <div>
@@ -627,6 +591,7 @@ const ResourcesPage = () => {
                           onChange={handleFileChange}
                           className="sr-only"
                           required
+                          disabled={!isSuperUser}
                         />
                       </label>
                       <p className="pl-1">or drag and drop</p>
@@ -658,6 +623,7 @@ const ResourcesPage = () => {
                   onChange={e => setDescription(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                   rows={3}
+                  disabled={!isSuperUser}
                 />
               </div>
 
@@ -749,6 +715,16 @@ const ResourcesPage = () => {
                                 {resource.branch}
                               </p>
                             )}
+                            {resource.year && (
+                              <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                Year {resource.year}
+                              </p>
+                            )}
+                            {resource.semester && (
+                              <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                Sem {resource.semester}
+                              </p>
+                            )}
                             {resource.college && (
                               <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                 {resource.college}
@@ -762,6 +738,12 @@ const ResourcesPage = () => {
                           <span>{resource.size}</span>
                           <span className="mx-1">•</span>
                           <span>{formatDate(resource.upload_date)}</span>
+                          {resource.subject && (
+                            <>
+                              <span className="mx-1">•</span>
+                              <span>{resource.subject}</span>
+                            </>
+                          )}
                         </div>
                         {resource.description && (
                           <p className="mt-1 text-sm text-gray-500 truncate">
