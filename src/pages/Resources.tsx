@@ -2,24 +2,26 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 
-// Configure axios base URL - adjust according to your backend
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// Configure axios base URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 axios.defaults.baseURL = API_BASE_URL;
 
 interface Resource {
   id: number;
   title: string;
+  name: string;
   file_url: string;
-  upload_date: string;
+  uploaded_at: string;
   file_type: string;
-  size: string;
-  college?: string;
-  branch?: string;
-  resource_type?: string;
+  size: number;
+  college: string;
+  branch: string;
+  year: string;
+  semester: string;
+  subject: string;
+  resource_type: string;
   description: string;
-  year?: string;
-  semester?: string;
-  subject?: string;
+  public_id: string;
 }
 
 const COLLEGES = [
@@ -63,10 +65,8 @@ const COLLEGES = [
   'Trinity College of Engineering & Research (TCER)'
 ];
 
-// Engineering Year select 
 const YEARS = ['1', '2', '3', '4'];
-// Engineering Semester select
-const SEMESTERS = ['1', '2'];
+const SEMESTERS = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
 const RESOURCE_TYPES = [
   'Assignment', 'Learning Notes', 'Lab Manual', 'Resources', 'Question Paper',
@@ -79,17 +79,17 @@ const ALLOWED_FILE_TYPES = [
 ];
 
 const FILE_TYPE_MAP: { [key: string]: string } = {
-  'pdf': 'pdf',
-  'doc': 'doc', 'docx': 'docx',
-  'txt': 'txt',
-  'ppt': 'ppt', 'pptx': 'pptx',
-  'zip': 'zip',
-  'jpg': 'jpg', 'jpeg': 'jpeg', 'png': 'png',
-  'gif': 'gif', 'webp': 'webp',
-  'xls': 'xls', 'xlsx': 'xlsx', 'csv': 'csv'
+  'pdf': 'PDF',
+  'doc': 'DOC', 'docx': 'DOCX',
+  'txt': 'TXT',
+  'ppt': 'PPT', 'pptx': 'PPTX',
+  'zip': 'ZIP',
+  'jpg': 'JPG', 'jpeg': 'JPEG', 'png': 'PNG',
+  'gif': 'GIF', 'webp': 'WEBP',
+  'xls': 'XLS', 'xlsx': 'XLSX', 'csv': 'CSV'
 };
 
-const MAX_FILE_SIZE_MB = 10; // Must match backend (10MB)
+const MAX_FILE_SIZE_MB = 50; // Must match backend (50MB)
 
 const ResourcesPage = () => {
   const { user, isAuthenticated, isSuperUser, logout } = useAuth();
@@ -97,6 +97,7 @@ const ResourcesPage = () => {
   const [filteredResources, setFilteredResources] = useState<Resource[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
+  const [name, setName] = useState('');
   const [college, setCollege] = useState('');
   const [branch, setBranch] = useState('');
   const [year, setYear] = useState('');
@@ -117,14 +118,16 @@ const ResourcesPage = () => {
       try {
         setIsLoading(true);
         setError('');
-        const response = await axios.get(`https://stackhack-live.onrender.com/api/documents/recent/`);
-        const mappedResources = response.data.slice(0, 10).map((doc: any) => ({
+        const response = await axios.get(`${API_BASE_URL}/documents/recent/`);
+        
+        const mappedResources = response.data.map((doc: any) => ({
           id: doc.id,
-          title: doc.name || doc.title || 'Untitled',
-          file_url: doc.file_url || doc.file,
-          upload_date: doc.uploaded_at || doc.upload_date,
-          file_type: doc.resource_type || doc.file_type || 'pdf',
-          size: doc.size || 'Unknown',
+          title: doc.title || 'Untitled',
+          name: doc.name || doc.title || 'Untitled',
+          file_url: doc.file_url,
+          uploaded_at: doc.uploaded_at,
+          file_type: doc.file_type?.toLowerCase() || 'unknown',
+          size: doc.size || 0,
           college: doc.college || '',
           branch: doc.branch || '',
           year: doc.year || '',
@@ -132,7 +135,9 @@ const ResourcesPage = () => {
           subject: doc.subject || '',
           resource_type: doc.resource_type || '',
           description: doc.description || '',
+          public_id: doc.public_id || ''
         }));
+        
         setResources(mappedResources);
         setFilteredResources(mappedResources);
       } catch (err) {
@@ -146,12 +151,13 @@ const ResourcesPage = () => {
     fetchResources();
   }, []);
 
-  // Filter resources based only on search query
+  // Filter resources based on search query
   useEffect(() => {
     let filtered = resources;
     if (searchQuery.trim() !== '') {
       filtered = filtered.filter(resource =>
         resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        resource.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (resource.college && resource.college.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (resource.branch && resource.branch.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (resource.year && resource.year.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -176,27 +182,26 @@ const ResourcesPage = () => {
 
     if (selectedFile) {
       const fileExt = selectedFile.name.split('.').pop()?.toLowerCase();
-
-      if (fileExt && !Object.keys(FILE_TYPE_MAP).includes(fileExt)) {
-        setError(`Invalid file type. Allowed types: ${Object.keys(FILE_TYPE_MAP).join(', ')}`);
+      if (fileExt) {
+        setFileType(fileExt);
+      }
+      if (!fileExt || !ALLOWED_FILE_TYPES.includes(fileExt)) {
+        setError(`Invalid file type. Allowed types: ${ALLOWED_FILE_TYPES.join(', ')}`);
         return;
       }
-
       if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
         setError(`File size exceeds ${MAX_FILE_SIZE_MB}MB limit`);
         return;
       }
-
       setSelectedFile(selectedFile);
-      setFileType(fileExt ? FILE_TYPE_MAP[fileExt] : '');
       setError('');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFile || !title) {
-      setError('Please select a file and provide a title');
+    if (!selectedFile || !title || !college || !branch || !year || !semester || !subject || !resourceType) {
+      setError('Please fill all required fields and select a file');
       return;
     }
 
@@ -208,6 +213,7 @@ const ResourcesPage = () => {
       const formData = new FormData();
       formData.append('file', selectedFile);
       formData.append('title', title);
+      formData.append('name', name || title);
       formData.append('description', description);
       formData.append('college', college);
       formData.append('branch', branch);
@@ -217,12 +223,7 @@ const ResourcesPage = () => {
       formData.append('resource_type', resourceType);
       formData.append('file_type', fileType);
 
-      // Debug: Log form data entries
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
-
-      const response = await axios.post('https://stackhack-live.onrender.com/api/upload/', formData, {
+      const response = await axios.post(`${API_BASE_URL}/upload/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }
@@ -231,10 +232,11 @@ const ResourcesPage = () => {
       const newResource = {
         id: response.data.id,
         title: response.data.title,
+        name: response.data.name,
         file_url: response.data.file_url,
-        upload_date: response.data.upload_date || new Date().toISOString(),
-        file_type: response.data.file_type || selectedFile.name.split('.').pop()?.toLowerCase(),
-        size: formatFileSize(response.data.size || selectedFile.size),
+        uploaded_at: response.data.uploaded_at,
+        file_type: response.data.file_type,
+        size: response.data.size || selectedFile.size,
         college: response.data.college,
         branch: response.data.branch,
         year: response.data.year,
@@ -242,12 +244,15 @@ const ResourcesPage = () => {
         subject: response.data.subject,
         resource_type: response.data.resource_type,
         description: response.data.description,
+        public_id: response.data.public_id
       };
 
       setResources(prev => [newResource, ...prev]);
       setFilteredResources(prev => [newResource, ...prev]);
 
+      // Reset form
       setTitle('');
+      setName('');
       setDescription('');
       setCollege('');
       setBranch('');
@@ -256,14 +261,14 @@ const ResourcesPage = () => {
       setSubject('');
       setResourceType('');
       setSelectedFile(null);
+      setFileType('');
       setUploadSuccess(true);
 
-    } catch (err) {
+    } catch (err: any) {
       let errorMessage = 'Upload failed. Please try again.';
       if (axios.isAxiosError(err)) {
-        errorMessage = err.response?.data?.message || 
-                      err.response?.data?.detail ||
-                      JSON.stringify(err.response?.data) || 
+        errorMessage = err.response?.data?.error || 
+                      err.response?.data?.details || 
                       errorMessage;
       }
       setError(errorMessage);
@@ -304,11 +309,11 @@ const ResourcesPage = () => {
         return <svg className={`${iconClass} text-red-500`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
         </svg>;
-      case 'docx':
+      case 'doc': case 'docx':
         return <svg className={`${iconClass} text-blue-500`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>;
-      case 'pptx':
+      case 'ppt': case 'pptx':
         return <svg className={`${iconClass} text-orange-500`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
         </svg>;
@@ -329,30 +334,29 @@ const ResourcesPage = () => {
     }
 
     try {
-      await axios.delete(`https://stackhack-live.onrender.com/api/documents/${resourceId}/`);
+      await axios.delete(`${API_BASE_URL}/documents/${resourceId}/delete/`);
       setResources(prev => prev.filter(resource => resource.id !== resourceId));
       setFilteredResources(prev => prev.filter(resource => resource.id !== resourceId));
-    } catch (error) {
+      setUploadSuccess(true);
+      setTimeout(() => setUploadSuccess(false), 3000);
+    } catch (error: any) {
       console.error('Failed to delete resource:', error);
-      setError('Failed to delete resource. Please try again.');
+      setError(error.response?.data?.error || 'Failed to delete resource. Please try again.');
     }
-  };
-
-  const handleOpenDocument = (resource: Resource) => {
-    if (!isAuthenticated) {
-      setError('Please log in to view documents');
-      return;
-    }
-    window.open(resource.file_url, '_blank');
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Upload result notification */}
-        {(uploadSuccess || error) && (
-          <div className={`mb-6 px-4 py-3 rounded-lg text-center font-medium text-sm ${uploadSuccess ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
-            {uploadSuccess ? 'Resource uploaded successfully!' : error}
+        {/* Notifications */}
+        {uploadSuccess && (
+          <div className="mb-6 px-4 py-3 bg-green-50 text-green-800 rounded-lg text-center font-medium text-sm border border-green-200">
+            Operation completed successfully!
+          </div>
+        )}
+        {error && (
+          <div className="mb-6 px-4 py-3 bg-red-50 text-red-800 rounded-lg text-center font-medium text-sm border border-red-200">
+            {error}
           </div>
         )}
 
@@ -364,12 +368,12 @@ const ResourcesPage = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Discover, share, and collaborate on the best engineering resources
           </p>
-          {/* User Status */}
+          
           <div className="mt-4">
             {isAuthenticated ? (
               <div className="inline-flex items-center bg-white rounded-full px-4 py-2 shadow-sm border border-gray-200">
                 <span className="text-sm text-gray-700 mr-3">
-                  Welcome, {user?.username} {isSuperUser && '(Super User)'}
+                  Welcome, {user?.username} {isSuperUser && '(Admin)'}
                 </span>
                 <button
                   onClick={logout}
@@ -386,9 +390,9 @@ const ResourcesPage = () => {
           </div>
         </div>
 
-        {/* Search and Upload Section */}
+        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          {/* Search Panel */}
+          {/* Search and Stats Panel */}
           <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="relative mb-6">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -420,13 +424,13 @@ const ResourcesPage = () => {
                 <p className="text-2xl font-bold text-purple-600">{RESOURCE_TYPES.length}</p>
               </div>
               <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
-                <p className="text-sm font-medium text-amber-800">Downloads</p>
-                <p className="text-2xl font-bold text-amber-600">1.2K+</p>
+                <p className="text-sm font-medium text-amber-800">Active Users</p>
+                <p className="text-2xl font-bold text-amber-600">250+</p>
               </div>
             </div>
           </div>
 
-          {/* Upload Panel - Visible to everyone, but only superusers can upload */}
+          {/* Upload Panel */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload New Resource</h2>
             {!isSuperUser && (
@@ -434,6 +438,7 @@ const ResourcesPage = () => {
                 Only Admin can upload resources. The form is disabled for your account.
               </div>
             )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -446,6 +451,22 @@ const ResourcesPage = () => {
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                   placeholder="e.g. Data Structures Notes"
+                  required
+                  disabled={!isSuperUser}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Display Name*
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="e.g. DS Notes Semester 4"
                   required
                   disabled={!isSuperUser}
                 />
@@ -480,7 +501,7 @@ const ResourcesPage = () => {
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter branch name"
+                    placeholder="e.g. Computer Engineering"
                     required
                     disabled={!isSuperUser}
                   />
@@ -536,7 +557,7 @@ const ResourcesPage = () => {
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter subject name"
+                  placeholder="e.g. Data Structures and Algorithms"
                   required
                   disabled={!isSuperUser}
                 />
@@ -591,7 +612,7 @@ const ResourcesPage = () => {
                           id="file-upload"
                           name="file-upload"
                           type="file"
-                          accept=".pdf,.docx,.pptx,.txt,.zip"
+                          accept={ALLOWED_FILE_TYPES.map(ext => `.${ext}`).join(',')}
                           onChange={handleFileChange}
                           className="sr-only"
                           required
@@ -618,7 +639,7 @@ const ResourcesPage = () => {
 
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
+                  Description*
                 </label>
                 <textarea
                   id="description"
@@ -627,15 +648,10 @@ const ResourcesPage = () => {
                   onChange={e => setDescription(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                   rows={3}
+                  required
                   disabled={!isSuperUser}
                 />
               </div>
-
-              {error && (
-                <div className="p-3 bg-red-50 text-red-800 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
 
               <button
                 type="submit"
@@ -710,42 +726,45 @@ const ResourcesPage = () => {
                           </p>
                           <div className="ml-2 flex-shrink-0 flex space-x-1">
                             {resource.resource_type && (
-                              <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
                                 {resource.resource_type}
-                              </p>
+                              </span>
                             )}
                             {resource.branch && (
-                              <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                 {resource.branch}
-                              </p>
+                              </span>
                             )}
                             {resource.year && (
-                              <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                 Year {resource.year}
-                              </p>
+                              </span>
                             )}
                             {resource.semester && (
-                              <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
                                 Sem {resource.semester}
-                              </p>
-                            )}
-                            {resource.college && (
-                              <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                {resource.college}
-                              </p>
+                              </span>
                             )}
                           </div>
                         </div>
                         <div className="mt-1 flex items-center text-sm text-gray-500">
-                          <span className="mr-2">{resource.file_type.toUpperCase()}</span>
+                          <span className="mr-2">
+                            {FILE_TYPE_MAP[resource.file_type] || resource.file_type.toUpperCase()}
+                          </span>
                           <span className="mx-1">•</span>
-                          <span>{resource.size}</span>
+                          <span>{formatFileSize(resource.size)}</span>
                           <span className="mx-1">•</span>
-                          <span>{formatDate(resource.upload_date)}</span>
+                          <span>{formatDate(resource.uploaded_at)}</span>
                           {resource.subject && (
                             <>
                               <span className="mx-1">•</span>
                               <span>{resource.subject}</span>
+                            </>
+                          )}
+                          {resource.college && (
+                            <>
+                              <span className="mx-1">•</span>
+                              <span className="truncate max-w-xs">{resource.college}</span>
                             </>
                           )}
                         </div>
@@ -758,7 +777,6 @@ const ResourcesPage = () => {
                       <div className="ml-4 flex-shrink-0 flex space-x-2">
                         {/* View/Open Button */}
                         <button
-                          onClick={() => handleOpenDocument(resource)}
                           disabled={!isAuthenticated}
                           className={`inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md ${
                             isAuthenticated 
@@ -766,10 +784,14 @@ const ResourcesPage = () => {
                               : 'text-gray-400 bg-gray-100 cursor-not-allowed'
                           }`}
                           title={isAuthenticated ? "Open document" : "Please log in to view documents"}
+                          onClick={() => {
+                            if (isAuthenticated && resource.file_url) {
+                              window.open(resource.file_url, '_blank', 'noopener,noreferrer');
+                            }
+                          }}
                         >
                           {isAuthenticated ? 'Open' : 'Log in to View'}
                         </button>
-
                         {/* Download Button */}
                         <a
                           href={resource.file_url}
