@@ -48,7 +48,7 @@ export const AuthContext = createContext<AuthContextType>({
 
 // ---------------- Configure axios instance ----------------
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://stackhack-live.onrender.com/api",
+  baseURL: "https://stackhack-live.onrender.com/api",
   timeout: 10000,
 });
 

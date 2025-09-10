@@ -1,64 +1,236 @@
-import { Link } from 'react-router-dom';
-import { MdEngineering } from 'react-icons/md';
+import { Link } from "react-router-dom";
+import { FaGithub, FaTwitter, FaLinkedin, FaEnvelope, FaHeart } from "react-icons/fa";
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="bg-gray-900 text-white pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-          <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <MdEngineering className="w-8 h-8 text-blue-400" />
-              <Link to="/" className="text-xl font-bold">StackHack</Link>
+    <>
+      {/* Desktop Footer (≥851px) */}
+      <footer className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Brand Section */}
+            <div className="md:col-span-1">
+              <Link to="/" className="text-2xl font-bold text-white hover:text-gray-300 transition-colors duration-200 mb-4 inline-block">
+                SᴛᴀᴄᴋHᴀᴄᴋ
+              </Link>
+              <p className="text-gray-300 mt-2 text-sm">
+                Empowering developers with resources, roadmaps, and community collaboration.
+              </p>
+              <div className="flex space-x-4 mt-4">
+                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors duration-200">
+                  <FaGithub className="w-5 h-5" />
+                </a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors duration-200">
+                  <FaTwitter className="w-5 h-5" />
+                </a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors duration-200">
+                  <FaLinkedin className="w-5 h-5" />
+                </a>
+                <a href="mailto:contact@stackhack.com" className="text-gray-300 hover:text-white transition-colors duration-200">
+                  <FaEnvelope className="w-5 h-5" />
+                </a>
+              </div>
             </div>
-            <p className="text-gray-400">
-              The ultimate resource hub for engineering students worldwide.
+
+            {/* Resources Section */}
+            <div>
+              <h3 className="text-white font-semibold mb-4 text-lg">Resources</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/resources" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">All Resources</Link>
+                </li>
+                <li>
+                  <Link to="/resources/tutorials" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Tutorials</Link>
+                </li>
+                <li>
+                  <Link to="/resources/articles" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Articles</Link>
+                </li>
+                <li>
+                  <Link to="/resources/courses" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Courses</Link>
+                </li>
+                <li>
+                  <Link to="/resources/books" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Books</Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Community Section */}
+            <div>
+              <h3 className="text-white font-semibold mb-4 text-lg">Community</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/community" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Forums</Link>
+                </li>
+                <li>
+                  <Link to="/community/discussions" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Discussions</Link>
+                </li>
+                <li>
+                  <Link to="/community/mentors" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Mentors</Link>
+                </li>
+                <li>
+                  <Link to="/community/events" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Events</Link>
+                </li>
+                <li>
+                  <Link to="/community/blogs" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Blogs</Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Support Section */}
+            <div>
+              <h3 className="text-white font-semibold mb-4 text-lg">Support</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/help" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Help Center</Link>
+                </li>
+                <li>
+                  <Link to="/contact" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Contact Us</Link>
+                </li>
+                <li>
+                  <Link to="/faq" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">FAQ</Link>
+                </li>
+                <li>
+                  <Link to="/privacy" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Privacy Policy</Link>
+                </li>
+                <li>
+                  <Link to="/terms" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Terms of Service</Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-blue-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-300 text-sm flex items-center">
+              Made with <FaHeart className="text-red-500 mx-1" /> by developers for developers
+            </p>
+            <p className="text-gray-300 text-sm mt-4 md:mt-0">
+              © {currentYear} SᴛᴀᴄᴋHᴀᴄᴋ. All rights reserved.
             </p>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Resources</h3>
-            <ul className="space-y-2">
-              <li><Link to="/question-papers" className="text-gray-400 hover:text-white">Question Papers</Link></li>
-              <li><Link to="/study-materials" className="text-gray-400 hover:text-white">Study Materials</Link></li>
-              <li><Link to="/video-lectures" className="text-gray-400 hover:text-white">Video Lectures</Link></li>
-              <li><Link to="/lab-manuals" className="text-gray-400 hover:text-white">Lab Manuals</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Community</h3>
-            <ul className="space-y-2">
-              <li><Link to="/discussions" className="text-gray-400 hover:text-white">Discussion Forums</Link></li>
-              <li><Link to="/study-groups" className="text-gray-400 hover:text-white">Study Groups</Link></li>
-              <li><Link to="/expert-qa" className="text-gray-400 hover:text-white">Expert Q&A</Link></li>
-              <li><Link to="/blog" className="text-gray-400 hover:text-white">Blog</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Contact</h3>
-            <ul className="space-y-2">
-              <li className="text-gray-400">support@StackHack.com</li>
-              <li className="text-gray-400">+91 22224578890</li>
-              <li className="text-gray-400">123 Engineering Lane, Tech City</li>
-            </ul>
+        </div>
+      </footer>
+
+      {/* Mobile Footer (≤850px) */}
+      <footer className="block md:hidden bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
+        <div className="px-4 py-8">
+          <div className="flex flex-col space-y-8">
+            {/* Brand Section */}
+            <div>
+              <Link to="/" className="text-xl font-bold text-white hover:text-gray-300 transition-colors duration-200 mb-2 inline-block">
+                SᴛᴀᴄᴋHᴀᴄᴋ
+              </Link>
+              <p className="text-gray-300 text-sm">
+                Empowering developers with resources, roadmaps, and community collaboration.
+              </p>
+              <div className="flex space-x-4 mt-4">
+                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors duration-200">
+                  <FaGithub className="w-5 h-5" />
+                </a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors duration-200">
+                  <FaTwitter className="w-5 h-5" />
+                </a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors duration-200">
+                  <FaLinkedin className="w-5 h-5" />
+                </a>
+                <a href="mailto:contact@stackhack.com" className="text-gray-300 hover:text-white transition-colors duration-200">
+                  <FaEnvelope className="w-5 h-5" />
+                </a>
+              </div>
+            </div>
+
+            {/* Accordion Sections */}
+            <div className="space-y-4">
+              {/* Resources Accordion */}
+              <details className="group">
+                <summary className="flex justify-between items-center font-semibold cursor-pointer list-none text-lg">
+                  Resources
+                  <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
+                </summary>
+                <ul className="mt-2 space-y-2 pl-4">
+                  <li>
+                    <Link to="/resources" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">All Resources</Link>
+                  </li>
+                  <li>
+                    <Link to="/resources/tutorials" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Tutorials</Link>
+                  </li>
+                  <li>
+                    <Link to="/resources/articles" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Articles</Link>
+                  </li>
+                  <li>
+                    <Link to="/resources/courses" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Courses</Link>
+                  </li>
+                  <li>
+                    <Link to="/resources/books" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Books</Link>
+                  </li>
+                </ul>
+              </details>
+
+              {/* Community Accordion */}
+              <details className="group">
+                <summary className="flex justify-between items-center font-semibold cursor-pointer list-none text-lg">
+                  Community
+                  <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
+                </summary>
+                <ul className="mt-2 space-y-2 pl-4">
+                  <li>
+                    <Link to="/community" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Forums</Link>
+                  </li>
+                  <li>
+                    <Link to="/community/discussions" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Discussions</Link>
+                  </li>
+                  <li>
+                    <Link to="/community/mentors" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Mentors</Link>
+                  </li>
+                  <li>
+                    <Link to="/community/events" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Events</Link>
+                  </li>
+                  <li>
+                    <Link to="/community/blogs" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Blogs</Link>
+                  </li>
+                </ul>
+              </details>
+
+              {/* Support Accordion */}
+              <details className="group">
+                <summary className="flex justify-between items-center font-semibold cursor-pointer list-none text-lg">
+                  Support
+                  <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
+                </summary>
+                <ul className="mt-2 space-y-2 pl-4">
+                  <li>
+                    <Link to="/help" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Help Center</Link>
+                  </li>
+                  <li>
+                    <Link to="/contact" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Contact Us</Link>
+                  </li>
+                  <li>
+                    <Link to="/faq" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">FAQ</Link>
+                  </li>
+                  <li>
+                    <Link to="/privacy" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Privacy Policy</Link>
+                  </li>
+                  <li>
+                    <Link to="/terms" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">Terms of Service</Link>
+                  </li>
+                </ul>
+              </details>
+            </div>
+
+            {/* Bottom Bar */}
+            <div className="border-t border-blue-800 pt-6 flex flex-col items-center">
+              <p className="text-gray-300 text-sm flex items-center mb-2">
+                Made with <FaHeart className="text-red-500 mx-1" /> by developers
+              </p>
+              <p className="text-gray-300 text-sm">
+                © {currentYear} SᴛᴀᴄᴋHᴀᴄᴋ. All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
-        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <a
-            href="https://www.linkedin.com/in/mahesh-r-0a109b20a/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-400 mb-4 md:mb-0 hover:text-white transition-colors"
-            style={{ textDecoration: 'none' }}
-          >
-            Copyright © 2025 stackhack.live. Developed by StackHack Team.
-          </a>
-          <div className="flex space-x-6">
-            <Link to="/terms" className="text-gray-400 hover:text-white">Terms</Link>
-            <Link to="/privacy" className="text-gray-400 hover:text-white">Privacy</Link>
-            <Link to="/cookies" className="text-gray-400 hover:text-white">Cookies</Link>
-          </div>
-        </div>
-      </div>
-    </footer>
+      </footer>
+    </>
   );
 }

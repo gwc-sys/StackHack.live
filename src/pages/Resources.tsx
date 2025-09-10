@@ -111,6 +111,7 @@ const ResourcesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [fileType, setFileType] = useState<string>('');
+  const [openResource, setOpenResource] = useState<Resource | null>(null);
 
   // Fetch resources from backend
   useEffect(() => {
@@ -672,6 +673,47 @@ const ResourcesPage = () => {
           </div>
         </div>
 
+        {/* Modal for full-size document preview */}
+        {openResource && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+            <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full mx-4 relative">
+              <button
+                className="absolute top-4 right-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                onClick={() => setOpenResource(null)}
+              >
+                Cancel
+              </button>
+              <div className="p-6">
+                <h2 className="text-xl font-bold mb-4">{openResource.title}</h2>
+                {/* PDF Viewer */}
+                {openResource.file_type === 'pdf' && (
+                  <iframe
+                    src={openResource.file_url}
+                    title={`PDF Preview - ${openResource.title}`}
+                    width="100%"
+                    height="650px"
+                    style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+                    allowFullScreen
+                  />
+                )}
+                {/* Office Viewer */}
+                {(openResource.file_type === 'docx' ||
+                  openResource.file_type === 'pptx' ||
+                  openResource.file_type === 'xlsx') && (
+                  <iframe
+                    src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(openResource.file_url)}`}
+                    title={`Office Preview - ${openResource.title}`}
+                    width="100%"
+                    height="650px"
+                    style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+                    allowFullScreen
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Resources List */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -786,7 +828,7 @@ const ResourcesPage = () => {
                           title={isAuthenticated ? "Open document" : "Please log in to view documents"}
                           onClick={() => {
                             if (isAuthenticated && resource.file_url) {
-                              window.open(resource.file_url, '_blank', 'noopener,noreferrer');
+                              setOpenResource(resource);
                             }
                           }}
                         >
