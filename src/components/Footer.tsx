@@ -104,7 +104,7 @@ export default function Footer() {
           {/* Bottom Bar */}
           <div className="border-t border-blue-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-300 text-sm flex items-center">
-              Made with <FaHeart className="text-red-500 mx-1" /> by developers for developers
+              Made with SᴛᴀᴄᴋHᴀᴄᴋ by developers for developers
             </p>
             <p className="text-gray-300 text-sm mt-4 md:mt-0">
               © {currentYear} SᴛᴀᴄᴋHᴀᴄᴋ. All rights reserved.

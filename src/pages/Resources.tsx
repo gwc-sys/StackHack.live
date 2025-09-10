@@ -86,7 +86,7 @@ const RESOURCE_TYPES = [
   'Learning Notes',
   'Lab Manual',
   'Resources',
-  'Question Paper & answer', // <-- updated name
+  'Question Paper', // <-- updated name
   'Project Report',
   'Tutorial',
   'Presentation',
@@ -257,7 +257,7 @@ const ResourcesPage = () => {
       formData.append('subject', subject);
       formData.append(
         'resource_type',
-        resourceType === 'Question Paper & answer' ? 'Question Paper' : resourceType
+        resourceType === 'Question Paper' ? 'Question Paper' : resourceType
       );
       formData.append('file_type', fileType);
 
@@ -435,6 +435,9 @@ const ResourcesPage = () => {
     return resources;
   };
 
+  // Example: Sort resources by date (descending) and take the latest 6
+  // (Removed unused latestResources variable)
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -558,99 +561,102 @@ const ResourcesPage = () => {
                 </div>
               ) : (
                 <ul className="divide-y divide-gray-200">
-                  {filteredResources.map((resource) => (
-                    <li key={resource.id} className="hover:bg-gray-50 transition-colors">
-                      <div className="px-6 py-4">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0">
-                            {getFileIcon(resource.file_type)}
-                          </div>
-                          <div className="ml-4 flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <p className="text-sm font-medium text-blue-600 truncate">
-                                {resource.title}
-                              </p>
-                              <div className="ml-2 flex-shrink-0 flex space-x-1">
-                                {resource.resource_type && (
-                                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                    {resource.resource_type}
-                                  </span>
+                  {filteredResources
+                    .sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime())
+                    .slice(0, 5)
+                    .map((resource) => (
+                      <li key={resource.id} className="hover:bg-gray-50 transition-colors">
+                        <div className="px-6 py-4">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                              {getFileIcon(resource.file_type)}
+                            </div>
+                            <div className="ml-4 flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium text-blue-600 truncate">
+                                  {resource.title}
+                                </p>
+                                <div className="ml-2 flex-shrink-0 flex space-x-1">
+                                  {resource.resource_type && (
+                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                      {resource.resource_type}
+                                    </span>
+                                  )}
+                                  {resource.branch && (
+                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                      {resource.branch}
+                                    </span>
+                                  )}
+                                  {resource.year && (
+                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                      Year {resource.year}
+                                    </span>
+                                  )}
+                                  {resource.semester && (
+                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                      Sem {resource.semester}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="mt-1 flex items-center text-sm text-gray-500">
+                                <span className="mr-2">
+                                  {FILE_TYPE_MAP[resource.file_type] || resource.file_type.toUpperCase()}
+                                </span>
+                                <span className="mx-1">•</span>
+                                <span>{formatFileSize(resource.size)}</span>
+                                <span className="mx-1">•</span>
+                                <span>{formatDate(resource.uploaded_at)}</span>
+                                {resource.subject && (
+                                  <>
+                                    <span className="mx-1">•</span>
+                                    <span>{resource.subject}</span>
+                                  </>
                                 )}
-                                {resource.branch && (
-                                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    {resource.branch}
-                                  </span>
-                                )}
-                                {resource.year && (
-                                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                    Year {resource.year}
-                                  </span>
-                                )}
-                                {resource.semester && (
-                                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                                    Sem {resource.semester}
-                                  </span>
+                                {resource.college && (
+                                  <>
+                                    <span className="mx-1">•</span>
+                                    <span className="truncate max-w-xs">{resource.college}</span>
+                                  </>
                                 )}
                               </div>
-                            </div>
-                            <div className="mt-1 flex items-center text-sm text-gray-500">
-                              <span className="mr-2">
-                                {FILE_TYPE_MAP[resource.file_type] || resource.file_type.toUpperCase()}
-                              </span>
-                              <span className="mx-1">•</span>
-                              <span>{formatFileSize(resource.size)}</span>
-                              <span className="mx-1">•</span>
-                              <span>{formatDate(resource.uploaded_at)}</span>
-                              {resource.subject && (
-                                <>
-                                  <span className="mx-1">•</span>
-                                  <span>{resource.subject}</span>
-                                </>
-                              )}
-                              {resource.college && (
-                                <>
-                                  <span className="mx-1">•</span>
-                                  <span className="truncate max-w-xs">{resource.college}</span>
-                                </>
+                              {resource.description && (
+                                <p className="mt-1 text-sm text-gray-500 truncate">
+                                  {resource.description}
+                                </p>
                               )}
                             </div>
-                            {resource.description && (
-                              <p className="mt-1 text-sm text-gray-500 truncate">
-                                {resource.description}
-                              </p>
-                            )}
-                          </div>
-                          <div className="ml-4 flex-shrink-0 flex space-x-2">
-                            <button
-                              disabled={!isAuthenticated}
-                              className={`inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md ${
-                                isAuthenticated 
-                                  ? 'text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-                                  : 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                              }`}
-                              title={isAuthenticated ? "Open document" : "Please log in to view documents"}
-                              onClick={() => {
-                                if (isAuthenticated && resource.file_url) {
-                                  setOpenResource(resource);
-                                }
-                              }}
-                            >
-                              {isAuthenticated ? 'Open' : 'Log in to View'}
-                            </button>
-                            {isSuperUser && (
+                            <div className="ml-4 flex-shrink-0 flex space-x-2">
                               <button
-                                onClick={() => handleDeleteResource(resource.id)}
-                                className="inline-flex items-center px-3 py-1 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                title="Delete resource"
+                                disabled={!isAuthenticated}
+                                className={`inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md ${
+                                  isAuthenticated 
+                                    ? 'text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                                    : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                                }`}
+                                title={isAuthenticated ? "Open document" : "Please log in to view documents"}
+                                onClick={() => {
+                                  if (isAuthenticated && resource.file_url) {
+                                    setOpenResource(resource);
+                                  }
+                                }}
                               >
-                                Delete
+                                {isAuthenticated ? 'Open' : 'Log in to View'}
                               </button>
-                            )}
+                              {isSuperUser && (
+                                <button
+                                  onClick={() => handleDeleteResource(resource.id)}
+                                  className="inline-flex items-center px-3 py-1 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                  title="Delete resource"
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </li>
-                  ))}
+                      </li>
+                    ))}
                 </ul>
               )}
             </div>
