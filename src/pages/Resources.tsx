@@ -835,13 +835,13 @@ const ResourcesPage = () => {
                           {isAuthenticated ? 'Open' : 'Log in to View'}
                         </button>
                         {/* Download Button */}
-                        <a
+                        {/* <a
                           href={resource.file_url}
                           download
                           className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                           Download
-                        </a>
+                        </a> */}
 
                         {/* Delete Button - Only for Super Users */}
                         {isSuperUser && (
