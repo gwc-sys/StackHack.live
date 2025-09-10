@@ -255,7 +255,10 @@ const ResourcesPage = () => {
       formData.append('year', year);
       formData.append('semester', semester);
       formData.append('subject', subject);
-      formData.append('resource_type', resourceType);
+      formData.append(
+        'resource_type',
+        resourceType === 'Question Paper & answer' ? 'Question Paper' : resourceType
+      );
       formData.append('file_type', fileType);
 
       const response = await axios.post(`${API_BASE_URL}/upload/`, formData, {
