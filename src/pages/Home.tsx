@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
+
+import {
   FaStar, FaSearch, FaRobot, FaTrophy, FaCertificate,
   FaCode, FaRoad
 } from 'react-icons/fa';
@@ -220,10 +221,10 @@ const Home = () => {
                   Explore Roadmaps
                 </Link>
                 <Link 
-                  to="/challenges" 
+                  to="/dsa-challenges" 
                   className="bg-transparent border-2 border-gray-400 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
                 >
-                  Try AI Challenges
+                 Try AI-generated DSA Challenges:
                 </Link>
               </div>
             </div>
