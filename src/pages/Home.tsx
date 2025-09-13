@@ -280,18 +280,29 @@ const Home = () => {
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {features.map((feature, index) => (
-            <div 
-              key={index} 
-              className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-transparent hover:border-gray-700 group"
-            >
-              <div className={`flex justify-center mb-6 w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.gradient} items-center mx-auto group-hover:scale-110 transition-transform duration-300`}>
-                {feature.icon}
+          {features.map((feature, index) => {
+            const card = (
+              <div 
+                className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-transparent hover:border-gray-700 group"
+              >
+                <div className={`flex justify-center mb-6 w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.gradient} items-center mx-auto group-hover:scale-110 transition-transform duration-300`}>
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-center text-gray-800 group-hover:text-gray-900">{feature.title}</h3>
+                <p className="text-gray-600 text-center">{feature.description}</p>
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-center text-gray-800 group-hover:text-gray-900">{feature.title}</h3>
-              <p className="text-gray-600 text-center">{feature.description}</p>
-            </div>
-          ))}
+            );
+
+            if (feature.title === 'DSA Challenges') {
+              return (
+                <Link key={index} to="/dsa-challenges" className="block">
+                  {card}
+                </Link>
+              );
+            }
+
+            return <div key={index}>{card}</div>;
+          })}
         </div>
       </div>
 

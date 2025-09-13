@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './pages/AuthContext';
+import AppProvider from './DSAChallenges/DSAchallenges';
 import Layout from './components/Layout.tsx';
 import Home from './pages/Home';
 import About from './pages/About';
@@ -15,32 +16,35 @@ import EventsHackathons from './pages/EventsHackathons';
 import FrontendRoadmapsPage from './RoadmapsPages/frontendRoadmapsPage.tsx';
 import Collaboration from './pages/Collaboration';
 import UserProfile from './pages/UserProfile';
-import DSAChallengesWithDjango from './DSAChallenges/DSAchallenges';
 
-export default function App() {
+function MainApp() {
   return (
-    <AuthProvider>
-      <Router>
-        <Header />
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/colleges" element={<Colleges />} />
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/community" element={<JoinCommunity />} />
-            <Route path="/universities" element={<Universities />} />
-            <Route path="/resources" element={<Resources />} />
-            <Route path="/roadmaps" element={<Roadmaps />} />
-            <Route path="/events-hackathons" element={<EventsHackathons />} />
-            <Route path="/roadmaps/role/frontend" element={<FrontendRoadmapsPage />} />
-            <Route path="/collaboration" element={<Collaboration />} />
-            <Route path="/profile" element={<UserProfile />} />
-            <Route path="/dsa-challenges" element={<DSAChallengesWithDjango />} />
-          </Routes>
-        </Layout>
-      </Router>
-    </AuthProvider>
+    
+      <AuthProvider>
+        <Router>
+          <Header />
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/colleges" element={<Colleges />} />
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/community" element={<JoinCommunity />} />
+              <Route path="/universities" element={<Universities />} />
+              <Route path="/resources" element={<Resources />} />
+              <Route path="/roadmaps" element={<Roadmaps />} />
+              <Route path="/events-hackathons" element={<EventsHackathons />} />
+              <Route path="/roadmaps/role/frontend" element={<FrontendRoadmapsPage />} />
+              <Route path="/collaboration" element={<Collaboration />} />
+              <Route path="/profile" element={<UserProfile />} />
+              <Route path="/dsa-challenges" element={<AppProvider />} />
+            </Routes>
+          </Layout>
+        </Router>
+      </AuthProvider>
+    
   );
 }
+
+export default MainApp;
