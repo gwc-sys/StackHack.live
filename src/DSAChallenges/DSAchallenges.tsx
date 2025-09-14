@@ -17,7 +17,7 @@ import { useAuth } from "../pages/AuthContext";
  */
 
 // ----------------------------- Configuration --------------------------
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 // ----------------------------- Types ---------------------------------
 type Difficulty = "Easy" | "Medium" | "Hard";
