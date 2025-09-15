@@ -101,13 +101,13 @@ const apiPOST = async <T = any>(path: string, body: any) => {
 };
 
 // API Endpoint Functions
-const fetchProblems = async (): Promise<Problem[]> => await apiGET<Problem[]>("/api/problems/");
-const fetchProblemDetail = async (id: string): Promise<Problem> => await apiGET<Problem>(`/api/problems/${encodeURIComponent(id)}/`);
-const createProblem = async (payload: Partial<Problem>): Promise<Problem> => await apiPOST<Problem>("/api/problems/", payload);
-const runCode = async (problemId: string, code: string): Promise<RunResult> => await apiPOST<RunResult>("/api/run/", { problem_id: problemId, code });
-const submitCode = async (problemId: string, code: string): Promise<RunResult> => await apiPOST<RunResult>("/api/submit/", { problem_id: problemId, code });
-const fetchProgress = async (): Promise<UserProgress[]> => await apiGET<UserProgress[]>("/api/progress/");
-const postProgress = async (payload: any) => await apiPOST("/api/progress/", payload);
+const fetchProblems = async (): Promise<Problem[]> => await apiGET<Problem[]>("/problems/");
+const fetchProblemDetail = async (id: string): Promise<Problem> => await apiGET<Problem>(`/problems/${encodeURIComponent(id)}/`);
+const createProblem = async (payload: Partial<Problem>): Promise<Problem> => await apiPOST<Problem>("/problems/", payload);
+const runCode = async (problemId: string, code: string): Promise<RunResult> => await apiPOST<RunResult>("/run/", { problem_id: problemId, code });
+const submitCode = async (problemId: string, code: string): Promise<RunResult> => await apiPOST<RunResult>("/submit/", { problem_id: problemId, code });
+const fetchProgress = async (): Promise<UserProgress[]> => await apiGET<UserProgress[]>("/progress/");
+const postProgress = async (payload: any) => await apiPOST("/progress/", payload);
 
 // ----------------------------- UI Helpers -----------------------------
 const difficultyBadge = (d: Difficulty) => {
