@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
 import {
   FaStar, FaSearch, FaRobot, FaTrophy, FaCertificate,
-  FaCode, FaRoad
+  FaCode, FaRoad, FaPlay, FaTerminal, FaCog, FaChevronRight
 } from 'react-icons/fa';
-import { SiGooglescholar } from 'react-icons/si';
+import { SiGooglescholar, SiTypescript, SiJavascript } from 'react-icons/si';
 
 type Feature = {
   icon: React.ReactElement;
@@ -38,13 +37,211 @@ type Challenge = {
 };
 
 const Home = () => {
-  // const [rating, setRating] = useState<number>(0);
-  // const [hover, setHover] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [chatbotOpen, setChatbotOpen] = useState<boolean>(false);
   const [chatMessage, setChatMessage] = useState<string>('');
   const [chatMessages, setChatMessages] = useState<Array<{text: string, isUser: boolean}>>([]);
   const [activeTab, setActiveTab] = useState<string>('roadmaps');
+  const [activeFile, setActiveFile] = useState<string>('game.ts');
+  const [codeOutput, setCodeOutput] = useState<string[]>([]);
+  const [isCompiling, setIsCompiling] = useState<boolean>(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // 3D canvas effect (updated with color and more code snippets)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resizeCanvas = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const codeElements: Array<{
+      x: number;
+      y: number;
+      z: number;
+      text: string;
+      speed: number;
+      size: number;
+      color: string;
+    }> = [];
+
+    const codeSnippets = [
+      "function", "const", "return", "if", "else", "for", "while", 
+      "class", "import", "export", "div", "span", "component", 
+      "useState", "useEffect", "interface", "type", "string", "number",
+      "boolean", "void", "=>", "{", "}", "(", ")", "[", "]", "<", ">"
+    ];
+
+    const colors = [
+      "rgba(100, 200, 255, 0.8)", 
+      "rgba(150, 220, 255, 0.7)", 
+      "rgba(200, 230, 255, 0.6)",
+      "rgba(120, 180, 255, 0.7)"
+    ];
+
+    for (let i = 0; i < 50; i++) {
+      codeElements.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        z: Math.random() * 1000,
+        text: codeSnippets[Math.floor(Math.random() * codeSnippets.length)],
+        speed: 0.5 + Math.random() * 2,
+        size: 10 + Math.random() * 10,
+        color: colors[Math.floor(Math.random() * colors.length)]
+      });
+    }
+
+    let animationFrameId: number;
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = 'rgba(100, 100, 200, 0.1)';
+      ctx.lineWidth = 1;
+
+      for (let x = 0; x < canvas.width; x += 30) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 30) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      codeElements.forEach((element) => {
+        element.z -= element.speed;
+        if (element.z < 0) {
+          element.z = 1000;
+          element.x = Math.random() * canvas.width;
+          element.y = Math.random() * canvas.height;
+        }
+        const scale = 1000 / (1000 + element.z);
+        const x = (element.x - canvas.width / 2) * scale + canvas.width / 2;
+        const y = (element.y - canvas.height / 2) * scale + canvas.height / 2;
+        ctx.font = `${element.size * scale}px 'Fira Code', monospace`;
+        ctx.fillStyle = element.color;
+        ctx.fillText(element.text, x, y);
+      });
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  // Simulate code compilation
+  const compileCode = () => {
+    setIsCompiling(true);
+    setCodeOutput([]);
+    setTimeout(() => {
+      setCodeOutput(prev => [...prev, "> tsc game.ts --watch"]);
+    }, 500);
+    setTimeout(() => {
+      setCodeOutput(prev => [...prev, "Compilation started..."]);
+    }, 1000);
+    setTimeout(() => {
+      setCodeOutput(prev => [...prev, "Checking types..."]);
+    }, 1500);
+    setTimeout(() => {
+      setCodeOutput(prev => [...prev, "No issues found."]);
+      setCodeOutput(prev => [...prev, "Compilation completed successfully."]);
+      setIsCompiling(false);
+    }, 2500);
+  };
+
+  // Editor files and content
+  const editorFiles = [
+    { name: 'game.ts', icon: <SiTypescript className="text-blue-500" /> },
+    { name: 'player.ts', icon: <SiTypescript className="text-blue-500" /> },
+    { name: 'utils.js', icon: <SiJavascript className="text-yellow-500" /> },
+  ];
+
+  const fileContents = {
+    'game.ts': `import { Player } from './player';
+import { updatePlayerVelocity } from './utils';
+
+export class Game {
+  private player: Player;
+  private cursors: any;
+  
+  constructor() {
+    this.player = new Player();
+    this.cursors = {
+      left: { isDown: false },
+      right: { isDown: false },
+      up: { isDown: false },
+      down: { isDown: false }
+    };
+  }
+  
+  update() {
+    // Update player velocity based on input
+    updatePlayerVelocity(this.player, this.cursors);
+    
+    // Additional game logic here
+    this.player.update();
+  }
+}`,
+    'player.ts': `export class Player {
+  private x: number = 0;
+  private y: number = 0;
+  private velocityX: number = 0;
+  private velocityY: number = 0;
+  
+  setVelocityX(velocity: number) {
+    this.velocityX = velocity;
+  }
+  
+  setVelocityY(velocity: number) {
+    this.velocityY = velocity;
+  }
+  
+  update() {
+    this.x += this.velocityX;
+    this.y += this.velocityY;
+  }
+  
+  getPosition() {
+    return { x: this.x, y: this.y };
+  }
+}`,
+    'utils.js': `export function updatePlayerVelocity(player, cursors) {
+  // Horizontal movement
+  if (cursors.left.isDown) {
+    player.setVelocityX(-200);
+  } else if (cursors.right.isDown) {
+    player.setVelocityX(200);
+  } else {
+    player.setVelocityX(0);
+  }
+  
+  // Vertical movement
+  if (cursors.up.isDown) {
+    player.setVelocityY(-200);
+  } else if (cursors.down.isDown) {
+    player.setVelocityY(200);
+  } else {
+    player.setVelocityY(0);
+  }
+}`
+  };
 
   const features: Feature[] = [
     {
@@ -157,25 +354,27 @@ const Home = () => {
   const handleChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatMessage.trim()) return;
-    
-    // Add user message
+
     setChatMessages(prev => [...prev, { text: chatMessage, isUser: true }]);
-    
-    // Simulate AI response
     setTimeout(() => {
-      setChatMessages(prev => [...prev, { 
-        text: "I can help you with learning resources, code explanations, or roadmap guidance. What specific topic are you working on?", 
-        isUser: false 
+      setChatMessages(prev => [...prev, {
+        text: "I can help you with learning resources, code explanations, or roadmap guidance. What specific topic are you working on?",
+        isUser: false
       }]);
     }, 1000);
-    
+
     setChatMessage('');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Hero Section */}
+      {/* Hero Section with 3D Coding UI */}
       <div className="relative bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white pt-32 pb-24 overflow-hidden">
+        {/* 3D Canvas Background */}
+        <canvas 
+          ref={canvasRef} 
+          className="absolute inset-0 w-full h-full opacity-30"
+        />
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900"></div>
         </div>
@@ -184,7 +383,6 @@ const Home = () => {
           <div className="absolute top-40 right-20 w-80 h-80 bg-purple-500 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
           <div className="absolute bottom-20 left-1/4 w-72 h-72 bg-cyan-500 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
-        
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -216,28 +414,125 @@ const Home = () => {
               <div className="flex flex-wrap gap-4">
                 <Link 
                   to="/roadmaps" 
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-cyan-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-cyan-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105 flex items-center"
                 >
-                  Explore Roadmaps
+                  Explore Roadmaps <FaChevronRight className="ml-2" />
                 </Link>
                 <Link 
                   to="/dsa-challenges" 
-                  className="bg-transparent border-2 border-gray-400 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                  className="bg-transparent border-2 border-gray-400 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-all shadow-md hover:shadow-lg transform hover:scale-105 flex items-center"
                 >
-                 Try AI-generated DSA Challenges:
+                  Try AI-generated DSA Challenges: <FaChevronRight className="ml-2" />
                 </Link>
               </div>
             </div>
             <div className="hidden lg:block">
               <div className="relative">
-                <div className="absolute -top-8 -left-8 w-64 h-64 bg-cyan-300 rounded-lg opacity-20 animate-pulse"></div>
-                <div className="absolute -bottom-8 -right-8 w-64 h-64 bg-blue-300 rounded-lg opacity-20 animate-pulse delay-300"></div>
-                <div className="relative bg-gray-100 rounded-xl shadow-2xl overflow-hidden transform hover:scale-105 transition-transform duration-300 border-2 border-white/20">
-                  <img
-                    src="https://images.unsplash.com/photo-1534665482403-a909d0d97c67?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                    alt="AI and coding interface"
-                    className="w-full h-auto object-cover"
-                  />
+                {/* 3D Coding Interface Visualization */}
+                <div className="bg-gray-900 rounded-xl shadow-2xl overflow-hidden transform perspective-1000 rotate-x-5 rotate-y-5 hover:rotate-x-0 hover:rotate-y-0 transition-transform duration-700 border-2 border-cyan-500/30">
+                  {/* Editor Header */}
+                  <div className="p-3 bg-gray-800 border-b border-gray-700 flex items-center justify-between">
+                    <div className="flex space-x-1">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    </div>
+                    <div className="flex space-x-2">
+                      {editorFiles.map((file) => (
+                        <button
+                          key={file.name}
+                          onClick={() => setActiveFile(file.name)}
+                          className={`px-3 py-1 rounded-t-md text-xs flex items-center space-x-1 ${
+                            activeFile === file.name 
+                              ? 'bg-gray-900 text-cyan-400 border-t border-cyan-500' 
+                              : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                          }`}
+                        >
+                          {file.icon}
+                          <span>{file.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button 
+                        onClick={compileCode}
+                        disabled={isCompiling}
+                        className="px-3 py-1 bg-green-600 hover:bg-green-700 rounded-md text-xs flex items-center disabled:opacity-50"
+                      >
+                        <FaPlay className="mr-1" size={10} /> Run
+                      </button>
+                      <button className="text-gray-400 hover:text-gray-200">
+                        <FaCog />
+                      </button>
+                    </div>
+                  </div>
+                  {/* Code Editor */}
+                  <div className="font-mono text-sm bg-gray-900 h-80 overflow-auto">
+                    <div className="flex">
+                      {/* Line numbers */}
+                      <div className="text-gray-500 text-right pr-3 pl-3 py-2 select-none border-r border-gray-700">
+                        {fileContents[activeFile as keyof typeof fileContents].split('\n').map((_, i) => (
+                          <div key={i} className="leading-6">{i + 1}</div>
+                        ))}
+                      </div>
+                      {/* Code content */}
+                      <div className="pl-3 py-2 flex-1">
+                        {fileContents[activeFile as keyof typeof fileContents].split('\n').map((line, i) => (
+                          <div key={i} className="leading-6 whitespace-pre">
+                            {line.includes('//') ? (
+                              <>
+                                <span className="text-gray-300">{line.split('//')[0]}</span>
+                                <span className="text-green-500">//{line.split('//')[1]}</span>
+                              </>
+                            ) : line.includes('import') || line.includes('from') ? (
+                              <span className="text-cyan-400">{line}</span>
+                            ) : line.includes('class') || line.includes('function') ? (
+                              <span className="text-purple-400">{line}</span>
+                            ) : line.includes('if') || line.includes('else') ? (
+                              <span className="text-purple-300">{line}</span>
+                            ) : line.includes('return') ? (
+                              <span className="text-red-400">{line}</span>
+                            ) : line.includes('const') || line.includes('let') || line.includes('private') ? (
+                              <span className="text-blue-400">{line}</span>
+                            ) : line.includes('{') || line.includes('}') ? (
+                              <span className="text-yellow-400">{line}</span>
+                            ) : (
+                              <span className="text-gray-300">{line}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Output Terminal */}
+                  <div className="border-t border-gray-700">
+                    <div className="flex items-center px-4 py-2 bg-gray-800 text-gray-400 text-xs">
+                      <FaTerminal className="mr-2" />
+                      OUTPUT
+                    </div>
+                    <div className="p-3 bg-black text-green-400 font-mono text-xs h-24 overflow-auto">
+                      {codeOutput.length > 0 ? (
+                        codeOutput.map((line, i) => (
+                          <div key={i} className="whitespace-pre">{line}</div>
+                        ))
+                      ) : (
+                        <div className="text-gray-500">// Code output will appear here after compilation</div>
+                      )}
+                      {isCompiling && (
+                        <div className="inline-block animate-pulse">▋</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {/* Floating code elements for 3D effect */}
+                <div className="absolute -top-4 -left-4 w-24 h-24 bg-blue-500/20 rounded-lg backdrop-blur-sm border border-blue-500/30 animate-float flex items-center justify-center">
+                  <div className="text-blue-300 text-xs text-center">Player.ts</div>
+                </div>
+                <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-purple-500/20 rounded-lg backdrop-blur-sm border border-purple-500/30 animate-float animation-delay-2000 flex items-center justify-center">
+                  <div className="text-purple-300 text-xs text-center">Game.ts</div>
+                </div>
+                <div className="absolute top-1/2 -right-6 w-16 h-16 bg-cyan-500/20 rounded-lg backdrop-blur-sm border border-cyan-500/30 animate-float animation-delay-3000 flex items-center justify-center">
+                  <div className="text-cyan-300 text-xs text-center">Utils.js</div>
                 </div>
               </div>
             </div>
@@ -282,7 +577,7 @@ const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {features.map((feature, index) => {
             const card = (
-              <div 
+              <div
                 className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-transparent hover:border-gray-700 group"
               >
                 <div className={`flex justify-center mb-6 w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.gradient} items-center mx-auto group-hover:scale-110 transition-transform duration-300`}>
@@ -402,8 +697,8 @@ const Home = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-300 border-t-4 border-blue-500"
             >
               <div className="flex mb-4">
@@ -438,21 +733,21 @@ const Home = () => {
           <div className="absolute top-40 right-20 w-80 h-80 bg-purple-500 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
           <div className="absolute bottom-20 left-1/4 w-72 h-72 bg-cyan-500 rounded-full filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6">Start Your AI-Powered Learning Journey Today</h2>
           <p className="text-xl mb-8 max-w-3xl mx-auto text-blue-100">
             Join thousands of developers and students accelerating their careers with our platform.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link 
-              to="/signup" 
+            <Link
+              to="/signup"
               className="bg-white text-blue-700 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               Get Started for Free
             </Link>
-            <Link 
-              to="/challenges" 
+            <Link
+              to="/challenges"
               className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               Try Sample Challenges
@@ -470,7 +765,7 @@ const Home = () => {
                 <FaRobot className="w-5 h-5 mr-2" />
                 <span className="font-semibold">AI Learning Assistant</span>
               </div>
-              <button 
+              <button
                 onClick={() => setChatbotOpen(false)}
                 className="text-white hover:text-gray-200"
               >
@@ -479,14 +774,14 @@ const Home = () => {
                 </svg>
               </button>
             </div>
-            
+
             <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
               <div className="mb-4 flex">
                 <div className="bg-blue-100 rounded-lg p-3 max-w-xs">
                   <p className="text-gray-800">Hi there! I'm your AI learning assistant. How can I help you today?</p>
                 </div>
               </div>
-              
+
               {chatMessages.map((msg, index) => (
                 <div key={index} className={`mb-4 flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
                   <div className={`rounded-lg p-3 max-w-xs ${msg.isUser ? 'bg-blue-500 text-white' : 'bg-blue-100 text-gray-800'}`}>
@@ -495,7 +790,7 @@ const Home = () => {
                 </div>
               ))}
             </div>
-            
+
             <form onSubmit={handleChatSubmit} className="p-3 border-t border-gray-200">
               <div className="flex">
                 <input

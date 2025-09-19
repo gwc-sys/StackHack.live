@@ -49,14 +49,6 @@ const NotFound: React.FC = () => {
             🔙 Previous Orbit
           </button>
         </div>
-
-        {/* Cosmic message */}
-        {/* <div className="mt-12 p-4 bg-gray-800 rounded-lg border border-purple-500">
-          <p className="text-sm text-gray-300">
-            "The only way to discover the limits of the possible is to go beyond them into the impossible."<br />
-            <span className="text-purple-400">- Arthur C. Clarke</span>
-          </p>
-        </div> */}
       </div>
     </div>
   );

@@ -1126,7 +1126,7 @@ const ResourcesPage = () => {
                     style={{ border: '1px solid #ccc', borderRadius: '8px' }}
                     allowFullScreen
                   />
-                )}
+              )}
               </div>
             </div>
           </div>
@@ -1135,5 +1135,4 @@ const ResourcesPage = () => {
     </div>
   );
 };
-
 export default ResourcesPage;
