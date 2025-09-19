@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FaGithub, FaTwitter, FaLinkedin, FaEnvelope, FaHeart } from "react-icons/fa";
+import { FaGithub, FaTwitter, FaLinkedin, FaEnvelope } from "react-icons/fa";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -7,7 +7,7 @@ export default function Footer() {
   return (
     <>
       {/* Desktop Footer (≥851px) */}
-      <footer className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
+      <footer className="hidden md:block bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Brand Section */}
@@ -104,7 +104,7 @@ export default function Footer() {
           {/* Bottom Bar */}
           <div className="border-t border-blue-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-300 text-sm flex items-center">
-              Made with SᴛᴀᴄᴋHᴀᴄᴋ by developers for developers
+              Crafted with SᴛᴀᴄᴋHɑᴄᴋ · By Developers
             </p>
             <p className="text-gray-300 text-sm mt-4 md:mt-0">
               © {currentYear} SᴛᴀᴄᴋHᴀᴄᴋ. All rights reserved.
@@ -147,7 +147,11 @@ export default function Footer() {
               <details className="group">
                 <summary className="flex justify-between items-center font-semibold cursor-pointer list-none text-lg">
                   Resources
-                  <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
+                    <span className="transition-transform duration-200 group-open:rotate-180">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="inline w-4 h-4">
+                        <path d="M4 6l4 4 4-4" />
+                      </svg>
+                    </span>
                 </summary>
                 <ul className="mt-2 space-y-2 pl-4">
                   <li>
@@ -172,7 +176,11 @@ export default function Footer() {
               <details className="group">
                 <summary className="flex justify-between items-center font-semibold cursor-pointer list-none text-lg">
                   Community
-                  <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
+                    <span className="transition-transform duration-200 group-open:rotate-180">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="inline">
+                      <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+                    </svg>
+                    </span>
                 </summary>
                 <ul className="mt-2 space-y-2 pl-4">
                   <li>
@@ -197,7 +205,11 @@ export default function Footer() {
               <details className="group">
                 <summary className="flex justify-between items-center font-semibold cursor-pointer list-none text-lg">
                   Support
-                  <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
+                    <span className="transition-transform duration-200 group-open:rotate-180">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="inline">
+                      <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+                      </svg>
+                    </span>
                 </summary>
                 <ul className="mt-2 space-y-2 pl-4">
                   <li>
@@ -222,7 +234,7 @@ export default function Footer() {
             {/* Bottom Bar */}
             <div className="border-t border-blue-800 pt-6 flex flex-col items-center">
               <p className="text-gray-300 text-sm flex items-center mb-2">
-                Made with <FaHeart className="text-red-500 mx-1" /> by developers
+               Crafted with SᴛᴀᴄᴋHɑᴄᴋ · By Developers
               </p>
               <p className="text-gray-300 text-sm">
                 © {currentYear} SᴛᴀᴄᴋHᴀᴄᴋ. All rights reserved.

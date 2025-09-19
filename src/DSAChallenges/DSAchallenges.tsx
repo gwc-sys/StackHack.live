@@ -804,7 +804,7 @@ const CommunityPage: React.FC<{ onOpenProblem: (id: string) => void }> = ({ onOp
 
 // --- Top Navigation Bar ---
 const TopNav: React.FC<{ onNavigate: (page: string) => void; current: string }> = ({ onNavigate, current }) => (
-  <nav className="w-full bg-white border-b shadow-sm flex items-center px-4 py-2 gap-2">
+  <nav className="w-full bg-white border-b shadow-sm flex flex-wrap items-center justify-center px-4 py-3 gap-3 mb-6 rounded-b-xl">
     {[
       { label: "Dashboard", page: "dashboard" },
       { label: "AI Challenges", page: "ai" },
@@ -817,9 +817,10 @@ const TopNav: React.FC<{ onNavigate: (page: string) => void; current: string }> 
         onClick={() => onNavigate(page)}
         className={`px-4 py-2 rounded-lg font-medium transition-colors
           ${current === page
-            ? "bg-indigo-600 text-white"
+            ? "bg-indigo-600 text-white shadow"
             : "bg-gray-100 text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"}
         `}
+        style={{ minWidth: 120 }}
       >
         {label}
       </button>
@@ -895,10 +896,12 @@ export default function DSArenaApp(): JSX.Element {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* If you have a header, render it here */}
+      {/* <Header /> */}
       {/* Top navigation bar */}
       <TopNav onNavigate={setPage} current={page} />
       {/* Main content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-2 py-4">
         <main>
           {page === 'dashboard' && (
             <>

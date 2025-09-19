@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // <-- import useNavigate
 import { useAuth } from "./AuthContext";
 
 const SignIn = () => {
   const [loginIdentifier, setLoginIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(""); // <-- success message state
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
+  const navigate = useNavigate(); // <-- initialize navigate
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +20,10 @@ const SignIn = () => {
 
     try {
       await login(loginIdentifier, password);
-      setSuccess("Successfully logged in!"); // <-- set success message
+      setSuccess("Successfully logged in!");
+      setTimeout(() => {
+        navigate("/"); // <-- redirect to homepage
+      }, 1000); // 1 second delay to show success message
     } catch (err: any) {
       setError(err.response?.data?.error || "Sign in failed. Please try again.");
     } finally {
@@ -36,7 +40,8 @@ const SignIn = () => {
             SᴛᴀᴄᴋHᴀᴄᴋ
           </h1>
           <p className="text-gray-500">
-            Welcome Back in <span className="font-semibold">SᴛᴀᴄᴋHᴀᴄᴋ</span>
+            Welcome Back in{" "}
+            <span className="font-semibold">SᴛᴀᴄᴋHᴀᴄᴋ</span>
           </p>
         </div>
 
