@@ -89,8 +89,8 @@ export default function Header() {
             <nav className="flex space-x-6">
               <Link to="/" className="text-white hover:text-gray-300 font-medium">Home</Link>
               <Link to="/resources" className="text-white hover:text-gray-300 font-medium">Resources</Link>
-              <Link to="/roadmaps" className="text-white hover:text-gray-300 font-medium">Roadmaps</Link>
-              <Link to="/community" className="text-white hover:text-gray-300 font-medium">Community</Link>
+              <Link to="/DevCourses" className="text-white hover:text-gray-300 font-medium">DevCourses</Link>
+              <Link to="/QuickDSA" className="text-white hover:text-gray-300 font-medium">QuickDSA</Link>
               <Link to="/collaboration" className="text-white hover:text-gray-300 font-medium">Collaboration</Link>
               <Link to="/events-hackathons" className="text-white hover:text-gray-300 font-medium">Hackathons</Link>
             </nav>
@@ -196,8 +196,8 @@ export default function Header() {
                 <nav className="px-6 py-6 flex flex-col space-y-4">
                   <Link to="/" onClick={handleLinkClick} className="text-white hover:text-gray-300">Home</Link>
                   <Link to="/resources" onClick={handleLinkClick} className="text-white hover:text-gray-300">Resources</Link>
-                  <Link to="/roadmaps" onClick={handleLinkClick} className="text-white hover:text-gray-300">Roadmaps</Link>
-                  <Link to="/community" onClick={handleLinkClick} className="text-white hover:text-gray-300">Community</Link>
+                  <Link to="/DevCourses" onClick={handleLinkClick} className="text-white hover:text-gray-300">DevCourses</Link>
+                  <Link to="/QuickDSA" onClick={handleLinkClick} className="text-white hover:text-gray-300">QuickDSA</Link>
                   <Link to="/collaboration" onClick={handleLinkClick} className="text-white hover:text-gray-300">Collaboration</Link>
                   <Link to="/events-hackathons" onClick={handleLinkClick} className="text-white hover:text-gray-300">Hackathons</Link>
                 </nav>

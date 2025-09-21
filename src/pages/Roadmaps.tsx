@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-
-// Import icons (you can use react-icons or custom SVGs)
 import { FaCode, FaLaptopCode, FaProjectDiagram, FaBook, FaVideo, FaSearch, FaRocket, FaUsers, FaStar, FaRegClock } from 'react-icons/fa';
 import { SiJavascript, SiPython, SiReact, SiNodedotjs, SiDocker, SiKubernetes, SiPostgresql, SiHiveBlockchain } from 'react-icons/si';
 
@@ -18,36 +16,33 @@ type Roadmap = {
   icon?: React.ReactNode;
 };
 
-const Roadmaps = () => {
+const Roadmaps: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<'role' | 'skill' | 'project' | 'guide' | 'video'>('role');
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
-  // Icon mapping function
   const getIconForRoadmap = (title: string) => {
     const iconMap: Record<string, React.ReactNode> = {
-      'Frontend': <FaLaptopCode className="text-blue-500" size={24} />,
-      'Backend': <FaCode className="text-green-500" size={24} />,
-      'DevOps': <SiDocker className="text-purple-500" size={24} />,
-      'Full Stack': <FaCode className="text-yellow-500" size={24} />,
-      'AI Engineer': <FaRocket className="text-pink-500" size={24} />,
-      'Data Analyst': <FaBook className="text-red-500" size={24} />,
-      'Blockchain': <SiHiveBlockchain className="text-indigo-500" size={24} />,
-      'Cyber Security': <FaUsers className="text-cyan-500" size={24} />,
-      'React': <SiReact className="text-blue-400" size={24} />,
-      'JavaScript': <SiJavascript className="text-yellow-400" size={24} />,
-      'Python': <SiPython className="text-blue-600" size={24} />,
-      'Node.js': <SiNodedotjs className="text-green-600" size={24} />,
-      'Docker': <SiDocker className="text-blue-400" size={24} />,
-      'Kubernetes': <SiKubernetes className="text-blue-600" size={24} />,
-      'PostgreSQL': <SiPostgresql className="text-blue-700" size={24} />,
+      'Frontend': <FaLaptopCode className="text-blue-400" size={24} />,
+      'Backend': <FaCode className="text-green-400" size={24} />,
+      'DevOps': <SiDocker className="text-purple-400" size={24} />,
+      'Full Stack': <FaCode className="text-yellow-400" size={24} />,
+      'AI Engineer': <FaRocket className="text-pink-400" size={24} />,
+      'Data Analyst': <FaBook className="text-red-400" size={24} />,
+      'Blockchain': <SiHiveBlockchain className="text-indigo-400" size={24} />,
+      'Cyber Security': <FaUsers className="text-cyan-400" size={24} />,
+      'React': <SiReact className="text-blue-300" size={24} />,
+      'JavaScript': <SiJavascript className="text-yellow-300" size={24} />,
+      'Python': <SiPython className="text-blue-500" size={24} />,
+      'Node.js': <SiNodedotjs className="text-green-500" size={24} />,
+      'Docker': <SiDocker className="text-blue-300" size={24} />,
+      'Kubernetes': <SiKubernetes className="text-blue-500" size={24} />,
+      'PostgreSQL': <SiPostgresql className="text-blue-600" size={24} />,
     };
-
-    return iconMap[title] || <FaStar className="text-gray-500" size={24} />;
+    return iconMap[title] || <FaStar className="text-gray-400" size={24} />;
   };
 
-  // Roadmap data with icons
   const roleBasedRoadmaps: Roadmap[] = [
     { id: 'frontend', title: 'Frontend', type: 'role', icon: getIconForRoadmap('Frontend') },
     { id: '2', title: 'Backend', type: 'role', icon: getIconForRoadmap('Backend') },
@@ -70,7 +65,7 @@ const Roadmaps = () => {
     { id: '19', title: 'Product Manager', type: 'role', icon: getIconForRoadmap('Product Manager') },
     { id: '20', title: 'Engineering Manager', type: 'role', icon: getIconForRoadmap('Engineering Manager') },
     { id: '21', title: 'Developer Relations', type: 'role', icon: getIconForRoadmap('Developer Relations') },
-    { id: '22', title: 'Create your own Roadmap', type: 'role', icon: <FaRocket className="text-indigo-500" size={24} /> }
+    { id: '22', title: 'Create your own Roadmap', type: 'role', icon: <FaRocket className="text-indigo-400" size={24} /> },
   ];
 
   const skillBasedRoadmaps: Roadmap[] = [
@@ -111,36 +106,33 @@ const Roadmaps = () => {
     { id: 's35', title: 'Cloudflare', type: 'skill', isNew: true, icon: getIconForRoadmap('Cloudflare') },
     { id: 's36', title: 'AI Agents', type: 'skill', isNew: true, icon: getIconForRoadmap('AI Agents') },
     { id: 's37', title: 'AI Red Teaming', type: 'skill', isNew: true, icon: getIconForRoadmap('AI Red Teaming') },
-    { id: 's38', title: 'Create your own Roadmap', type: 'skill', icon: <FaRocket className="text-indigo-500" size={24} /> }
+    { id: 's38', title: 'Create your own Roadmap', type: 'skill', icon: <FaRocket className="text-indigo-400" size={24} /> },
   ];
 
-  // Guides and Questions arrays
   const guides: Roadmap[] = [
-    { id: 'g1', title: 'How to Learn React', type: 'guide', format: 'textual', icon: <FaBook className="text-blue-500" size={24} /> },
-    { id: 'g2', title: 'Backend Best Practices', type: 'guide', format: 'textual', icon: <FaBook className="text-green-500" size={24} /> },
-    { id: 'g3', title: 'DevOps for Beginners', type: 'guide', format: 'textual', icon: <FaBook className="text-purple-500" size={24} /> }
+    { id: 'g1', title: 'How to Learn React', type: 'guide', format: 'textual', icon: <FaBook className="text-blue-400" size={24} /> },
+    { id: 'g2', title: 'Backend Best Practices', type: 'guide', format: 'textual', icon: <FaBook className="text-green-400" size={24} /> },
+    { id: 'g3', title: 'DevOps for Beginners', type: 'guide', format: 'textual', icon: <FaBook className="text-purple-400" size={24} /> },
   ];
 
   const questions: Roadmap[] = [
-    { id: 'q1', title: 'React Interview Questions', type: 'guide', format: 'questions', icon: <FaBook className="text-blue-400" size={24} /> },
-    { id: 'q2', title: 'Node.js Interview Questions', type: 'guide', format: 'questions', icon: <FaBook className="text-green-400" size={24} /> }
+    { id: 'q1', title: 'React Interview Questions', type: 'guide', format: 'questions', icon: <FaBook className="text-blue-300" size={24} /> },
+    { id: 'q2', title: 'Node.js Interview Questions', type: 'guide', format: 'questions', icon: <FaBook className="text-green-300" size={24} /> },
   ];
 
-  // Add a sample projectIdeas array
   const projectIdeas: Roadmap[] = [
-    { id: 'p1', title: 'Portfolio Website', type: 'project', icon: <FaProjectDiagram className="text-blue-500" size={24} /> },
-    { id: 'p2', title: 'E-commerce App', type: 'project', icon: <FaProjectDiagram className="text-green-500" size={24} /> },
-    { id: 'p3', title: 'Chat Application', type: 'project', icon: <FaProjectDiagram className="text-purple-500" size={24} /> },
-    { id: 'p4', title: 'Blog Platform', type: 'project', icon: <FaProjectDiagram className="text-yellow-500" size={24} /> },
-    { id: 'p5', title: 'Create your own Project', type: 'project', icon: <FaRocket className="text-indigo-500" size={24} /> }
+    { id: 'p1', title: 'Portfolio Website', type: 'project', icon: <FaProjectDiagram className="text-blue-400" size={24} /> },
+    { id: 'p2', title: 'E-commerce App', type: 'project', icon: <FaProjectDiagram className="text-green-400" size={24} /> },
+    { id: 'p3', title: 'Chat Application', type: 'project', icon: <FaProjectDiagram className="text-purple-400" size={24} /> },
+    { id: 'p4', title: 'Blog Platform', type: 'project', icon: <FaProjectDiagram className="text-yellow-400" size={24} /> },
+    { id: 'p5', title: 'Create your own Project', type: 'project', icon: <FaRocket className="text-indigo-400" size={24} /> },
   ];
 
-  // Sample videos array
   const videos: Roadmap[] = [
-    { id: 'v1', title: 'React Crash Course', type: 'video', length: '1h 30m', icon: <FaVideo className="text-blue-500" size={24} /> },
-    { id: 'v2', title: 'Node.js Tutorial', type: 'video', length: '2h 10m', icon: <FaVideo className="text-green-500" size={24} /> },
-    { id: 'v3', title: 'DevOps Basics', type: 'video', length: '45m', icon: <FaVideo className="text-purple-500" size={24} /> },
-    { id: 'v4', title: 'Design Patterns', type: 'video', length: '1h 5m', icon: <FaVideo className="text-yellow-500" size={24} /> }
+    { id: 'v1', title: 'React Crash Course', type: 'video', length: '1h 30m', icon: <FaVideo className="text-blue-400" size={24} /> },
+    { id: 'v2', title: 'Node.js Tutorial', type: 'video', length: '2h 10m', icon: <FaVideo className="text-green-400" size={24} /> },
+    { id: 'v3', title: 'DevOps Basics', type: 'video', length: '45m', icon: <FaVideo className="text-purple-400" size={24} /> },
+    { id: 'v4', title: 'Design Patterns', type: 'video', length: '1h 5m', icon: <FaVideo className="text-yellow-400" size={24} /> },
   ];
 
   const getCurrentRoadmaps = () => {
@@ -159,22 +151,24 @@ const Roadmaps = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-gray-100">
       {/* Hero Section */}
-      <section className="bg-gray-950 text-white py-16">
+      <section className="bg-gradient-to-r from-blue-900 to-purple-900 text-white py-16">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 animate-fade-in">Developer Roadmaps</h1>
-          <p className="text-xl mb-8 max-w-3xl mx-auto animate-fade-in delay-100">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 animate-fade-in">Developer Roadmaps</h1>
+          <p className="text-xl mb-8 max-w-3xl mx-auto text-gray-300 animate-fade-in delay-100">
             roadmap.sh is a community effort to create roadmaps, guides and other educational content to help guide developers in picking up a path and guide their learnings.
           </p>
           <div className="flex justify-center gap-4 animate-fade-in delay-200">
-            <Link 
+            <Link
               to={isAuthenticated ? "/my-roadmaps" : "/signup"}
-              className="bg-gray-900 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-800 transition duration-300 transform hover:scale-105 shadow-lg"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-3 rounded-full text-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/50"
             >
               {isAuthenticated ? 'My Roadmaps' : 'Get Started'}
             </Link>
-            <button className="border-2 border-gray-900 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-900 hover:text-white hover:bg-opacity-10 transition duration-300 transform hover:scale-105">
+            <button
+              className="border-2 border-blue-400 text-blue-400 px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-400/10 hover:text-blue-300 transition-all duration-300 transform hover:scale-105 hover:shadow-blue-500/50"
+            >
               Contribute
             </button>
           </div>
@@ -184,23 +178,23 @@ const Roadmaps = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12 -mt-10">
         {/* Floating Card */}
-        <div className="bg-gray-950 rounded-xl shadow-xl p-6 mb-8 max-w-4xl mx-auto text-white">
+        <div className="bg-gray-950/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 mb-8 max-w-4xl mx-auto border border-blue-500/20">
           {/* Tabs */}
-          <div className="flex overflow-x-auto pb-2 mb-6 scrollbar-hide">
+          <div className="flex overflow-x-auto pb-2 mb-6 scrollbar-hide space-x-2">
             {[
               { id: 'role', title: 'Role-based', icon: <FaCode className="mr-2" /> },
               { id: 'skill', title: 'Skill-based', icon: <FaLaptopCode className="mr-2" /> },
               { id: 'project', title: 'Projects', icon: <FaProjectDiagram className="mr-2" /> },
               { id: 'guide', title: 'Guides', icon: <FaBook className="mr-2" /> },
-              { id: 'video', title: 'Videos', icon: <FaVideo className="mr-2" /> }
+              { id: 'video', title: 'Videos', icon: <FaVideo className="mr-2" /> },
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center px-6 py-3 whitespace-nowrap font-medium text-sm rounded-lg mr-2 transition-all ${
+                className={`flex items-center px-6 py-3 whitespace-nowrap font-medium text-sm rounded-lg transition-all duration-300 ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                    : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white'
                 }`}
               >
                 {tab.icon}
@@ -217,61 +211,63 @@ const Roadmaps = () => {
             <input
               type="text"
               placeholder={`Search ${activeTab.replace('-', ' ')}...`}
-              className="w-full pl-10 p-4 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-gray-900 text-white"
+              className="w-full pl-10 p-4 rounded-lg bg-gray-900/50 border border-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-400 transition-all duration-300"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
 
-        {/* White background for all cards and empty state */}
-        <div className="bg-white rounded-xl shadow-xl p-8">
+        {/* Card Grid */}
+        <div className="bg-gray-950/30 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-blue-500/20">
           {filteredRoadmaps.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredRoadmaps.map(roadmap => (
-                <div 
-                  key={roadmap.id} 
-                  className={`rounded-xl shadow-md overflow-hidden transition-all duration-300 border border-gray-700 hover:border-gray-500 hover:shadow-lg transform hover:-translate-y-1 ${hoveredCard === roadmap.id ? 'ring-2 ring-gray-400' : ''} text-white bg-gray-800`}
+                <div
+                  key={roadmap.id}
+                  className={`relative rounded-xl overflow-hidden transition-all duration-300 border border-blue-500/20 hover:border-blue-400/50 hover:shadow-xl hover:shadow-blue-500/20 transform hover:-translate-y-1 bg-gray-800/80 backdrop-blur-sm ${
+                    hoveredCard === roadmap.id ? 'ring-2 ring-blue-400/50' : ''
+                  }`}
                   onMouseEnter={() => setHoveredCard(roadmap.id)}
                   onMouseLeave={() => setHoveredCard(null)}
                 >
                   <div className="p-6">
                     <div className="flex items-center mb-4">
-                      <div className="p-3 rounded-lg bg-gray-800 mr-4">
+                      <div className="p-3 rounded-lg bg-gray-900/50 mr-4">
                         {roadmap.icon || getIconForRoadmap(roadmap.title)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold truncate">{roadmap.title}</h3>
+                        <h3 className="text-lg font-semibold truncate text-white">{roadmap.title}</h3>
                         {roadmap.isNew && (
-                          <span className="bg-green-900 text-green-200 text-xs px-2 py-1 rounded-full">
+                          <span className="bg-gradient-to-r from-green-500 to-teal-500 text-white text-xs px-2 py-1 rounded-full">
                             New
                           </span>
                         )}
                       </div>
                     </div>
-                    
+
                     {roadmap.format === 'textual' && (
-                      <span className="inline-block bg-gray-800 text-gray-200 text-xs px-2 py-1 rounded-full mb-3">
+                      <span className="inline-block bg-gray-700/50 text-gray-200 text-xs px-2 py-1 rounded-full mb-3">
                         Guide
                       </span>
                     )}
-                    
+
                     {roadmap.format === 'questions' && (
-                      <span className="inline-block bg-purple-900 text-purple-200 text-xs px-2 py-1 rounded-full mb-3">
+                      <span className="inline-block bg-purple-700/50 text-purple-200 text-xs px-2 py-1 rounded-full mb-3">
                         Interview Questions
                       </span>
                     )}
-                    
+
                     {roadmap.type === 'video' && (
                       <div className="flex items-center text-sm text-gray-400 mb-3">
                         <FaRegClock className="mr-1" />
                         <span>{roadmap.length}</span>
                       </div>
                     )}
-                    
+
                     <Link
                       to={`/roadmaps/${roadmap.type}/${roadmap.id.toLowerCase()}`}
-                      className="mt-4 inline-flex items-center justify-center w-full text-center bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-2 px-4 rounded-lg transition duration-300 text-sm hover:bg-gray-800"
+                      className="mt-4 inline-flex items-center justify-center w-full text-center bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg transition-all duration-300 text-sm hover:from-blue-600 hover:to-purple-600 hover:shadow-lg"
                     >
                       {roadmap.type === 'video' ? 'Watch Video' : 'View Details'}
                       <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -283,13 +279,13 @@ const Roadmaps = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 bg-white rounded-xl shadow-sm">
+            <div className="text-center py-16 bg-gray-950/30 rounded-2xl shadow-sm border border-blue-500/20">
               <div className="text-5xl mb-4">🔍</div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-900">No {activeTab.replace('-', ' ')} found</h3>
+              <h3 className="text-xl font-semibold mb-2 text-gray-100">No {activeTab.replace('-', ' ')} found</h3>
               <p className="text-gray-400 mb-4">Try adjusting your search query</p>
-              <button 
+              <button
                 onClick={() => setSearchQuery('')}
-                className="text-gray-900 hover:underline font-medium"
+                className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-300"
               >
                 Clear search
               </button>
@@ -300,9 +296,9 @@ const Roadmaps = () => {
         {/* View All Buttons */}
         {filteredRoadmaps.length > 0 && (
           <div className="mt-12 text-center">
-            <Link 
-              to={`/${activeTab}`} 
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-gradient-to-br from-gray-900 to-gray-800 hover:bg-gray-800 transition duration-300"
+            <Link
+              to={`/${activeTab}`}
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-300 hover:shadow-lg"
             >
               View All {activeTab === 'role' ? 'Role-based' : activeTab === 'skill' ? 'Skill-based' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Roadmaps
               <svg className="ml-2 -mr-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -314,22 +310,22 @@ const Roadmaps = () => {
       </div>
 
       {/* CTA Section */}
-      <section className="bg-gray-950 text-white py-16">
+      <section className="bg-gradient-to-b from-gray-950 to-gray-900 text-white py-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">Ready to accelerate your learning?</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of developers who have leveled up their skills with our roadmaps.
+          <h2 className="text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">Ready to accelerate your learning?</h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto text-gray-300">
+            Join thousands of developers who have leveled up their skills with our AI-powered roadmaps.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link 
+            <Link
               to={isAuthenticated ? "/my-roadmaps" : "/signup"}
-              className="bg-gray-900 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-800 transition duration-300 transform hover:scale-105 shadow-lg"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-3 rounded-full text-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/50"
             >
               {isAuthenticated ? 'Continue Learning' : 'Start for Free'}
             </Link>
-            <Link 
+            <Link
               to="/community"
-              className="border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-gray-900 hover:bg-opacity-10 transition duration-300 transform hover:scale-105"
+              className="border-2 border-blue-400 text-blue-400 px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-400/10 hover:text-blue-300 transition-all duration-300 transform hover:scale-105 hover:shadow-blue-500/50"
             >
               Join Our Community
             </Link>

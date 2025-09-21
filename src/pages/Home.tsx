@@ -366,6 +366,15 @@ export class Game {
     setChatMessage('');
   };
 
+  const featureLinks: Record<string, string> = {
+    "AI-Powered Roadmaps": "/ai-learning-roadmap",
+    "DSA Challenges": "/dsa-challenges",
+    "Skill Certification": "/certificate-verification",
+    "Hackathons & Competitions": "/events-hackathons",
+    "Learning Resources": "/resources",
+    "AI Mentor": "/ai-mentor"
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Hero Section with 3D Coding UI */}
@@ -578,7 +587,7 @@ export class Game {
           {features.map((feature, index) => {
             const card = (
               <div
-                className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-transparent hover:border-gray-700 group"
+                className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-transparent hover:border-gray-700 group cursor-pointer"
               >
                 <div className={`flex justify-center mb-6 w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.gradient} items-center mx-auto group-hover:scale-110 transition-transform duration-300`}>
                   {feature.icon}
@@ -588,15 +597,12 @@ export class Game {
               </div>
             );
 
-            if (feature.title === 'DSA Challenges') {
-              return (
-                <Link key={index} to="/dsa-challenges" className="block">
-                  {card}
-                </Link>
-              );
-            }
-
-            return <div key={index}>{card}</div>;
+            // Make every card a Link
+            return (
+              <Link key={index} to={featureLinks[feature.title] || "/"} className="block">
+                {card}
+              </Link>
+            );
           })}
         </div>
       </div>
