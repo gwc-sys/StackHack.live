@@ -1,23 +1,24 @@
 import React, { useEffect, useMemo, useState } from "react";
-import type { JSX } from "react";
 import { useAuth } from "../pages/AuthContext";
 
 /**
- *  DSAChallenge - Frontend (React + TypeScript)
+ * DSAChallenge - Frontend (React + TypeScript)
  * Modern DSA practice platform with AI integration
  * 
  * API Endpoints:
- * - GET    /api/problems/          Fetch all problems
- * - GET    /api/problems/{id}/     Fetch specific problem details
- * - POST   /api/problems/          Create a new problem
- * - POST   /api/run/               Run code against test cases
- * - POST   /api/submit/            Submit final solution
- * - GET    /api/progress/          Fetch user progress/leaderboard
- * - POST   /api/progress/          Update user progress
+ * - GET    /api/problems/                 Fetch all problems
+ * - GET    /api/problems/{id}/            Fetch specific problem details
+ * - POST   /api/problems/                 Create a new problem
+ * - POST   /api/run/                      Run code against test cases
+ * - POST   /api/submit/                   Submit final solution
+ * - GET    /api/progress/                 Fetch user progress/leaderboard
+ * - POST   /api/progress/                 Update user progress
+ * - POST   /api/community/problems/       Create DSA Community Problem
+ * - POST   /api/ai/generate/              Generate AI DSA Problem
  */
 
 // ----------------------------- Configuration --------------------------
-const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const BACKEND_URL: string = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 // ----------------------------- Types ---------------------------------
 type Difficulty = "Easy" | "Medium" | "Hard";
@@ -58,40 +59,45 @@ interface UserProgress {
   solved_count: number;
 }
 
-// ----------------------------- Helpers --------------------------------
-const safeJoin = (base: string, path: string) => base.replace(/\/+$/u, "") + path;
+interface AIGeneratePayload {
+  difficulty?: Difficulty;
+  tags?: string[];
+}
 
-const handleFetchError = async (res: Response) => {
-  let bodyText = await res.text();
+// ----------------------------- Helpers --------------------------------
+const safeJoin = (base: string, path: string): string => base.replace(/\/+$/u, "") + path;
+
+const handleFetchError = async (res: Response): Promise<never> => {
+  const bodyText: string = await res.text();
   let body: any = null;
   try {
     body = JSON.parse(bodyText);
   } catch {
     body = bodyText;
   }
-  const message = (body && (body.detail || body.message)) || (typeof body === "string" ? body : JSON.stringify(body));
+  const message: string = (body && (body.detail || body.message)) || (typeof body === "string" ? body : JSON.stringify(body));
   throw new Error(`API Error ${res.status}: ${message}`);
 };
 
 // ----------------------------- API Layer -------------------------------
-const apiGET = async <T = any>(path: string) => {
-  const token = localStorage.getItem('token');
+const apiGET = async <T = unknown>(path: string): Promise<T> => {
+  const token: string | null = localStorage.getItem('token');
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Token ${token}`;
   
-  const url = safeJoin(BACKEND_URL, path);
-  const res = await fetch(url, { headers });
+  const url: string = safeJoin(BACKEND_URL, path);
+  const res: Response = await fetch(url, { headers });
   if (!res.ok) await handleFetchError(res);
   return (await res.json()) as T;
 };
 
-const apiPOST = async <T = any>(path: string, body: any) => {
-  const token = localStorage.getItem('token');
+const apiPOST = async <T = unknown>(path: string, body: unknown): Promise<T> => {
+  const token: string | null = localStorage.getItem('token');
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Token ${token}`;
   
-  const url = safeJoin(BACKEND_URL, path);
-  const res = await fetch(url, {
+  const url: string = safeJoin(BACKEND_URL, path);
+  const res: Response = await fetch(url, {
     method: "POST",
     headers,
     body: JSON.stringify(body),
@@ -102,24 +108,52 @@ const apiPOST = async <T = any>(path: string, body: any) => {
 
 // API Endpoint Functions
 const fetchProblems = async (): Promise<Problem[]> => await apiGET<Problem[]>("/problems/");
+
 const fetchProblemDetail = async (id: string): Promise<Problem> => await apiGET<Problem>(`/problems/${encodeURIComponent(id)}/`);
+
 const createProblem = async (payload: Partial<Problem>): Promise<Problem> => await apiPOST<Problem>("/problems/", payload);
-const runCode = async (problemId: string, code: string): Promise<RunResult> => await apiPOST<RunResult>("/run/", { problem_id: problemId, code });
-const submitCode = async (problemId: string, code: string): Promise<RunResult> => await apiPOST<RunResult>("/submit/", { problem_id: problemId, code });
+
+const createCommunityProblem = async (payload: Partial<Problem>): Promise<Problem> => 
+  await apiPOST<Problem>("/community/problems/", { ...payload, source: 'User' });
+
+const generateAIProblem = async (payload: AIGeneratePayload): Promise<Problem> => 
+  await apiPOST<Problem>("/ai/generate/", { ...payload, source: 'AI' });
+
+const runCode = async (problemId: string, code: string): Promise<RunResult> => 
+  await apiPOST<RunResult>("/run/", { problem_id: problemId, code });
+
+const submitCode = async (problemId: string, code: string): Promise<RunResult> => 
+  await apiPOST<RunResult>("/submit/", { problem_id: problemId, code });
+
 const fetchProgress = async (): Promise<UserProgress[]> => await apiGET<UserProgress[]>("/progress/");
-const postProgress = async (payload: any) => await apiPOST("/progress/", payload);
+
+const postProgress = async (payload: unknown): Promise<unknown> => await apiPOST("/progress/", payload);
 
 // ----------------------------- UI Helpers -----------------------------
-const difficultyBadge = (d: Difficulty) => {
-  if (d === "Easy") return "bg-emerald-100 text-emerald-800 border border-emerald-200";
-  if (d === "Medium" ) return "bg-amber-100 text-amber-800 border border-amber-200";
-  return "bg-rose-100 text-rose-800 border border-rose-200";
+const difficultyBadge = (d: Difficulty): string => {
+  switch (d) {
+    case "Easy":
+      return "bg-emerald-100 text-emerald-800 border border-emerald-200";
+    case "Medium":
+      return "bg-amber-100 text-amber-800 border border-amber-200";
+    case "Hard":
+      return "bg-rose-100 text-rose-800 border border-rose-200";
+    default:
+      return "";
+  }
 };
 
-const getDifficultyValue = (d: Difficulty) => {
-  if (d === "Easy") return 1;
-  if (d === "Medium") return 2;
-  return 3;
+const getDifficultyValue = (d: Difficulty): number => {
+  switch (d) {
+    case "Easy":
+      return 1;
+    case "Medium":
+      return 2;
+    case "Hard":
+      return 3;
+    default:
+      return 0;
+  }
 };
 
 const Skeleton: React.FC<{ className?: string }> = ({ className = "" }) => (
@@ -210,9 +244,9 @@ const ProblemListView: React.FC<{
         const data = await fetchProblems();
         if (!mounted) return;
         setProblems(Array.isArray(data) ? data : []);
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!mounted) return;
-        setError(err?.message || String(err));
+        setError(err instanceof Error ? err.message : String(err));
       }
     })();
     return () => { mounted = false; };
@@ -263,11 +297,11 @@ const ProblemListView: React.FC<{
 
 const ProblemDetail: React.FC<{ problemId: string; onClose: () => void }> = ({ problemId, onClose }) => {
   const [problem, setProblem] = useState<Problem | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [code, setCode] = useState<string>("// Write your solution here\n");
   const [runningResult, setRunningResult] = useState<RunResult | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
   useEffect(() => {
     let mounted = true;
@@ -278,9 +312,9 @@ const ProblemDetail: React.FC<{ problemId: string; onClose: () => void }> = ({ p
         const p = await fetchProblemDetail(problemId);
         if (!mounted) return;
         setProblem(p);
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!mounted) return;
-        setError(err?.message || String(err));
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         if (!mounted) return;
         setLoading(false);
@@ -289,17 +323,17 @@ const ProblemDetail: React.FC<{ problemId: string; onClose: () => void }> = ({ p
     return () => { mounted = false; };
   }, [problemId]);
 
-  const onRun = async () => {
+  const onRun = async (): Promise<void> => {
     setRunningResult(null);
     try {
       const res = await runCode(problemId, code);
       setRunningResult(res);
-    } catch (e: any) {
-      setRunningResult({ status: 'Error', message: e.message });
+    } catch (e: unknown) {
+      setRunningResult({ status: 'Error', message: e instanceof Error ? e.message : String(e) });
     }
   };
 
-  const onSubmit = async () => {
+  const onSubmit = async (): Promise<void> => {
     setSubmitting(true);
     setRunningResult(null);
     try {
@@ -308,8 +342,8 @@ const ProblemDetail: React.FC<{ problemId: string; onClose: () => void }> = ({ p
       if (res.status === 'Accepted') {
         try { await postProgress({ problem_id: problemId, solved: true }); } catch (e) { /* ignore */ }
       }
-    } catch (e: any) {
-      setRunningResult({ status: 'Error', message: e.message });
+    } catch (e: unknown) {
+      setRunningResult({ status: 'Error', message: e instanceof Error ? e.message : String(e) });
     } finally { setSubmitting(false); }
   };
 
@@ -392,7 +426,7 @@ const ProblemDetail: React.FC<{ problemId: string; onClose: () => void }> = ({ p
               <div className="border border-gray-300 rounded-lg overflow-hidden">
                 <textarea 
                   value={code} 
-                  onChange={(e) => setCode(e.target.value)} 
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCode(e.target.value)} 
                   rows={14} 
                   className="w-full font-mono p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                 />
@@ -495,18 +529,26 @@ const ProblemDetail: React.FC<{ problemId: string; onClose: () => void }> = ({ p
 };
 
 const CreateProblemModal: React.FC<{ open: boolean; onClose: () => void; onCreated?: (p: Problem) => void }> = ({ open, onClose, onCreated }) => {
-  const [title, setTitle] = useState("");
-  const [statement, setStatement] = useState("");
+  const [title, setTitle] = useState<string>("");
+  const [statement, setStatement] = useState<string>("");
   const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
-  const [tags, setTags] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [tags, setTags] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { if (!open) { setTitle(''); setStatement(''); setTags(''); setDifficulty('Easy'); setError(null); } }, [open]);
+  useEffect(() => {
+    if (!open) {
+      setTitle('');
+      setStatement('');
+      setTags('');
+      setDifficulty('Easy');
+      setError(null);
+    }
+  }, [open]);
 
   if (!open) return null;
 
-  const submit = async () => {
+  const submit = async (): Promise<void> => {
     setLoading(true);
     setError(null);
     try {
@@ -517,11 +559,14 @@ const CreateProblemModal: React.FC<{ open: boolean; onClose: () => void; onCreat
         tags: tags.split(',').map(s => s.trim()).filter(Boolean),
         source: 'User',
       };
-      const p = await createProblem(payload);
+      const p = await createCommunityProblem(payload);
       onCreated?.(p);
       onClose();
-    } catch (e: any) { setError(e?.message || String(e)); }
-    finally { setLoading(false); }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -539,7 +584,7 @@ const CreateProblemModal: React.FC<{ open: boolean; onClose: () => void; onCreat
             <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
             <input 
               value={title} 
-              onChange={(e) => setTitle(e.target.value)} 
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)} 
               placeholder="Problem title" 
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
             />
@@ -549,7 +594,7 @@ const CreateProblemModal: React.FC<{ open: boolean; onClose: () => void; onCreat
             <label className="block text-sm font-medium text-gray-700 mb-1">Problem Statement</label>
             <textarea 
               value={statement} 
-              onChange={(e) => setStatement(e.target.value)} 
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setStatement(e.target.value)} 
               rows={6} 
               placeholder="Describe the problem..." 
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
@@ -561,7 +606,7 @@ const CreateProblemModal: React.FC<{ open: boolean; onClose: () => void; onCreat
               <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
               <select 
                 value={difficulty} 
-                onChange={(e) => setDifficulty(e.target.value as Difficulty)} 
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDifficulty(e.target.value as Difficulty)} 
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               >
                 <option value="Easy">Easy</option>
@@ -574,7 +619,7 @@ const CreateProblemModal: React.FC<{ open: boolean; onClose: () => void; onCreat
               <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
               <input 
                 value={tags} 
-                onChange={(e) => setTags(e.target.value)} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTags(e.target.value)} 
                 placeholder="algorithm, data-structures, etc." 
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
               />
@@ -589,6 +634,90 @@ const CreateProblemModal: React.FC<{ open: boolean; onClose: () => void; onCreat
             </button>
             <button onClick={submit} disabled={loading} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-50">
               {loading ? "Creating..." : "Create Problem"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AIGenerateModal: React.FC<{ open: boolean; onClose: () => void; onCreated?: (p: Problem) => void }> = ({ open, onClose, onCreated }) => {
+  const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
+  const [tags, setTags] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setTags('');
+      setDifficulty('Easy');
+      setError(null);
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  const submit = async (): Promise<void> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const payload: AIGeneratePayload = {
+        difficulty,
+        tags: tags.split(',').map(s => s.trim()).filter(Boolean),
+      };
+      const p = await generateAIProblem(payload);
+      onCreated?.(p);
+      onClose();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40">
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-xl font-semibold text-gray-900">Generate AI Problem</div>
+          <button onClick={onClose} className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">
+            Close
+          </button>
+        </div>
+
+        <div className="grid gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
+            <select 
+              value={difficulty} 
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDifficulty(e.target.value as Difficulty)} 
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
+            <input 
+              value={tags} 
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTags(e.target.value)} 
+              placeholder="algorithm, data-structures, etc." 
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+            />
+          </div>
+
+          {error && <div className="p-3 text-red-600 bg-red-50 rounded-lg text-sm">{error}</div>}
+
+          <div className="flex items-center justify-end gap-3 pt-4">
+            <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 text-gray-700 font-medium">
+              Cancel
+            </button>
+            <button onClick={submit} disabled={loading} className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50">
+              {loading ? "Generating..." : "Generate Problem"}
             </button>
           </div>
         </div>
@@ -660,6 +789,7 @@ const StaticLeaderboard: React.FC = () => (
 const AIPage: React.FC<{ onOpenProblem: (id: string) => void }> = ({ onOpenProblem }) => {
   const [aiProblems, setAiProblems] = useState<Problem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showGenerateModal, setShowGenerateModal] = useState<boolean>(false);
 
   useEffect(() => {
     let mounted = true;
@@ -668,9 +798,9 @@ const AIPage: React.FC<{ onOpenProblem: (id: string) => void }> = ({ onOpenProbl
         const problems = await fetchProblems();
         if (!mounted) return;
         setAiProblems(problems.filter(p => p.source === "AI"));
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!mounted) return;
-        setError(err?.message || String(err));
+        setError(err instanceof Error ? err.message : String(err));
       }
     })();
     return () => { mounted = false; };
@@ -682,7 +812,10 @@ const AIPage: React.FC<{ onOpenProblem: (id: string) => void }> = ({ onOpenProbl
         <h1 className="text-4xl font-bold mb-4">AI Challenges</h1>
         <p className="text-lg mb-6">Practice with algorithm problems generated by our advanced AI system</p>
         <div className="flex gap-4">
-          <button className="px-6 py-3 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors">
+          <button 
+            onClick={() => setShowGenerateModal(true)}
+            className="px-6 py-3 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+          >
             Generate New Challenge
           </button>
           <button className="px-6 py-3 border border-white text-white font-semibold rounded-lg hover:bg-white/10 transition-colors">
@@ -728,13 +861,32 @@ const AIPage: React.FC<{ onOpenProblem: (id: string) => void }> = ({ onOpenProbl
           )}
         </div>
       </div>
+
+      {showGenerateModal && (
+        <AIGenerateModal
+          open={showGenerateModal}
+          onClose={() => setShowGenerateModal(false)}
+          onCreated={() => {
+            setShowGenerateModal(false);
+            // Refresh AI problems
+            (async () => {
+              try {
+                const problems = await fetchProblems();
+                setAiProblems(problems.filter(p => p.source === "AI"));
+              } catch (err: unknown) {
+                setError(err instanceof Error ? err.message : String(err));
+              }
+            })();
+          }}
+        />
+      )}
     </div>
   );
 };
 
 const CommunityPage: React.FC<{ onOpenProblem: (id: string) => void }> = ({ onOpenProblem }) => {
   const [sortBy, setSortBy] = useState<'hardest' | 'newest' | 'solved' | 'success'>('newest');
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [filterDifficulty, setFilterDifficulty] = useState<Difficulty | 'all'>('all');
 
   return (
@@ -762,7 +914,7 @@ const CommunityPage: React.FC<{ onOpenProblem: (id: string) => void }> = ({ onOp
           <div className="flex flex-col sm:flex-row gap-3">
             <select 
               value={filterDifficulty} 
-              onChange={(e) => setFilterDifficulty(e.target.value as Difficulty | 'all')}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterDifficulty(e.target.value as Difficulty | 'all')}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             >
               <option value="all">All Difficulties</option>
@@ -773,7 +925,7 @@ const CommunityPage: React.FC<{ onOpenProblem: (id: string) => void }> = ({ onOp
             
             <select 
               value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortBy(e.target.value as 'hardest' | 'newest' | 'solved' | 'success')}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             >
               <option value="newest">Newest First</option>
@@ -829,11 +981,10 @@ const TopNav: React.FC<{ onNavigate: (page: string) => void; current: string }> 
 );
 
 // --- Main App with TopNav ---
-export default function DSArenaApp(): JSX.Element {
+const DSArenaApp: React.FC = () => {
   const [page, setPage] = useState<string>('dashboard');
   const [selectedProblemId, setSelectedProblemId] = useState<string | null>(null);
-  const [createOpen, setCreateOpen] = useState(false);
-  const [aiOpen, setAiOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState<boolean>(false);
 
   // Dashboard stats (dynamic)
   const { user } = useAuth();
@@ -879,9 +1030,9 @@ export default function DSArenaApp(): JSX.Element {
           setPointsEarned(0);
           setCurrentStreakDays(0);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!mounted) return;
-        setDashboardError(err?.message || String(err));
+        setDashboardError(err instanceof Error ? err.message : String(err));
         setTotalSolved(0);
         setPointsEarned(0);
         setCurrentStreakDays(0);
@@ -896,8 +1047,6 @@ export default function DSArenaApp(): JSX.Element {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* If you have a header, render it here */}
-      {/* <Header /> */}
       {/* Top navigation bar */}
       <TopNav onNavigate={setPage} current={page} />
       {/* Main content */}
@@ -1096,21 +1245,8 @@ export default function DSArenaApp(): JSX.Element {
           onCreated={() => setCreateOpen(false)}
         />
       )}
-      {aiOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40">
-          <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-xl font-semibold text-gray-900">AI Problem Generator</div>
-              <button onClick={() => setAiOpen(false)} className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">
-                Close
-              </button>
-            </div>
-            <div className="text-center py-8 text-gray-500">
-              AI Generation feature coming soon...
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
-}
+};
+
+export default DSArenaApp;
