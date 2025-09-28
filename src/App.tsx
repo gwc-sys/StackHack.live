@@ -16,10 +16,11 @@ import EventsHackathons from "./pages/EventsHackathons";
 import FrontendRoadmapsPage from "./RoadmapsPages/frontendRoadmapsPage.tsx";
 import Collaboration from "./pages/Collaboration";
 import UserProfile from "./pages/UserProfile";
-import Problems from "./pages/Problems.tsx";    
+import Problems from "./DSAChallenges/ProblemDetailPage.tsx";    
 import NotFound from "./pages/NotFound.tsx";
 import AILearningRoadmap from "./pages/AILearningRoadmap.tsx";   
 import AIMentor from "./pages/AIMentor.tsx"; 
+import ProblemDetailPage from "./DSAChallenges/ProblemDetailPage";
 
 function MainApp() {
   return (
@@ -40,10 +41,11 @@ function MainApp() {
           <Route path="/collaboration" element={<Collaboration />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/dsa-challenges" element={<AppProvider />} />
-          <Route path="/problems/:id" element={<Problems />} />
+          <Route path="/problems/:id" element={<ProblemDetailPage />} />
           <Route path="*" element={<NotFound />} /> 
           <Route path="/ai-learning-roadmap" element={<AILearningRoadmap />} />
           <Route path="/ai-mentor" element={<AIMentor />} />
+          <Route path="/dsa-challenges/problems/:id" element={<Problems />} />
           {/* <Route path="/certificate-verification" element={<CertificateVerification />} /> */}
         </Routes>
       </Layout>

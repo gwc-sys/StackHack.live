@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useAuth } from "../pages/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 /**
  * DSArena - Modern DSA Practice Platform with AI Integration
@@ -122,7 +123,7 @@ const fetchProblems = async (): Promise<Problem[]> => {
     return data;
   }
   // If no problems from backend, return the default problem
-  return [DEFAULT_DSA_PROBLEM];
+  return [];
 };
 
 const fetchProblemDetail = async (id: string): Promise<Problem> => 
@@ -193,7 +194,8 @@ const Skeleton: React.FC<SkeletonProps> = React.memo(({ className = "" }) => (
 Skeleton.displayName = 'Skeleton';
 
 interface ProblemCardProps { problem: Problem; onOpen: (id: string) => void; }
-const ProblemCard: React.FC<ProblemCardProps> = React.memo(({ problem, onOpen }) => {
+const ProblemCard: React.FC<ProblemCardProps> = React.memo(({ problem}) => {
+  const navigate = useNavigate();
   return (
     <article className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200" role="article">
       <div className="flex items-start justify-between gap-4">
@@ -214,9 +216,7 @@ const ProblemCard: React.FC<ProblemCardProps> = React.memo(({ problem, onOpen })
             </span>
           </header>
 
-          <p className="mt-2 text-sm text-gray-600 line-clamp-3 whitespace-pre-wrap" aria-label="Problem statement">
-            {problem.statement}
-          </p>
+          <p className="mt-2 text-gray-700 line-clamp-2">{problem.statement}</p>
 
           <div className="flex items-center gap-2 mt-3" role="list">
             {problem.tags?.slice(0, 3).map(t => (
@@ -255,7 +255,7 @@ const ProblemCard: React.FC<ProblemCardProps> = React.memo(({ problem, onOpen })
 
         <div className="flex flex-col gap-2">
           <button 
-            onClick={() => onOpen(problem.id)} 
+            onClick={() => navigate(`/problems/${problem.id}`)} 
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
             aria-label={`Solve ${problem.title}`}
           >
@@ -324,6 +324,10 @@ const ProblemListView: React.FC<ProblemListViewProps> = React.memo(({
     return result;
   }, [problems, filter, sortBy]);
 
+  const uniqueProblems = Array.from(
+    new Map(filteredAndSorted.map(p => [p.id, p])).values()
+  );
+
   if (error) return (
     <div className="p-4 text-red-500 bg-red-50 rounded-lg" role="alert" aria-label="Error loading problems">
       Error loading problems: {error}
@@ -336,7 +340,7 @@ const ProblemListView: React.FC<ProblemListViewProps> = React.memo(({
     </div>
   );
 
-  if (!filteredAndSorted.length) return (
+  if (!uniqueProblems.length) return (
     <div className="p-6 text-center text-gray-500 bg-white rounded-lg border" aria-label="No problems found">
       No problems found.
     </div>
@@ -344,7 +348,7 @@ const ProblemListView: React.FC<ProblemListViewProps> = React.memo(({
 
   return (
     <div className="grid grid-cols-1 gap-6" role="list">
-      {filteredAndSorted.map(p => <ProblemCard key={p.id} problem={p} onOpen={onOpen} />)}
+      {uniqueProblems.map(p => <ProblemCard key={p.id} problem={p} onOpen={onOpen} />)}
     </div>
   );
 });
@@ -1464,44 +1468,6 @@ const AIGenerateModal: React.FC<AIGenerateModalProps> = React.memo(({ open, onCl
 });
 AIGenerateModal.displayName = 'AIGenerateModal';
 
-const DEFAULT_DSA_PROBLEM: Problem = {
-  id: "default-1",
-  title: "Two Sum",
-  statement: `Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
-
-You may assume that each input would have exactly one solution, and you may not use the same element twice.
-
-You can return the answer in any order.`,
-  input_format: "nums = [2,7,11,15], target = 9",
-  output_format: "Output: [0,1]",
-  constraints: [
-    "2 <= nums.length <= 10^4",
-    "-10^9 <= nums[i] <= 10^9",
-    "-10^9 <= target <= 10^9",
-    "Only one valid answer exists."
-  ],
-  examples: [
-    {
-      input: "nums = [2,7,11,15], target = 9",
-      output: "[0,1]",
-      explanation: "nums[0] + nums[1] == 2 + 7 == 9"
-    },
-    {
-      input: "nums = [3,2,4], target = 6",
-      output: "[1,2]",
-      explanation: "nums[1] + nums[2] == 2 + 4 == 6"
-    }
-  ],
-  difficulty: "Easy",
-  tags: ["array", "hash-table"],
-  created_at: new Date().toISOString(),
-  author: "System",
-  source: "Admin",
-  attempts: 0,
-  solves: 0,
-  hardness_score: 1
-};
-
 // --- Admin Update Problem Modal ---
 interface UpdateProblemModalProps {
   open: boolean;
@@ -1539,6 +1505,8 @@ const UpdateProblemModal: React.FC<UpdateProblemModalProps> = React.memo(({ open
       return;
     }
     setLoading(true); setError(null);
+
+
     try {
       const payload = {
         title: title.trim(),
@@ -1641,4 +1609,6 @@ const UpdateProblemModal: React.FC<UpdateProblemModalProps> = React.memo(({ open
 });
 UpdateProblemModal.displayName = "UpdateProblemModal";
 
+export type { Problem, RunResult };
+export { fetchProblemDetail, runCode, submitCode, postProgress, getDifficultyBadgeClass };
 export default DSAchallenges;
