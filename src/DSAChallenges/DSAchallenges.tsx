@@ -455,7 +455,8 @@ const ProblemDetail: React.FC<ProblemDetailProps> = ({ problemId, onClose, setOp
           </button>
         </header>
 
-        <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-y-auto">
+        {/* Add max-h-[70vh] and overflow-y-auto here */}
+        <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 max-h-[70vh] overflow-y-auto">
           <div className="lg:col-span-2">
             <section className="mb-6">
               <h3 className="text-xl font-semibold mb-4 text-gray-900">Problem Statement</h3>
