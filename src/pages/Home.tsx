@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  FaStar, FaSearch, FaRobot, FaTrophy, FaCertificate,
+  FaStar, FaSearch, FaRobot, FaTrophy,
   FaCode, FaRoad, FaPlay, FaTerminal, FaCog, FaChevronRight
 } from 'react-icons/fa';
 import { SiGooglescholar, SiTypescript, SiJavascript } from 'react-icons/si';
@@ -257,9 +257,9 @@ export class Game {
       gradient: "from-purple-500 to-pink-500"
     },
     {
-      icon: <FaCertificate className="w-6 h-6 text-white" />,
-      title: "Skill Certification",
-      description: "Earn verified certificates recognized by industry leaders",
+      icon: <FaCode className="w-6 h-6 text-white" />,
+      title: "InstantIDE",
+      description: "Run code in 50+ languages, instantly online.",
       gradient: "from-green-500 to-emerald-500"
     },
     {
@@ -369,7 +369,7 @@ export class Game {
   const featureLinks: Record<string, string> = {
     "AI-Powered Roadmaps": "/ai-learning-roadmap",
     "DSA Challenges": "/dsa-challenges",
-    "Skill Certification": "/certificate-verification",
+    "InstantIDE": "/online-ide",
     "Hackathons & Competitions": "/events-hackathons",
     "Learning Resources": "/resources",
     "AI Mentor": "/ai-mentor"
@@ -599,7 +599,11 @@ export class Game {
 
             // Make every card a Link
             return (
-              <Link key={index} to={featureLinks[feature.title] || "/"} className="block">
+              <Link
+                key={index}
+                to={featureLinks[feature.title]}
+                className="block hover:no-underline"
+              >
                 {card}
               </Link>
             );

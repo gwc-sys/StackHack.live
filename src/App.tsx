@@ -4,7 +4,6 @@ import AppProvider from "./DSAChallenges/DSAchallenges";
 import Layout from "./components/Layout.tsx";
 import Home from "./pages/Home";
 import About from "./pages/About";
-// import CertificateVerification from "./pages/CertificateVerification.tsx";
 import Universities from "./pages/Universities.tsx";
 import SignIn from "./pages/SignIn.tsx";
 import SignUp from "./pages/SignUp.tsx";
@@ -21,6 +20,7 @@ import NotFound from "./pages/NotFound.tsx";
 import AILearningRoadmap from "./pages/AILearningRoadmap.tsx";   
 import AIMentor from "./pages/AIMentor.tsx"; 
 import ProblemDetailPage from "./DSAChallenges/ProblemDetailPage";
+import OnlineIDE from "./pages/OnlineIDE.tsx";
 
 function MainApp() {
   return (
@@ -46,7 +46,7 @@ function MainApp() {
           <Route path="/ai-learning-roadmap" element={<AILearningRoadmap />} />
           <Route path="/ai-mentor" element={<AIMentor />} />
           <Route path="/dsa-challenges/problems/:id" element={<Problems />} />
-          {/* <Route path="/certificate-verification" element={<CertificateVerification />} /> */}
+          <Route path="/online-ide" element={<OnlineIDE/>} />
         </Routes>
       </Layout>
     </AuthProvider>
