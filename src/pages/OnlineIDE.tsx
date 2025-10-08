@@ -394,7 +394,7 @@ const OnlineIDE: React.FC = () => {
     setActiveBottomPanel(newPanel.id);
   };
 
-  // Drag and drop functions
+  // Drag and drop functions drindrin
   const handleDragStart = (index: number) => {
     dragItem.current = index;
   };
