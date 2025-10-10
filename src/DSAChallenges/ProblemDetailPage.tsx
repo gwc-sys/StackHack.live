@@ -3,16 +3,24 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Problem, RunResult, fetchProblemDetail, postProgress, getDifficultyBadgeClass } from "./DSAchallenges";
 import Editor from "@monaco-editor/react";
 
-// Judge0 API configuration
-const JUDGE0_API_KEY = import.meta.env.VITE_JUDGE0_API_KEY || 'your-judge0-api-key';
-const JUDGE0_BASE_URL = import.meta.env.VITE_JUDGE0_BASE_URL || 'https://judge0-ce.p.rapidapi.com';
+// Piston API configuration (no API key required)
+const PISTON_API_URL = 'https://emkc.org/api/v2/piston';
 
-// Supported languages with Judge0 language IDs
-const SUPPORTED_LANGUAGES = [
+// Supported languages with Piston runtime configurations
+interface LanguageConfig {
+  id: string;
+  name: string;
+  pistonLanguage: string;
+  pistonVersion: string;
+  defaultCode: string;
+}
+
+const SUPPORTED_LANGUAGES: LanguageConfig[] = [
   { 
     id: 'javascript', 
     name: 'JavaScript (Node.js)', 
-    judge0Id: 63,
+    pistonLanguage: 'javascript',
+    pistonVersion: '18.15.0',
     defaultCode: `function solve(input) {
     // Your solution here
     // Example: Return the input as is for demonstration
@@ -21,7 +29,7 @@ const SUPPORTED_LANGUAGES = [
 
 // Handle the input and call solve function
 function main() {
-    // Read input (this would be provided by the test cases)
+    // Read input from stdin (provided by test cases)
     const input = require('fs').readFileSync(0, 'utf8').trim();
     
     // Parse input if needed (JSON, numbers, etc.)
@@ -47,7 +55,8 @@ if (require.main === module) {
   { 
     id: 'python', 
     name: 'Python 3', 
-    judge0Id: 71,
+    pistonLanguage: 'python',
+    pistonVersion: '3.10.0',
     defaultCode: `def solve(input_data):
     # Your solution here
     # Example: Return the input as is for demonstration
@@ -56,12 +65,13 @@ if (require.main === module) {
 def main():
     # Read input from stdin
     import sys
+    import json
+    
     input_data = sys.stdin.read().strip()
     
     # Parse input if needed
     try:
         # Try to parse as JSON
-        import json
         parsed_input = json.loads(input_data)
     except:
         parsed_input = input_data
@@ -81,7 +91,8 @@ if __name__ == "__main__":
   { 
     id: 'java', 
     name: 'Java', 
-    judge0Id: 62,
+    pistonLanguage: 'java',
+    pistonVersion: '15.0.2',
     defaultCode: `import java.util.*;
 import java.io.*;
 
@@ -105,7 +116,7 @@ public class Main {
         // Parse input if needed
         Object parsedInput;
         try {
-            // Try to parse as JSON (you might want to use a JSON library like Jackson in real implementation)
+            // Try to parse as JSON
             if (input.startsWith("{") || input.startsWith("[")) {
                 parsedInput = input; // For simplicity, using string as is
             } else {
@@ -126,7 +137,8 @@ public class Main {
   { 
     id: 'cpp', 
     name: 'C++', 
-    judge0Id: 54,
+    pistonLanguage: 'cpp',
+    pistonVersion: '10.2.0',
     defaultCode: `#include <iostream>
 #include <string>
 #include <vector>
@@ -157,69 +169,42 @@ int main() {
     
     return 0;
 }`
-  },
-  { 
-    id: 'c', 
-    name: 'C', 
-    judge0Id: 50,
-    defaultCode: `#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
-// Your solution function
-char* solve(char* input) {
-    // Your solution here
-    // Example: Return the input as is for demonstration
-    return input;
-}
-
-int main() {
-    // Read input from stdin
-    char input[1000];
-    char buffer[100];
-    input[0] = '\\0';
-    
-    while (fgets(buffer, sizeof(buffer), stdin)) {
-        strcat(input, buffer);
-    }
-    
-    // Remove trailing newline if exists
-    size_t len = strlen(input);
-    if (len > 0 && input[len-1] == '\\n') {
-        input[len-1] = '\\0';
-    }
-    
-    // Call your solution
-    char* result = solve(input);
-    
-    // Output the result
-    printf("%s\\n", result);
-    
-    return 0;
-}`
   }
 ];
 
-// Types for Judge0 API
-interface Judge0Submission {
-  source_code: string;
-  language_id: number;
+// Types for Piston API
+interface PistonExecutionRequest {
+  language: string;
+  version: string;
+  files: Array<{
+    name?: string;
+    content: string;
+  }>;
   stdin?: string;
-  expected_output?: string;
+  args?: string[];
+  compile_timeout?: number;
+  run_timeout?: number;
+  compile_memory_limit?: number;
+  run_memory_limit?: number;
 }
 
-interface Judge0Response {
-  token: string;
-  status?: {
-    id: number;
-    description: string;
+interface PistonExecutionResponse {
+  ran: boolean;
+  language: string;
+  version: string;
+  run: {
+    stdout: string;
+    stderr: string;
+    output: string;
+    code: number;
+    signal: string | null;
   };
-  stdout?: string;
-  stderr?: string;
-  compile_output?: string;
+}
+
+interface TestResult {
+  name: string;
+  passed: boolean;
   message?: string;
-  time?: string;
-  memory?: number;
 }
 
 const ProblemDetailPage: React.FC = () => {
@@ -235,6 +220,7 @@ const ProblemDetailPage: React.FC = () => {
   const [executing, setExecuting] = useState<boolean>(false);
   const [customInput, setCustomInput] = useState<string>('');
   const [showCustomInput, setShowCustomInput] = useState<boolean>(false);
+  const [showResult, setShowResult] = useState<boolean>(true);
 
   useEffect(() => {
     let mounted = true;
@@ -261,20 +247,18 @@ const ProblemDetailPage: React.FC = () => {
     }
   }, [selectedLanguage]);
 
-  // Judge0 API functions
-  const submitToJudge0 = async (submission: Judge0Submission): Promise<Judge0Response> => {
-    const response = await fetch(`${JUDGE0_BASE_URL}/submissions?base64_encoded=false&wait=true`, {
+  // Piston API execution function
+  const executeWithPiston = async (request: PistonExecutionRequest): Promise<PistonExecutionResponse> => {
+    const response = await fetch(`${PISTON_API_URL}/execute`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-RapidAPI-Key': JUDGE0_API_KEY,
-        'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
       },
-      body: JSON.stringify(submission)
+      body: JSON.stringify(request)
     });
 
     if (!response.ok) {
-      throw new Error(`Judge0 API error: ${response.statusText}`);
+      throw new Error(`Piston API error: ${response.statusText}`);
     }
 
     return await response.json();
@@ -293,39 +277,39 @@ const ProblemDetailPage: React.FC = () => {
       const lang = SUPPORTED_LANGUAGES.find(l => l.id === selectedLanguage);
       if (!lang) throw new Error('Selected language not supported');
 
-      const submission: Judge0Submission = {
-        source_code: code,
-        language_id: lang.judge0Id,
+      const request: PistonExecutionRequest = {
+        language: lang.pistonLanguage,
+        version: lang.pistonVersion,
+        files: [{ content: code }],
         stdin: customInput
       };
 
-      const result = await submitToJudge0(submission);
+      const result = await executeWithPiston(request);
       
-      let status = 'Runtime Error';
-      let message = '';
+      let status: string = 'Runtime Error';
+      let message: string = '';
 
-      if (result.compile_output) {
-        status = 'Compilation Error';
-        message = result.compile_output;
-      } else if (result.stderr) {
+      if (result.run.stderr) {
         status = 'Runtime Error';
-        message = result.stderr;
-      } else if (result.stdout) {
+        message = result.run.stderr;
+      } else if (result.run.stdout) {
         status = 'Success';
-        message = `Output: ${result.stdout}`;
-      } else if (result.message) {
+        message = `Output: ${result.run.stdout}`;
+      } else {
         status = 'Error';
-        message = result.message;
+        message = 'No output received';
       }
+
+      const testResults: TestResult[] = [{
+        name: 'Custom Test',
+        passed: status === 'Success',
+        message: status === 'Success' ? 'Custom test executed successfully' : message
+      }];
 
       setRunningResult({ 
         status: status as any, 
         message,
-        test_results: [{
-          name: 'Custom Test',
-          passed: status === 'Success',
-          message: status === 'Success' ? 'Custom test executed successfully' : message
-        }]
+        test_results: testResults
       });
 
     } catch (e: unknown) {
@@ -351,32 +335,30 @@ const ProblemDetailPage: React.FC = () => {
       const lang = SUPPORTED_LANGUAGES.find(l => l.id === selectedLanguage);
       if (!lang) throw new Error('Selected language not supported');
 
-      const testResults = [];
+      const testResults: TestResult[] = [];
       
       for (let i = 0; i < problem.examples.length; i++) {
         const testCase = problem.examples[i];
         
-        const submission: Judge0Submission = {
-          source_code: code,
-          language_id: lang.judge0Id,
-          stdin: testCase.input,
-          expected_output: testCase.output
+        const request: PistonExecutionRequest = {
+          language: lang.pistonLanguage,
+          version: lang.pistonVersion,
+          files: [{ content: code }],
+          stdin: testCase.input
         };
 
-        const result = await submitToJudge0(submission);
+        const result = await executeWithPiston(request);
         
         let passed = false;
         let message = '';
 
-        if (result.compile_output) {
-          message = `Compilation Error: ${result.compile_output}`;
-        } else if (result.stderr) {
-          message = `Runtime Error: ${result.stderr}`;
-        } else if (result.stdout?.trim() === testCase.output.trim()) {
+        if (result.run.stderr) {
+          message = `Runtime Error: ${result.run.stderr}`;
+        } else if (result.run.stdout?.trim() === testCase.output.trim()) {
           passed = true;
           message = 'Test passed';
         } else {
-          message = `Expected: ${testCase.output}, Got: ${result.stdout}`;
+          message = `Expected: ${testCase.output}, Got: ${result.run.stdout}`;
         }
 
         testResults.push({
@@ -408,8 +390,6 @@ const ProblemDetailPage: React.FC = () => {
     setRunningResult(null);
 
     try {
-      // For submission, we might want to run more comprehensive tests
-      // For now, we'll use the same as runTests but with a different message
       await runTests();
       
       // If all tests passed, mark as solved
@@ -440,21 +420,20 @@ const ProblemDetailPage: React.FC = () => {
   }, [selectedLanguage]);
 
   // Helper function for result color
-  function getResultColor(status: string) {
+  const getResultColor = (status: string): string => {
     switch (status) {
       case 'Accepted':
       case 'Success':
         return 'text-green-600';
       case 'Wrong Answer':
         return 'text-yellow-600';
-      case 'Compilation Error':
       case 'Error':
       case 'Runtime Error':
-      case 'Pending':
+        return 'text-red-600';
       default:
         return 'text-red-600';
     }
-  }
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
@@ -694,45 +673,55 @@ const ProblemDetailPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Results */}
+            {/* Results Toggle */}
             {runningResult && (
-              <div className="p-4 border rounded-lg bg-white">
-                <div className={`font-semibold mb-2 ${getResultColor(runningResult.status)}`}>
-                  Result: {runningResult.status}
-                </div>
-                {runningResult.message && (
-                  <pre
-                    className="text-sm text-gray-700 mb-3 p-2 bg-gray-50 rounded font-mono max-h-40 overflow-auto whitespace-pre-wrap"
-                    style={{ maxHeight: 160 }}
-                  >
-                    {runningResult.message}
-                  </pre>
-                )}
-                {runningResult.test_results && runningResult.test_results.length > 0 && (
-                  <div className="mt-3">
-                    <div className="font-medium mb-2 text-gray-800">Test Results:</div>
-                    <ul className="space-y-2">
-                      {runningResult.test_results?.map((tr: { name: string; passed: boolean; message?: string }, idx: number) => (
-                        <li key={idx} className={`p-2 rounded border ${
-                          tr.passed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
-                        }`}>
-                          <div className="flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full ${tr.passed ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                            <span className={`font-medium ${tr.passed ? 'text-green-700' : 'text-red-700'}`}>
-                              {tr.name}: {tr.passed ? "Passed" : "Failed"}
-                            </span>
-                          </div>
-                          {tr.message && (
-                            <pre
-                              className="text-sm text-gray-600 mt-1 ml-4 font-mono max-h-24 overflow-auto whitespace-pre-wrap"
-                              style={{ maxHeight: 96 }}
-                            >
-                              {tr.message}
-                            </pre>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
+              <div>
+                <button
+                  onClick={() => setShowResult(!showResult)}
+                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 mb-2"
+                >
+                  <span>{showResult ? '▼' : '▶'} Result</span>
+                </button>
+                {showResult && (
+                  <div className="p-4 border rounded-lg bg-white">
+                    <div className={`font-semibold mb-2 ${getResultColor(runningResult.status)}`}>
+                      Result: {runningResult.status}
+                    </div>
+                    {runningResult.message && (
+                      <pre
+                        className="text-sm text-gray-700 mb-3 p-2 bg-gray-50 rounded font-mono max-h-40 overflow-auto whitespace-pre-wrap"
+                        style={{ maxHeight: 160 }}
+                      >
+                        {runningResult.message}
+                      </pre>
+                    )}
+                    {runningResult.test_results && runningResult.test_results.length > 0 && (
+                      <div className="mt-3">
+                        <div className="font-medium mb-2 text-gray-800">Test Results:</div>
+                        <ul className="space-y-2">
+                          {runningResult.test_results?.map((tr: TestResult, idx: number) => (
+                            <li key={idx} className={`p-2 rounded border ${
+                              tr.passed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                            }`}>
+                              <div className="flex items-center gap-2">
+                                <span className={`w-2 h-2 rounded-full ${tr.passed ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                <span className={`font-medium ${tr.passed ? 'text-green-700' : 'text-red-700'}`}>
+                                  {tr.name}: {tr.passed ? "Passed" : "Failed"}
+                                </span>
+                              </div>
+                              {tr.message && (
+                                <pre
+                                  className="text-sm text-gray-600 mt-1 ml-4 font-mono max-h-24 overflow-auto whitespace-pre-wrap"
+                                  style={{ maxHeight: 96 }}
+                                >
+                                  {tr.message}
+                                </pre>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
