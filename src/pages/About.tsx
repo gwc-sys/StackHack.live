@@ -46,13 +46,13 @@ const AboutPage: React.FC = () => {
       education: "Computer Science"
     },
     {
-      name: "Sarah Johnson",
+      name: "Sankalp Gadakh",
       title: "Frontend Developer & React Specialist",
       photo: "/images/sarah.jpg",
       bio: "Creative frontend developer with 3+ years of experience building responsive and accessible web applications. Passionate about user experience and modern JavaScript frameworks.",
       email: "sarah.johnson@example.com",
-      phone: "+91 9130 124",
-      location: "Bangalore, India",
+      phone: "+91 8010552426",
+      location: "Pune, India",
       socialLinks: [
         { name: "GitHub", url: "https://github.com/sarahj", icon: "github" },
         { name: "LinkedIn", url: "https://linkedin.com/in/sarahj", icon: "linkedin" },
@@ -67,13 +67,13 @@ const AboutPage: React.FC = () => {
       education: "Software Engineering"
     },
     {
-      name: "Alex Chen",
+      name: "Nikita Mali",
       title: "Backend Developer & DevOps Engineer",
       photo: "/images/alex.jpg",
       bio: "Backend specialist with 4+ years of experience in building scalable APIs and cloud infrastructure. Focused on performance optimization and system architecture.",
       email: "alex.chen@example.com",
-      phone: "+91 9130 125",
-      location: "Hyderabad, India",
+      phone: "+91 9130 1210215",
+      location: "Pune, India",
       socialLinks: [
         { name: "GitHub", url: "https://github.com/alexchen", icon: "github" },
         { name: "LinkedIn", url: "https://linkedin.com/in/alexchen", icon: "linkedin" },
@@ -87,13 +87,13 @@ const AboutPage: React.FC = () => {
       education: "Computer Engineering"
     },
     {
-      name: "Priya Sharma",
+      name: "Aishwarya Salgar",
       title: "Mobile Developer & Cross-Platform Expert",
       photo: "/images/priya.jpg",
       bio: "Mobile app developer with expertise in cross-platform development. Passionate about creating seamless mobile experiences and optimizing app performance.",
       email: "priya.sharma@example.com",
-      phone: "+91 9130 126",
-      location: "Delhi, India",
+      phone: "+91 9130 1264578",
+      location: "Pune , India",
       socialLinks: [
         { name: "GitHub", url: "https://github.com/priyas", icon: "github" },
         { name: "LinkedIn", url: "https://linkedin.com/in/priyasharma", icon: "linkedin" },
