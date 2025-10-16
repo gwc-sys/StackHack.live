@@ -50,7 +50,7 @@ const AboutPage: React.FC = () => {
       title: "Frontend Developer & React Specialist",
       photo: "/images/sarah.jpg",
       bio: "Creative frontend developer with 3+ years of experience building responsive and accessible web applications. Passionate about user experience and modern JavaScript frameworks.",
-      email: "sarah.johnson@example.com",
+      email: "sankalp-gadakh@gmail.com",
       phone: "+91 8010552426",
       location: "Pune, India",
       socialLinks: [
@@ -71,7 +71,7 @@ const AboutPage: React.FC = () => {
       title: "Backend Developer & DevOps Engineer",
       photo: "/images/alex.jpg",
       bio: "Backend specialist with 4+ years of experience in building scalable APIs and cloud infrastructure. Focused on performance optimization and system architecture.",
-      email: "alex.chen@example.com",
+      email: "Nikita-mali@gmial.com",
       phone: "+91 9130 1210215",
       location: "Pune, India",
       socialLinks: [
@@ -91,7 +91,7 @@ const AboutPage: React.FC = () => {
       title: "Mobile Developer & Cross-Platform Expert",
       photo: "/images/priya.jpg",
       bio: "Mobile app developer with expertise in cross-platform development. Passionate about creating seamless mobile experiences and optimizing app performance.",
-      email: "priya.sharma@example.com",
+      email: "Aishwarya-salgar@gmail.com",
       phone: "+91 9130 1264578",
       location: "Pune , India",
       socialLinks: [
