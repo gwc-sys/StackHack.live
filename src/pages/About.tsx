@@ -36,7 +36,7 @@ const AboutPage: React.FC = () => {
         { name: "LinkedIn", url: "https://www.linkedin.com/in/mahesh-r-0a109b20a", icon: "linkedin" },
         { name: "Twitter", url: "https://mahesh-raskar.com", icon: "twitter" },
         { name: "Portfolio", url: "https://mahesh-raskar.dev", icon: "globe" },
-        { name: "WhatsApp", url: "https://wa.me/919130123", icon: "whatsapp" } // <-- Added WhatsApp
+        { name: "WhatsApp", url: "https://wa.me/9021329710", icon: "whatsapp" } // <-- Added WhatsApp
       ],
       skills: [
         "TypeScript", "React", "Node.js", "Tailwind CSS", "JavaScript", "Java", "C++", "C#", 
