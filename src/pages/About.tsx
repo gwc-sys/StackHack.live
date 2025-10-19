@@ -26,7 +26,7 @@ const AboutPage: React.FC = () => {
     {
       name: "Mahesh Raskar",
       title: "Full Stack Developer & UI/UX Enthusiast",
-      photo: "/images/mahesh.jpg",
+      photo: '/src/assets/mahesh-profile-pic.JPG',
       bio: "Passionate developer with 5+ years of experience creating web applications. I love turning complex problems into simple, beautiful designs. When I'm not coding, you can find me hiking, reading tech blogs, or contributing to open-source projects.",
       email: "mahesh-raskar@outlook.com",
       phone: "+91 9890739710",
