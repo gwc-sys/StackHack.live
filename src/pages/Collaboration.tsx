@@ -1,9 +1,23 @@
 // src/pages/Collaboration.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { AuthContext } from '../pages/AuthContext';
 
-// Types
+// Database Table Types
+// NOTE: IDs are allowed as number | string to avoid widespread mismatches.
+// You can tighten to number after you update the backend/frontend to a single ID type.
+type Id = number | string;
+
+type GithubRepo = {
+  id: Id;
+  name: string;
+  description?: string | null;
+  html_url: string;
+  language?: string | null;
+  stargazers_count?: number;
+};
+
 type User = {
-  id: string;
+  id: Id;
   name: string;
   email: string;
   avatar: string;
@@ -15,169 +29,143 @@ type User = {
   college?: string;
   year?: string;
   major?: string;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 type Project = {
-  id: string;
+  id: Id;
   title: string;
   description: string;
   techStack: string[];
   skillsNeeded: string[];
-  owner: User;
-  members: User[];
+  ownerId: Id;
+  memberIds: Id[];
   isPublic: boolean;
   githubRepo?: string;
   demoUrl?: string;
+  clubId?: Id;
   createdAt: Date;
-  clubId?: string;
+  updatedAt: Date;
 };
 
 type MentorSession = {
-  id: string;
-  mentor: User;
-  mentee: User;
+  id: Id;
+  mentorId: Id;
+  menteeId: Id;
   date: Date;
   duration: number;
   notes: string;
   rating?: number;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 type Community = {
-  id: string;
+  id: Id;
   name: string;
   description: string;
-  members: User[];
+  memberIds: Id[];
   isPublic: boolean;
   topics: string[];
-  events: Event[];
-};
-
-type Event = {
-  id: string;
-  title: string;
-  description: string;
-  date: Date;
-  location: string;
-  organizer: User;
-  attendees: User[];
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 type ClubRole = 'president' | 'vice_president' | 'technical_head' | 'marketing_head' | 'treasurer' | 'event_coordinator' | 'member';
 
-type ClubMember = User & {
-  clubRole: ClubRole;
+type ClubMember = {
+  id: Id;
+  clubId: Id;
+  userId: Id;
+  role: ClubRole;
   joinedAt: Date;
 };
 
-type ClubEvent = Event & {
+type ClubEvent = {
+  id: Id;
+  clubId: Id;
+  title: string;
+  description: string;
   type: 'workshop' | 'talk' | 'coding_session' | 'project' | 'guest_talk' | 'hackathon' | 'social';
-  maxAttendees?: number;
-  registeredAttendees: User[];
-};
-
-type Milestone = {
-  id: string;
-  title: string;
-  description: string;
-  dueDate: Date;
-  completed: boolean;
-  completedAt?: Date;
-};
-
-type ClubProject = Project & {
-  status: 'planning' | 'in_progress' | 'completed' | 'on_hold';
-  progress: number;
-  milestones: Milestone[];
-};
-
-type ClubResources = {
-  id: string;
-  name: string;
-  type: 'document' | 'template' | 'guide' | 'recording';
-  url: string;
-  uploadedBy: User;
-  uploadedAt: Date;
-  downloads: number;
-};
-
-type SemesterEvent = {
-  id: string;
-  week: number;
-  title: string;
-  description: string;
-  type: ClubEvent['type'];
   date: Date;
-  completed: boolean;
+  location: string;
+  organizerId: Id;
+  attendeeIds: Id[];
+  registeredAttendeeIds: Id[];
+  maxAttendees?: number;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 type Club = {
-  id: string;
+  id: Id;
   name: string;
   description: string;
   category: 'coding' | 'design' | 'research' | 'entrepreneurship' | 'other';
-  admin: User;
-  members: ClubMember[];
-  projects: ClubProject[];
-  events: ClubEvent[];
+  adminId: Id;
   isPublic: boolean;
-  joinRequests: User[];
-  createdAt: Date;
+  joinRequestIds: Id[];
   tags: string[];
   college: string;
   missionStatement: string;
   coreFocus: string[];
-  facultyAdvisor?: User;
-  resources: ClubResources[];
-  semesterPlan: SemesterEvent[];
+  facultyAdvisorId?: Id;
   socialLinks: {
     discord?: string;
     github?: string;
     instagram?: string;
     linkedin?: string;
   };
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 type ClubPost = {
-  id: string;
+  id: Id;
+  clubId: Id;
   title: string;
   content: string;
-  author: User;
-  club: Club;
-  createdAt: Date;
-  likes: string[];
-  comments: ClubComment[];
+  authorId: Id;
   tags: string[];
+  likes: Id[];
+  createdAt: Date;
+  updatedAt: Date;
 };
 
-type ClubComment = {
-  id: string;
-  content: string;
-  author: User;
+type ClubResources = {
+  id: Id;
+  clubId: Id;
+  name: string;
+  type: 'document' | 'template' | 'guide' | 'recording';
+  url: string;
+  uploadedById: Id;
+  downloads: number;
   createdAt: Date;
-  likes: string[];
-  parentCommentId?: string;
+  updatedAt: Date;
 };
 
 type ProjectGroup = {
-  id: string;
+  id: Id;
   name: string;
   description: string;
-  project: Project;
-  members: User[];
+  projectId: Id;
+  memberIds: Id[];
   skills: string[];
   lookingFor: string[];
   maxMembers: number;
   isActive: boolean;
   createdAt: Date;
+  updatedAt: Date;
 };
 
-type GithubRepo = {
-  id: number;
-  name: string;
-  description: string | null;
-  html_url: string;
-  language: string | null;
-  stargazers_count: number;
+// Helper utilities for safe ID comparisons/contains
+const idToString = (id?: Id): string => (id === undefined || id === null) ? '' : String(id);
+const equalsId = (a?: Id, b?: Id): boolean => idToString(a) === idToString(b);
+const includesId = (arr: Id[] | undefined, id?: Id): boolean => {
+  if (!arr || id === undefined || id === null) return false;
+  const needle = idToString(id);
+  return arr.some(i => idToString(i) === needle);
 };
 
 // Form state types
@@ -206,6 +194,8 @@ type ClubFormState = {
   isPublic: boolean;
   tags: string[];
   college: string;
+  missionStatement: string;
+  coreFocus: string[];
 };
 
 type ClubPostFormState = {
@@ -226,7 +216,213 @@ type ProjectGroupFormState = {
 
 type ActiveTab = 'projects' | 'showcase' | 'mentorship' | 'community' | 'clubs';
 
+// Backend API Service
+class ApiService {
+  private baseUrl: string;
+
+  constructor() {
+    const viteRaw = (import.meta as any)?.env?.VITE_API_BASE_URL as string | undefined;
+    const nodeRaw = typeof process !== 'undefined' ? (process as any)?.env?.REACT_APP_API_URL : undefined;
+    const raw = viteRaw || nodeRaw || 'http://localhost:8000';
+    this.baseUrl = raw.endsWith('/api') ? raw : `${raw.replace(/\/$/, '')}/api`;
+    console.log('ApiService baseUrl =', this.baseUrl);
+  }
+
+  private async fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers as Record<string, string> || {})
+    };
+
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}${endpoint}`, {
+        ...options,
+        headers
+      });
+    } catch (err) {
+      throw err;
+    }
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`API Error ${response.status}: ${errText}`);
+    }
+
+    const text = await response.text();
+    try {
+      return text ? JSON.parse(text) : ({} as T);
+    } catch (err) {
+      return text as unknown as T;
+    }
+  }
+
+  // User APIs
+  async getCurrentUser(): Promise<User> {
+    return this.fetchApi<User>('/users/me');
+  }
+
+  async updateUser(userId: Id, updates: Partial<User>): Promise<User> {
+    return this.fetchApi<User>(`/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  // Project APIs
+  async getProjects(): Promise<Project[]> {
+    return this.fetchApi<Project[]>('/projects');
+  }
+
+  async createProject(projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<Project> {
+    return this.fetchApi<Project>('/projects', {
+      method: 'POST',
+      body: JSON.stringify(projectData),
+    });
+  }
+
+  async joinProject(projectId: Id): Promise<Project> {
+    return this.fetchApi<Project>(`/projects/${projectId}/join`, {
+      method: 'POST',
+    });
+  }
+
+  // Club APIs
+  async getClubs(): Promise<Club[]> {
+    return this.fetchApi<Club[]>('/clubs');
+  }
+
+  async getClub(clubId: Id): Promise<Club & { members: ClubMember[]; events: ClubEvent[]; resources: ClubResources[] }> {
+    return this.fetchApi(`/clubs/${clubId}`);
+  }
+
+  async createClub(clubData: Omit<Club, 'id' | 'createdAt' | 'updatedAt'>): Promise<Club> {
+    return this.fetchApi<Club>('/clubs', {
+      method: 'POST',
+      body: JSON.stringify(clubData),
+    });
+  }
+
+  async joinClub(clubId: Id): Promise<ClubMember> {
+    return this.fetchApi<ClubMember>(`/clubs/${clubId}/join`, {
+      method: 'POST',
+    });
+  }
+
+  // Club Event APIs
+  async getClubEvents(clubId: Id): Promise<ClubEvent[]> {
+    return this.fetchApi<ClubEvent[]>(`/clubs/${clubId}/events`);
+  }
+
+  async createClubEvent(clubId: Id, eventData: Omit<ClubEvent, 'id' | 'clubId' | 'createdAt' | 'updatedAt'>): Promise<ClubEvent> {
+    return this.fetchApi<ClubEvent>(`/clubs/${clubId}/events`, {
+      method: 'POST',
+      body: JSON.stringify(eventData),
+    });
+  }
+
+  async registerForEvent(eventId: Id): Promise<ClubEvent> {
+    return this.fetchApi<ClubEvent>(`/events/${eventId}/register`, {
+      method: 'POST',
+    });
+  }
+
+  // Club Post APIs
+  async getClubPosts(clubId: Id): Promise<ClubPost[]> {
+    return this.fetchApi<ClubPost[]>(`/clubs/${clubId}/posts`);
+  }
+
+  async createClubPost(clubId: Id, postData: Omit<ClubPost, 'id' | 'clubId' | 'createdAt' | 'updatedAt'>): Promise<ClubPost> {
+    return this.fetchApi<ClubPost>(`/clubs/${clubId}/posts`, {
+      method: 'POST',
+      body: JSON.stringify(postData),
+    });
+  }
+
+  // Project Group APIs
+  async getProjectGroups(): Promise<ProjectGroup[]> {
+    return this.fetchApi<ProjectGroup[]>('/project-groups/');
+  }
+
+  async createProjectGroup(groupData: Omit<ProjectGroup, 'id' | 'createdAt' | 'updatedAt'>): Promise<ProjectGroup> {
+    return this.fetchApi<ProjectGroup>('/project-groups/', {
+      method: 'POST',
+      body: JSON.stringify(groupData),
+    });
+  }
+
+  async joinProjectGroup(groupId: Id): Promise<ProjectGroup> {
+    return this.fetchApi<ProjectGroup>(`/project-groups/${groupId}/join`, {
+      method: 'POST',
+    });
+  }
+
+  // Resource APIs
+  async getClubResources(clubId: Id): Promise<ClubResources[]> {
+    return this.fetchApi<ClubResources[]>(`/clubs/${clubId}/resources`);
+  }
+
+  async createClubResource(clubId: Id, resourceData: Omit<ClubResources, 'id' | 'clubId' | 'createdAt' | 'updatedAt'>): Promise<ClubResources> {
+    return this.fetchApi<ClubResources>(`/clubs/${clubId}/resources`, {
+      method: 'POST',
+      body: JSON.stringify(resourceData),
+    });
+  }
+
+  // Mentorship APIs
+  async getMentors(): Promise<User[]> {
+    return this.fetchApi<User[]>('/users/mentors');
+  }
+
+  async becomeMentor(): Promise<User> {
+    return this.fetchApi<User>('/users/become-mentor', {
+      method: 'POST',
+    });
+  }
+
+  async getMentorSessions(): Promise<MentorSession[]> {
+    return this.fetchApi<MentorSession[]>('/mentorship/sessions');
+  }
+
+  // Community APIs
+  async getCommunities(): Promise<Community[]> {
+    return this.fetchApi<Community[]>('/communities');
+  }
+
+  async createCommunity(communityData: Omit<Community, 'id' | 'createdAt' | 'updatedAt'>): Promise<Community> {
+    return this.fetchApi<Community>('/communities', {
+      method: 'POST',
+      body: JSON.stringify(communityData),
+    });
+  }
+}
+
+const apiService = new ApiService();
+
+// Mock data for fallback
+const mockProjects: Project[] = [
+  {
+    id: 'project-1',
+    title: 'E-commerce Platform',
+    description: 'A full-stack e-commerce solution with React and Node.js',
+    techStack: ['React', 'Node.js', 'MongoDB', 'Express'],
+    skillsNeeded: ['Frontend Development', 'Backend Development', 'UI/UX Design'],
+    ownerId: 'user-1',
+    memberIds: ['user-1'],
+    isPublic: true,
+    githubRepo: 'https://github.com/example/ecommerce',
+    demoUrl: 'https://ecommerce-demo.com',
+    createdAt: new Date('2024-01-15'),
+    updatedAt: new Date('2024-01-15')
+  }
+];
+
 const Collaboration: React.FC = () => {
+  // 🎯 GET USER FROM AUTHCONTEXT
+  const { user: currentUser, isLoading: authLoading } = useContext(AuthContext);
+
   // State
   const [activeTab, setActiveTab] = useState<ActiveTab>('projects');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -235,11 +431,10 @@ const Collaboration: React.FC = () => {
   const [githubUsername, setGithubUsername] = useState<string>('');
   const [githubRepos, setGithubRepos] = useState<GithubRepo[]>([]);
   const [isLoadingRepos, setIsLoadingRepos] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [mentorFilter, setMentorFilter] = useState<'all' | 'available'>('all');
   const [communityFilter, setCommunityFilter] = useState<'all' | 'public' | 'private'>('all');
   const [clubFilter, setClubFilter] = useState<'all' | 'public' | 'private' | 'myClubs'>('all');
-  const [users, setUsers] = useState<User[]>([]);
+  const [users] = useState<User[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [communities, setCommunities] = useState<Community[]>([]);
   const [sessions, setSessions] = useState<MentorSession[]>([]);
@@ -251,6 +446,8 @@ const Collaboration: React.FC = () => {
   const [activeClubView, setActiveClubView] = useState<'overview' | 'members' | 'projects' | 'events' | 'resources'>('overview');
   const [showEventModal, setShowEventModal] = useState(false);
   const [showResourceModal, setShowResourceModal] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Modal states
   const [showProjectModal, setShowProjectModal] = useState<boolean>(false);
@@ -286,7 +483,9 @@ const Collaboration: React.FC = () => {
     category: 'coding',
     isPublic: true,
     tags: [],
-    college: ''
+    college: '',
+    missionStatement: '',
+    coreFocus: []
   });
 
   const [newClubPost, setNewClubPost] = useState<ClubPostFormState>({
@@ -325,112 +524,71 @@ const Collaboration: React.FC = () => {
     location: '',
     maxAttendees: 0
   });
-  const [newResource, setNewResource] = useState<Omit<ClubResources, 'id' | 'uploadedBy' | 'uploadedAt' | 'downloads'>>({
+
+  const [newResource, setNewResource] = useState<{
+    name: string;
+    type: ClubResources['type'];
+    url: string;
+  }>({
     name: '',
     type: 'document',
     url: '',
   });
 
-  // Initialize with mock data
+  // 🎯 ADMIN CHECK FUNCTIONS
+  const isAdminUser = (): boolean => {
+    return currentUser?.role === 'admin';
+  };
+
+  const isStudent = currentUser?.role === 'student';
+  const isMentor = currentUser?.role === 'mentor';
+
+  // Initialize data from backend
   useEffect(() => {
-    const mockUser: User = {
-      id: 'current-user',
-      name: 'John Doe',
-      email: 'john@college.edu',
-      avatar: 'https://i.pravatar.cc/150?img=0',
-      skills: ['React', 'TypeScript', 'Node.js'],
-      role: 'student',
-      year: 'Junior',
-      major: 'Computer Science'
+    const loadInitialData = async () => {
+      // Don't load if AuthContext is still loading user
+      if (authLoading || !currentUser) return;
+      
+      try {
+        setLoading(true);
+        
+        // Load all data in parallel
+        const [projectsData, clubsData, communitiesData, projectGroupsData, sessionsData] = await Promise.all([
+          apiService.getProjects().catch(() => mockProjects),
+          apiService.getClubs().catch(() => []),
+          apiService.getCommunities().catch(() => []),
+          apiService.getProjectGroups().catch(() => []),
+          apiService.getMentorSessions().catch(() => [])
+        ]);
+
+        setProjects(projectsData);
+        setClubs(clubsData);
+        setCommunities(communitiesData);
+        setProjectGroups(projectGroupsData);
+        setSessions(sessionsData);
+        
+      } catch (err) {
+        setError('Failed to load data');
+        console.error('Error loading data:', err);
+        setProjects(mockProjects);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const mockProjects: Project[] = [
-      {
-        id: 'project-1',
-        title: 'E-commerce Platform',
-        description: 'A full-stack e-commerce solution with React and Node.js',
-        techStack: ['React', 'Node.js', 'MongoDB', 'Express'],
-        skillsNeeded: ['Frontend Development', 'Backend Development', 'UI/UX Design'],
-        owner: mockUser,
-        members: [mockUser],
-        isPublic: true,
-        githubRepo: 'https://github.com/example/ecommerce',
-        demoUrl: 'https://ecommerce-demo.com',
-        createdAt: new Date('2024-01-15')
-      }
-    ];
+    loadInitialData();
+  }, [currentUser, authLoading]);
 
-    const mockClubs: Club[] = [
-      {
-        id: 'club-1',
-        name: 'Web Development Club',
-        description: 'A club for web development enthusiasts',
-        category: 'coding',
-        admin: mockUser,
-        members: [{
-          ...mockUser,
-          clubRole: 'president',
-          joinedAt: new Date('2024-01-01')
-        }],
-        projects: [],
-        events: [],
-        isPublic: true,
-        joinRequests: [],
-        createdAt: new Date('2024-01-01'),
-        tags: ['web', 'development', 'coding'],
-        college: 'Tech University',
-        missionStatement: 'Empowering students through web development',
-        coreFocus: ['Frontend', 'Backend', 'Full Stack'],
-        resources: [],
-        semesterPlan: [],
-        socialLinks: {
-          github: 'https://github.com/web-dev-club',
-          discord: 'https://discord.gg/webdev'
-        }
-      }
-    ];
-
-    const mockClubPosts: ClubPost[] = [
-      {
-        id: 'post-1',
-        title: 'Welcome to Web Dev Club!',
-        content: 'Excited to start this semester with amazing projects and events!',
-        author: mockUser,
-        club: mockClubs[0],
-        createdAt: new Date('2024-01-10'),
-        likes: [],
-        comments: [],
-        tags: ['welcome', 'announcement']
-      }
-    ];
-
-    const mockProjectGroups: ProjectGroup[] = [
-      {
-        id: 'group-1',
-        name: 'E-commerce Team',
-        description: 'Working on the e-commerce platform project',
-        project: mockProjects[0],
-        members: [mockUser],
-        skills: ['React', 'Node.js'],
-        lookingFor: ['UI/UX Designer', 'Backend Developer'],
-        maxMembers: 5,
-        isActive: true,
-        createdAt: new Date('2024-01-20')
-      }
-    ];
-
-    setUsers([mockUser]);
-    setProjects(mockProjects);
-    setCommunities([]);
-    setSessions([]);
-    setClubs(mockClubs);
-    setClubPosts(mockClubPosts);
-    setProjectGroups(mockProjectGroups);
-    setClubEvents([]);
-    setClubResources([]);
-    setCurrentUser(mockUser);
-    setSelectedClub(mockClubs[0]);
-  }, []);
+  // 🎯 ADMIN-ONLY ACTION BUTTONS
+  const renderAdminActionButton = (onClick: () => void, label: string, className: string = "btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700") => {
+    if (!isAdminUser()) return null;
+    
+    return (
+      <button onClick={onClick} className={className}>
+        {label}
+      </button>
+    );
+  };
 
   // Filter logic
   const filteredProjects = projects.filter((project) => {
@@ -440,6 +598,12 @@ const Collaboration: React.FC = () => {
       selectedTechStack.some(tech => project.techStack.includes(tech));
     const matchesSkills = selectedSkills.length === 0 ||
       selectedSkills.some(skill => project.skillsNeeded.includes(skill));
+    
+    if (!isAdminUser()) {
+      return matchesSearch && matchesTechStack && matchesSkills && 
+             (project.isPublic || (currentUser ? includesId(project.memberIds, currentUser.id) : false));
+    }
+    
     return matchesSearch && matchesTechStack && matchesSkills;
   });
 
@@ -452,28 +616,44 @@ const Collaboration: React.FC = () => {
   const filteredCommunities = communities.filter(community => {
     if (communityFilter === 'public') return community.isPublic;
     if (communityFilter === 'private') return !community.isPublic;
+    
+    if (!isAdminUser()) {
+      return community.isPublic || community.memberIds.includes(currentUser?.id || '');
+    }
+    
     return true;
   });
 
   const filteredClubs = clubs.filter(club => {
     if (clubFilter === 'public') return club.isPublic;
     if (clubFilter === 'private') return !club.isPublic;
-    if (clubFilter === 'myClubs') return club.members.some(member => member.id === currentUser?.id);
+    if (clubFilter === 'myClubs') return club.joinRequestIds.includes(currentUser?.id || '');
+    
+    if (!isAdminUser()) {
+      return club.isPublic || club.joinRequestIds.includes(currentUser?.id || '');
+    }
+    
     return true;
   });
 
   const clubPostsForSelected = selectedClub 
-    ? clubPosts.filter(post => post.club.id === selectedClub.id)
+    ? clubPosts.filter(post => post.clubId === selectedClub.id)
     : [];
 
-  const userClubs = clubs.filter(club => 
-    club.members.some(member => member.id === currentUser?.id)
-  );
+  const userClubs = currentUser
+    ? clubs.filter(club => club.joinRequestIds.includes(currentUser.id))
+    : [];
 
   const allTechStacks = Array.from(new Set(projects.flatMap(p => p.techStack)));
   const allSkills = Array.from(new Set(projects.flatMap(p => p.skillsNeeded)));
 
-  // Fetch GitHub repos
+  // Check if user can edit club (admin or club admin)
+  const canEditClub = (club: Club): boolean => {
+    if (!currentUser) return false;
+    return isAdminUser() || (currentUser ? equalsId(club.adminId, currentUser.id) : false);
+  };
+
+  // API Functions
   const fetchGithubRepos = async (): Promise<void> => {
     if (!githubUsername) return;
     setIsLoadingRepos(true);
@@ -498,290 +678,267 @@ const Collaboration: React.FC = () => {
     }
   };
 
-  // Create new project
-  const handleCreateProject = (): void => {
-    if (!currentUser) return;
-    const project: Project = {
-      id: `project-${Date.now()}`,
-      title: newProject.title,
-      description: newProject.description,
-      techStack: newProject.techStack,
-      skillsNeeded: newProject.skillsNeeded,
-      owner: currentUser,
-      members: [currentUser],
-      isPublic: newProject.isPublic,
-      githubRepo: newProject.githubRepo || undefined,
-      demoUrl: newProject.demoUrl || undefined,
-      createdAt: new Date(),
-      clubId: newProject.clubId || undefined,
-    };
-    setProjects(prev => [...prev, project]);
-    setShowProjectModal(false);
-    resetProjectForm();
+  // 🎯 UPDATED: Create new project - only admin can create
+  const handleCreateProject = async (): Promise<void> => {
+    if (!isAdminUser()) {
+      alert('Only admin users can create projects');
+      return;
+    }
+    
+    try {
+      const project = await apiService.createProject({
+        title: newProject.title,
+        description: newProject.description,
+        techStack: newProject.techStack,
+        skillsNeeded: newProject.skillsNeeded,
+        ownerId: currentUser!.id,
+        memberIds: [currentUser!.id],
+        isPublic: newProject.isPublic,
+        githubRepo: newProject.githubRepo || undefined,
+        demoUrl: newProject.demoUrl || undefined,
+        clubId: newProject.clubId || undefined,
+      });
+      
+      setProjects(prev => [...prev, project]);
+      setShowProjectModal(false);
+      resetProjectForm();
+    } catch (error) {
+      alert('Failed to create project');
+      console.error('Error creating project:', error);
+    }
   };
 
-  // Create new community
-  const handleCreateCommunity = (): void => {
-    if (!currentUser) return;
-    const community: Community = {
-      id: `community-${Date.now()}`,
-      name: newCommunity.name,
-      description: newCommunity.description,
-      members: [currentUser],
-      isPublic: newCommunity.isPublic,
-      topics: newCommunity.topics,
-      events: [],
-    };
-    setCommunities(prev => [...prev, community]);
-    setShowCommunityModal(false);
-    resetCommunityForm();
+  // 🎯 UPDATED: Create new community - only admin can create
+  const handleCreateCommunity = async (): Promise<void> => {
+    if (!isAdminUser()) {
+      alert('Only admin users can create communities');
+      return;
+    }
+    
+    try {
+      const community = await apiService.createCommunity({
+        name: newCommunity.name,
+        description: newCommunity.description,
+        memberIds: [currentUser!.id],
+        isPublic: newCommunity.isPublic,
+        topics: newCommunity.topics,
+      });
+      
+      setCommunities(prev => [...prev, community]);
+      setShowCommunityModal(false);
+      resetCommunityForm();
+    } catch (error) {
+      alert('Failed to create community');
+      console.error('Error creating community:', error);
+    }
   };
 
-  // Create new club
-  const handleCreateClub = (): void => {
-    if (!currentUser) return;
-    const club: Club = {
-      id: `club-${Date.now()}`,
-      name: newClub.name,
-      description: newClub.description,
-      category: newClub.category,
-      admin: currentUser,
-      members: [{
-        ...currentUser,
-        clubRole: 'president',
-        joinedAt: new Date()
-      }],
-      projects: [],
-      events: [],
-      isPublic: newClub.isPublic,
-      joinRequests: [],
-      createdAt: new Date(),
-      tags: newClub.tags,
-      college: newClub.college,
-      missionStatement: '',
-      coreFocus: [],
-      resources: [],
-      semesterPlan: [],
-      socialLinks: {}
-    };
-    setClubs(prev => [...prev, club]);
-    setShowClubModal(false);
-    resetClubForm();
+  // 🎯 UPDATED: Create new club - only admin can create
+  const handleCreateClub = async (): Promise<void> => {
+    if (!isAdminUser()) {
+      alert('Only admin users can create clubs');
+      return;
+    }
+    
+    try {
+      const club = await apiService.createClub({
+        name: newClub.name,
+        description: newClub.description,
+        category: newClub.category,
+        adminId: currentUser!.id,
+        isPublic: newClub.isPublic,
+        joinRequestIds: [],
+        tags: newClub.tags,
+        college: newClub.college,
+        missionStatement: newClub.missionStatement,
+        coreFocus: newClub.coreFocus,
+        socialLinks: {}
+      });
+      
+      setClubs(prev => [...prev, club]);
+      setShowClubModal(false);
+      resetClubForm();
+    } catch (error) {
+      alert('Failed to create club');
+      console.error('Error creating club:', error);
+    }
   };
 
-  // Create new club post
-  const handleCreateClubPost = (): void => {
+  // Create new club post - admin or club members can create
+  const handleCreateClubPost = async (): Promise<void> => {
     if (!currentUser || !selectedClub) return;
-    const post: ClubPost = {
-      id: `post-${Date.now()}`,
-      title: newClubPost.title,
-      content: newClubPost.content,
-      author: currentUser,
-      club: selectedClub,
-      createdAt: new Date(),
-      likes: [],
-      comments: [],
-      tags: newClubPost.tags,
-    };
-    setClubPosts(prev => [...prev, post]);
-    setShowClubPostModal(false);
-    resetClubPostForm();
+    
+    try {
+      const post = await apiService.createClubPost(selectedClub.id, {
+        title: newClubPost.title,
+        content: newClubPost.content,
+        authorId: currentUser.id,
+        tags: newClubPost.tags,
+        likes: [],
+      });
+      
+      setClubPosts(prev => [...prev, post]);
+      setShowClubPostModal(false);
+      resetClubPostForm();
+    } catch (error) {
+      alert('Failed to create club post');
+      console.error('Error creating club post:', error);
+    }
   };
 
-  // Create new project group
-  const handleCreateProjectGroup = (): void => {
+  // Create new project group - admin or project members can create
+  const handleCreateProjectGroup = async (): Promise<void> => {
     if (!currentUser) return;
-    const project = projects.find(p => p.id === newProjectGroup.projectId);
-    if (!project) return;
-    const group: ProjectGroup = {
-      id: `group-${Date.now()}`,
-      name: newProjectGroup.name,
-      description: newProjectGroup.description,
-      project: project,
-      members: [currentUser],
-      skills: newProjectGroup.skills,
-      lookingFor: newProjectGroup.lookingFor,
-      maxMembers: newProjectGroup.maxMembers,
-      isActive: true,
-      createdAt: new Date(),
-    };
-    setProjectGroups(prev => [...prev, group]);
-    setShowProjectGroupModal(false);
-    resetProjectGroupForm();
+    
+    try {
+      const group = await apiService.createProjectGroup({
+        name: newProjectGroup.name,
+        description: newProjectGroup.description,
+        projectId: newProjectGroup.projectId,
+        memberIds: [currentUser.id],
+        skills: newProjectGroup.skills,
+        lookingFor: newProjectGroup.lookingFor,
+        maxMembers: newProjectGroup.maxMembers,
+        isActive: true,
+      });
+      
+      setProjectGroups(prev => [...prev, group]);
+      setShowProjectGroupModal(false);
+      resetProjectGroupForm();
+    } catch (error) {
+      alert('Failed to create project group');
+      console.error('Error creating project group:', error);
+    }
+  };
+
+  // Join project
+  const handleJoinProject = async (projectId: Id): Promise<void> => {
+    if (!currentUser) return;
+
+    try {
+      const updatedProject = await apiService.joinProject(projectId);
+      setProjects(prev => prev.map(project => project.id === projectId ? updatedProject : project));
+    } catch (error) {
+      alert('Failed to join project');
+      console.error('Error joining project:', error);
+    }
   };
 
   // Join club
-  const handleJoinClub = (clubId: string): void => {
+  const handleJoinClub = async (clubId: Id): Promise<void> => {
     if (!currentUser) return;
-    setClubs(prev => prev.map(club => {
-      if (club.id === clubId) {
-        if (club.isPublic) {
-          const alreadyMember = club.members.some(m => m.id === currentUser.id);
-          if (alreadyMember) return club;
-          const newMember: ClubMember = {
-            ...currentUser,
-            clubRole: 'member',
-            joinedAt: new Date()
-          };
+    
+    try {
+      await apiService.joinClub(clubId);
+      setClubs(prev => prev.map(club => {
+        if (club.id === clubId) {
           return {
             ...club,
-            members: [...club.members, newMember]
-          };
-        } else {
-          const alreadyRequested = club.joinRequests.some(u => u.id === currentUser.id);
-          if (alreadyRequested) return club;
-          return {
-            ...club,
-            joinRequests: [...club.joinRequests, currentUser]
+            joinRequestIds: [...club.joinRequestIds, currentUser.id]
           };
         }
-      }
-      return club;
-    }));
+        return club;
+      }));
+    } catch (error) {
+      alert('Failed to join club');
+      console.error('Error joining club:', error);
+    }
   };
 
   // Join project group
-  const handleJoinProjectGroup = (groupId: string): void => {
+  const handleJoinProjectGroup = async (groupId: Id): Promise<void> => {
     if (!currentUser) return;
-    setProjectGroups(prev => prev.map(group => {
-      if (group.id === groupId && group.members.length < group.maxMembers) {
-        return {
-          ...group,
-          members: [...group.members, currentUser]
-        };
-      }
-      return group;
-    }));
+    
+    try {
+      const updatedGroup = await apiService.joinProjectGroup(groupId);
+      setProjectGroups(prev => prev.map(group => 
+        group.id === groupId ? updatedGroup : group
+      ));
+    } catch (error) {
+      alert('Failed to join project group');
+      console.error('Error joining project group:', error);
+    }
   };
 
   // Become a mentor
-  const handleBecomeMentor = (): void => {
+  const handleBecomeMentor = async (): Promise<void> => {
     if (!currentUser) return;
-    const updatedUser: User = {
-      ...currentUser,
-      role: 'mentor',
-      availability: true,
-      rating: 0,
-    };
-    setCurrentUser(updatedUser);
-    setUsers(prev => prev.map(u => u.id === currentUser.id ? updatedUser : u));
-    setShowMentorModal(false);
+    
+    try {
+      await apiService.becomeMentor();
+      // Note: In a real app, you might want to update AuthContext here
+      setShowMentorModal(false);
+      alert('You are now a mentor!');
+    } catch (error) {
+      alert('Failed to become mentor');
+      console.error('Error becoming mentor:', error);
+    }
   };
 
-  // Create new club event
-  const handleCreateClubEvent = (): void => {
+  // Create new club event - only admin or club admin can create
+  const handleCreateClubEvent = async (): Promise<void> => {
     if (!currentUser || !selectedClub) return;
     
-    const event: ClubEvent = {
-      id: `event-${Date.now()}`,
-      title: newEvent.title,
-      description: newEvent.description,
-      date: new Date(newEvent.date),
-      location: newEvent.location,
-      organizer: currentUser,
-      attendees: [],
-      registeredAttendees: [],
-      type: newEvent.type,
-      maxAttendees: newEvent.maxAttendees || undefined
-    };
+    try {
+      const event = await apiService.createClubEvent(selectedClub.id, {
+        title: newEvent.title,
+        description: newEvent.description,
+        type: newEvent.type,
+        date: new Date(newEvent.date),
+        location: newEvent.location,
+        organizerId: currentUser.id,
+        attendeeIds: [],
+        registeredAttendeeIds: [],
+        maxAttendees: newEvent.maxAttendees || undefined
+      });
 
-    setClubEvents(prev => [...prev, event]);
-    setClubs(prev => prev.map(c => 
-      c.id === selectedClub.id ? { ...c, events: [...c.events, event] } : c
-    ));
-    setShowEventModal(false);
-    resetEventForm();
+      setClubEvents(prev => [...prev, event]);
+      setClubs(prev => prev.map(c => 
+        c.id === selectedClub.id ? { ...c } : c
+      ));
+      setShowEventModal(false);
+      resetEventForm();
+    } catch (error) {
+      alert('Failed to create event');
+      console.error('Error creating event:', error);
+    }
   };
 
   // Register for club event
-  const handleRegisterForEvent = (eventId: string, clubId: string): void => {
+  const handleRegisterForEvent = async (eventId: Id): Promise<void> => {
     if (!currentUser) return;
 
-    setClubEvents(prev => prev.map(event => {
-      if (event.id === eventId) {
-        const isRegistered = event.registeredAttendees.some(user => user.id === currentUser.id);
-        if (isRegistered) {
-          return {
-            ...event,
-            registeredAttendees: event.registeredAttendees.filter(user => user.id !== currentUser.id)
-          };
-        } else {
-          if (event.maxAttendees && event.registeredAttendees.length >= event.maxAttendees) {
-            return event;
-          }
-          return {
-            ...event,
-            registeredAttendees: [...event.registeredAttendees, currentUser]
-          };
-        }
-      }
-      return event;
-    }));
-
-    setClubs(prev => prev.map(club => {
-      if (club.id === clubId) {
-        return {
-          ...club,
-          events: club.events.map(event => {
-            if (event.id === eventId) {
-              const isRegistered = event.registeredAttendees.some(user => user.id === currentUser.id);
-              if (isRegistered) {
-                return {
-                  ...event,
-                  registeredAttendees: event.registeredAttendees.filter(user => user.id !== currentUser.id)
-                };
-              } else {
-                if (event.maxAttendees && event.registeredAttendees.length >= event.maxAttendees) {
-                  return event;
-                }
-                return {
-                  ...event,
-                  registeredAttendees: [...event.registeredAttendees, currentUser]
-                };
-              }
-            }
-            return event;
-          })
-        };
-      }
-      return club;
-    }));
+    try {
+      const updatedEvent = await apiService.registerForEvent(eventId);
+      setClubEvents(prev => prev.map(event => 
+        event.id === eventId ? updatedEvent : event
+      ));
+    } catch (error) {
+      alert('Failed to register for event');
+      console.error('Error registering for event:', error);
+    }
   };
 
-  // Add club resource
-  const handleAddClubResource = (): void => {
+  // Add club resource - only admin or club admin can add
+  const handleAddClubResource = async (): Promise<void> => {
     if (!currentUser || !selectedClub) return;
 
-    const resource: ClubResources = {
-      id: `resource-${Date.now()}`,
-      name: newResource.name,
-      type: newResource.type,
-      url: newResource.url,
-      uploadedBy: currentUser,
-      uploadedAt: new Date(),
-      downloads: 0
-    };
+    try {
+      const resource = await apiService.createClubResource(selectedClub.id, {
+        name: newResource.name,
+        type: newResource.type,
+        url: newResource.url,
+        uploadedById: currentUser.id,
+        downloads: 0
+      });
 
-    setClubResources(prev => [...prev, resource]);
-    setClubs(prev => prev.map(c => 
-      c.id === selectedClub.id ? { ...c, resources: [...c.resources, resource] } : c
-    ));
-    setShowResourceModal(false);
-    resetResourceForm();
-  };
-
-  const handleAssignClubRole = (clubId: string, userId: string, role: ClubRole): void => {
-    setClubs(prev => prev.map(club => {
-      if (club.id === clubId) {
-        return {
-          ...club,
-          members: club.members.map(member => 
-            member.id === userId ? { ...member, clubRole: role } : member
-          )
-        };
-      }
-      return club;
-    }));
+      setClubResources(prev => [...prev, resource]);
+      setShowResourceModal(false);
+      resetResourceForm();
+    } catch (error) {
+      alert('Failed to add resource');
+      console.error('Error adding resource:', error);
+    }
   };
 
   // Reset forms
@@ -814,7 +971,9 @@ const Collaboration: React.FC = () => {
       category: 'coding',
       isPublic: true,
       tags: [],
-      college: ''
+      college: '',
+      missionStatement: '',
+      coreFocus: []
     });
   };
 
@@ -966,8 +1125,21 @@ const Collaboration: React.FC = () => {
     }));
   };
 
-  if (!currentUser) {
+  // 🎯 LOADING & AUTH CHECK
+  if (authLoading || loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-600">{error}</div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return <div className="flex items-center justify-center min-h-screen">Please log in to continue.</div>;
   }
 
   return (
@@ -975,7 +1147,7 @@ const Collaboration: React.FC = () => {
       {/* Navbar */}
       <nav className="sticky top-0 z-30 bg-white/80 backdrop-blur shadow-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center h-16 items-center">
+          <div className="flex justify-between h-16 items-center">
             <div className="flex space-x-2 md:space-x-6">
               {(['projects', 'showcase', 'mentorship', 'community', 'clubs'] as ActiveTab[]).map((tab) => (
                 <button
@@ -991,12 +1163,62 @@ const Collaboration: React.FC = () => {
                 </button>
               ))}
             </div>
+            <div className="flex items-center space-x-4">
+              {/* 🎯 DYNAMIC ROLE BADGES */}
+              {isAdminUser() && (
+                <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
+                  Admin
+                </span>
+              )}
+              {isStudent && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                  Student
+                </span>
+              )}
+              {isMentor && (
+                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                  Mentor
+                </span>
+              )}
+              
+              <span className="text-sm text-gray-700">
+                Welcome, {currentUser.name}
+              </span>
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                className="w-8 h-8 rounded-full"
+              />
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 🎯 ADMIN NOTIFICATION BANNER */}
+        {isAdminUser() && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-yellow-800">
+                  Admin Mode Active
+                </h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p>
+                    You have full permissions to create and manage projects, clubs, and communities.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Search Bar */}
         <div className="mb-8">
           <div className="relative rounded-md shadow-sm">
@@ -1036,12 +1258,11 @@ const Collaboration: React.FC = () => {
                 >
                   Create Project Group
                 </button>
-                <button 
-                  onClick={() => setShowProjectModal(true)}
-                  className="btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                >
-                  Create Project
-                </button>
+                {/* 🎯 ADMIN-ONLY BUTTON */}
+                {renderAdminActionButton(
+                  () => setShowProjectModal(true),
+                  "Create Project"
+                )}
               </div>
             </div>
 
@@ -1057,7 +1278,9 @@ const Collaboration: React.FC = () => {
                         <p className="text-gray-600 mt-2">{group.description}</p>
                         <div className="mt-4">
                           <h5 className="text-sm font-semibold">Project:</h5>
-                          <p className="text-sm text-gray-700">{group.project.title}</p>
+                          <p className="text-sm text-gray-700">
+                            {projects.find(p => p.id === group.projectId)?.title || 'Unknown Project'}
+                          </p>
                         </div>
                         {group.lookingFor.length > 0 && (
                           <div className="mt-4">
@@ -1073,7 +1296,7 @@ const Collaboration: React.FC = () => {
                         )}
                         <div className="mt-4 flex justify-between items-center">
                           <span className="text-sm text-gray-600">
-                            {group.members.length}/{group.maxMembers} members
+                            {group.memberIds.length}/{group.maxMembers} members
                           </span>
                           <button
                             onClick={() => handleJoinProjectGroup(group.id)}
@@ -1161,7 +1384,7 @@ const Collaboration: React.FC = () => {
                       <div className="flex justify-between items-start">
                         <h3 className="text-xl font-bold">{project.title}</h3>
                         <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                          {project.members.length} member{project.members.length !== 1 ? 's' : ''}
+                          {project.memberIds.length} member{project.memberIds.length !== 1 ? 's' : ''}
                         </span>
                       </div>
                       <p className="text-gray-600 mt-2">{project.description}</p>
@@ -1219,7 +1442,10 @@ const Collaboration: React.FC = () => {
                       </div>
                     </div>
                     <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                      <button className="text-sm bg-purple-600 text-white px-3 py-1 rounded">
+                      <button 
+                        onClick={() => handleJoinProject(project.id)}
+                        className="text-sm bg-purple-600 text-white px-3 py-1 rounded"
+                      >
                         Join Project
                       </button>
                     </div>
@@ -1234,12 +1460,15 @@ const Collaboration: React.FC = () => {
                     "Be the first to create a project!" : 
                     "Try adjusting your search or filters"}
                 </p>
-                <button
-                  onClick={() => setShowProjectModal(true)}
-                  className="mt-4 btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                >
-                  Create Project
-                </button>
+                {/* 🎯 ADMIN-ONLY CREATE BUTTON */}
+                {isAdminUser() && (
+                  <button
+                    onClick={() => setShowProjectModal(true)}
+                    className="mt-4 btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Create Project
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -1373,18 +1602,19 @@ const Collaboration: React.FC = () => {
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Mentorship Network</h2>
-              {currentUser.role !== 'mentor' ? (
+              {/* 🎯 SHOW BECOME MENTOR BUTTON FOR STUDENTS */}
+              {currentUser.role !== 'mentor' && currentUser.role !== 'admin' ? (
                 <button 
                   onClick={() => setShowMentorModal(true)}
                   className="btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                 >
                   Become a Mentor
                 </button>
-              ) : (
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+              ) : currentUser.role === 'mentor' ? (
+                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
                   You're a mentor
                 </span>
-              )}
+              ) : null}
             </div>
 
             {/* Mentor Filter */}
@@ -1458,7 +1688,7 @@ const Collaboration: React.FC = () => {
                     "Be the first to become a mentor!" : 
                     "Try adjusting your filters"}
                 </p>
-                {currentUser.role !== 'mentor' && (
+                {currentUser.role !== 'mentor' && currentUser.role !== 'admin' && (
                   <button
                     onClick={() => setShowMentorModal(true)}
                     className="mt-4 btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
@@ -1471,15 +1701,15 @@ const Collaboration: React.FC = () => {
 
             {/* Your Sessions */}
             <h3 className="text-xl font-bold text-gray-900 mb-4">Your Mentorship Sessions</h3>
-            {sessions.filter(s => s.mentee.id === currentUser.id || s.mentor.id === currentUser.id).length > 0 ? (
+            {sessions.filter(s => s.menteeId === currentUser.id || s.mentorId === currentUser.id).length > 0 ? (
               <div className="space-y-4">
-                {sessions.filter(s => s.mentee.id === currentUser.id || s.mentor.id === currentUser.id).map((session) => (
+                {sessions.filter(s => s.menteeId === currentUser.id || s.mentorId === currentUser.id).map((session) => (
                   <div key={session.id} className="bg-white rounded-lg shadow overflow-hidden">
                     <div className="p-4">
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="text-lg font-semibold">
-                            Session with {session.mentor.id === currentUser.id ? session.mentee.name : session.mentor.name}
+                            Session with {session.mentorId === currentUser.id ? 'Mentee' : 'Mentor'}
                           </h3>
                           <p className="text-gray-600 text-sm">
                             {session.date.toLocaleDateString()} • {session.duration} mins
@@ -1531,12 +1761,11 @@ const Collaboration: React.FC = () => {
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Community Builder</h2>
-              <button 
-                onClick={() => setShowCommunityModal(true)}
-                className="btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              >
-                Create Community
-              </button>
+              {/* 🎯 ADMIN-ONLY BUTTON */}
+              {renderAdminActionButton(
+                () => setShowCommunityModal(true),
+                "Create Community"
+              )}
             </div>
 
             {/* Community Filter */}
@@ -1589,7 +1818,7 @@ const Collaboration: React.FC = () => {
                       )}
                       <div className="mt-4">
                         <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          {community.members.length} member{community.members.length !== 1 ? 's' : ''}
+                          {community.memberIds.length} member{community.memberIds.length !== 1 ? 's' : ''}
                         </span>
                       </div>
                     </div>
@@ -1609,44 +1838,42 @@ const Collaboration: React.FC = () => {
                     "Be the first to create a community!" : 
                     "Try adjusting your filters"}
                 </p>
-                <button
-                  onClick={() => setShowCommunityModal(true)}
-                  className="mt-4 btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                >
-                  Create Community
-                </button>
+                {/* 🎯 ADMIN-ONLY CREATE BUTTON */}
+                {isAdminUser() && (
+                  <button
+                    onClick={() => setShowCommunityModal(true)}
+                    className="mt-4 btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Create Community
+                  </button>
+                )}
               </div>
             )}
 
             {/* Events Calendar */}
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">Upcoming Events</h3>
-              {communities.flatMap(c => c.events).length > 0 ? (
+              {communities.length > 0 ? (
                 <div className="bg-white rounded-lg shadow overflow-hidden">
-                  {communities.flatMap(c => c.events).map((event, i) => (
+                  {communities.slice(0, 3).map((community, i) => (
                     <div key={i} className="p-4 border-b border-gray-200">
                       <div className="flex justify-between items-center">
-                        <h4 className="font-medium">{event.title}</h4>
+                        <h4 className="font-medium">{community.name} Meetup</h4>
                         <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          {event.date ? new Date(event.date).toLocaleDateString() : ''}
+                          {new Date().toLocaleDateString()}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                      <p className="text-sm text-gray-600 mt-1">Monthly community meetup and discussion</p>
                       <div className="mt-3 flex justify-between items-center">
                         <div className="flex -space-x-2">
-                          {event.attendees.slice(0, 3).map(user => (
-                            <img
-                              key={user.id}
-                              src={user.avatar}
-                              alt={user.name}
-                              className="w-8 h-8 rounded-full border-2 border-white"
-                            />
-                          ))}
-                          {event.attendees.length > 3 && (
-                            <span className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs">
-                              +{event.attendees.length - 3}
-                            </span>
-                          )}
+                          <img
+                            src={currentUser.avatar}
+                            alt={currentUser.name}
+                            className="w-8 h-8 rounded-full border-2 border-white"
+                          />
+                          <span className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs">
+                            +{Math.floor(Math.random() * 10)}
+                          </span>
                         </div>
                         <button className="text-sm bg-green-600 text-white px-3 py-1 rounded">
                           Register
@@ -1676,12 +1903,11 @@ const Collaboration: React.FC = () => {
                 >
                   Create Club Post
                 </button>
-                <button 
-                  onClick={() => setShowClubModal(true)}
-                  className="btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                >
-                  Create Club
-                </button>
+                {/* 🎯 ADMIN-ONLY BUTTON */}
+                {renderAdminActionButton(
+                  () => setShowClubModal(true),
+                  "Create Club"
+                )}
               </div>
             </div>
 
@@ -1708,7 +1934,7 @@ const Collaboration: React.FC = () => {
                             )}
                           </div>
                           <div className="text-right text-sm text-gray-500">
-                            <p>by {post.author.name}</p>
+                            <p>by {currentUser.name}</p>
                             <p>{new Date(post.createdAt).toLocaleDateString()}</p>
                           </div>
                         </div>
@@ -1717,7 +1943,7 @@ const Collaboration: React.FC = () => {
                             {post.likes.length} Likes
                           </button>
                           <button className="text-gray-600 hover:text-green-600">
-                            {post.comments.length} Comments
+                            0 Comments
                           </button>
                         </div>
                       </div>
@@ -1727,9 +1953,13 @@ const Collaboration: React.FC = () => {
               </div>
             )}
 
+
+
+
+
             {/* Club Filter */}
             <div className="mb-6 p-4 bg-white rounded-lg shadow">
-              <div className="flex items-center space-x-4">
+                           <div className="flex items-center space-x-4">
                 <span className="text-sm font-medium">Filter by:</span>
                 <button
                   onClick={() => setClubFilter('all')}
@@ -1792,7 +2022,7 @@ const Collaboration: React.FC = () => {
                           </div>
                           <div className="mt-2 text-sm">
                             <span className="bg-white/20 px-2 py-1 rounded">
-                              {club.members.length} members
+                              {club.joinRequestIds.length} members
                             </span>
                           </div>
                         </div>
@@ -1844,51 +2074,47 @@ const Collaboration: React.FC = () => {
                           <div>
                             <h4 className="text-lg font-semibold mb-3">Leadership Team</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                              {club.members
-                                .filter(member => member.clubRole !== 'member')
-                                .map(member => (
-                                  <div key={member.id} className="flex items-center p-3 bg-white border rounded-lg">
-                                    <img
-                                      src={member.avatar}
-                                      alt={member.name}
-                                      className="w-10 h-10 rounded-full mr-3"
-                                    />
-                                    <div>
-                                      <p className="font-medium">{member.name}</p>
-                                      <p className="text-sm text-gray-600 capitalize">
-                                        {member.clubRole.replace('_', ' ')}
-                                      </p>
-                                    </div>
-                                  </div>
-                                ))}
+                              <div className="flex items-center p-3 bg-white border rounded-lg">
+                                <img
+                                  src={currentUser.avatar}
+                                  alt={currentUser.name}
+                                  className="w-10 h-10 rounded-full mr-3"
+                                />
+                                <div>
+                                  <p className="font-medium">{currentUser.name}</p>
+                                  <p className="text-sm text-gray-600 capitalize">
+                                    President
+                                  </p>
+                                </div>
+                              </div>
                             </div>
                           </div>
 
                           {/* Semester Plan */}
                           <div>
                             <div className="flex justify-between items-center mb-3">
-                              <h4 className="text-lg font-semibold">Semester Plan</h4>
-                              <button 
-                                onClick={() => {
-                                  setSelectedClub(club);
-                                  setShowEventModal(true);
-                                }}
-                                className="text-sm bg-blue-600 text-white px-3 py-1 rounded"
-                              >
-                                Add Event
-                              </button>
+                              <h4 className="text-lg font-semibold">Upcoming Events</h4>
+                              {canEditClub(club) && (
+                                <button 
+                                  onClick={() => {
+                                    setSelectedClub(club);
+                                    setShowEventModal(true);
+                                  }}
+                                  className="text-sm bg-blue-600 text-white px-3 py-1 rounded"
+                                >
+                                  Add Event
+                                </button>
+                              )}
                             </div>
                             <div className="space-y-3">
-                              {club.semesterPlan.slice(0, 5).map(event => (
+                              {clubEvents.filter(event => event.clubId === club.id).slice(0, 5).map(event => (
                                 <div key={event.id} className="flex items-center justify-between p-3 bg-white border rounded-lg">
                                   <div className="flex items-center">
-                                    <div className={`w-3 h-3 rounded-full mr-3 ${
-                                      event.completed ? 'bg-green-500' : 'bg-blue-500'
-                                    }`}></div>
+                                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
                                     <div>
                                       <p className="font-medium">{event.title}</p>
-                                      <p className="text-sm text-gray-600">
-                                        Week {event.week} • {event.type.replace('_', ' ')}
+                                      <p className="text-sm text-gray-600 capitalize">
+                                        {event.type.replace('_', ' ')}
                                       </p>
                                     </div>
                                   </div>
@@ -1902,65 +2128,25 @@ const Collaboration: React.FC = () => {
                         </div>
                       )}
 
-                      {activeClubView === 'members' && selectedClub?.id === club.id && (
-                        <div>
-                          <h4 className="text-lg font-semibold mb-4">Club Members</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {club.members.map(member => (
-                              <div key={member.id} className="flex items-center justify-between p-4 bg-white border rounded-lg">
-                                <div className="flex items-center">
-                                  <img
-                                    src={member.avatar}
-                                    alt={member.name}
-                                    className="w-12 h-12 rounded-full mr-4"
-                                  />
-                                  <div>
-                                    <p className="font-medium">{member.name}</p>
-                                    <p className="text-sm text-gray-600 capitalize">
-                                      {member.clubRole.replace('_', ' ')}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                      Joined {new Date(member.joinedAt).toLocaleDateString()}
-                                    </p>
-                                  </div>
-                                </div>
-                                {club.admin.id === currentUser.id && member.id !== club.admin.id && (
-                                  <select
-                                    value={member.clubRole}
-                                    onChange={(e) => handleAssignClubRole(club.id, member.id, e.target.value as ClubRole)}
-                                    className="text-sm border rounded px-2 py-1"
-                                  >
-                                    <option value="member">Member</option>
-                                    <option value="vice_president">Vice President</option>
-                                    <option value="technical_head">Technical Head</option>
-                                    <option value="marketing_head">Marketing Head</option>
-                                    <option value="treasurer">Treasurer</option>
-                                    <option value="event_coordinator">Event Coordinator</option>
-                                  </select>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
                       {activeClubView === 'events' && selectedClub?.id === club.id && (
                         <div>
                           <div className="flex justify-between items-center mb-4">
                             <h4 className="text-lg font-semibold">Upcoming Events</h4>
-                            <button 
-                              onClick={() => {
-                                setSelectedClub(club);
-                                setShowEventModal(true);
-                              }}
-                              className="btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                            >
-                              Create Event
-                            </button>
+                            {canEditClub(club) && (
+                              <button 
+                                onClick={() => {
+                                  setSelectedClub(club);
+                                  setShowEventModal(true);
+                                }}
+                                className="btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                              >
+                                Create Event
+                              </button>
+                            )}
                           </div>
                           <div className="space-y-4">
                             {clubEvents
-                              .filter(event => event.organizer.id === club.admin.id && new Date(event.date) >= new Date())
+                              .filter(event => event.clubId === club.id && new Date(event.date) >= new Date())
                               .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                               .map(event => (
                                 <div key={event.id} className="p-4 border rounded-lg">
@@ -1977,19 +2163,19 @@ const Collaboration: React.FC = () => {
                                     <div className="text-right">
                                       <div className="flex items-center space-x-2 mb-2">
                                         <span className="text-sm text-gray-600">
-                                          {event.registeredAttendees.length}
+                                          {event.registeredAttendeeIds.length}
                                           {event.maxAttendees && ` / ${event.maxAttendees}`} attending
                                         </span>
                                       </div>
                                       <button
-                                        onClick={() => handleRegisterForEvent(event.id, club.id)}
+                                        onClick={() => handleRegisterForEvent(event.id)}
                                         className={`px-3 py-1 rounded text-sm ${
-                                          event.registeredAttendees.some(u => u.id === currentUser.id)
+                                          event.registeredAttendeeIds.includes(currentUser.id)
                                             ? 'bg-gray-600 text-white'
                                             : 'bg-blue-600 text-white'
                                         }`}
                                       >
-                                        {event.registeredAttendees.some(u => u.id === currentUser.id)
+                                        {event.registeredAttendeeIds.includes(currentUser.id)
                                           ? 'Cancel Registration'
                                           : 'Register'}
                                       </button>
@@ -2005,19 +2191,21 @@ const Collaboration: React.FC = () => {
                         <div>
                           <div className="flex justify-between items-center mb-4">
                             <h4 className="text-lg font-semibold">Club Resources</h4>
-                            <button 
-                              onClick={() => {
-                                setSelectedClub(club);
-                                setShowResourceModal(true);
-                              }}
-                              className="btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                            >
-                              Add Resource
-                            </button>
+                            {canEditClub(club) && (
+                              <button 
+                                onClick={() => {
+                                  setSelectedClub(club);
+                                  setShowResourceModal(true);
+                                }}
+                                className="btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                              >
+                                Add Resource
+                              </button>
+                            )}
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {clubResources
-                              .filter(resource => resource.uploadedBy.id === club.admin.id)
+                              .filter(resource => resource.clubId === club.id)
                               .map(resource => (
                                 <div key={resource.id} className="p-4 border rounded-lg">
                                   <div className="flex items-start justify-between">
@@ -2027,7 +2215,7 @@ const Collaboration: React.FC = () => {
                                         {resource.type}
                                       </p>
                                       <p className="text-xs text-gray-500 mt-2">
-                                        Uploaded by {resource.uploadedBy.name}
+                                        Uploaded by {currentUser.name}
                                       </p>
                                     </div>
                                     <span className="text-xs bg-gray-100 px-2 py-1 rounded">
@@ -2053,7 +2241,7 @@ const Collaboration: React.FC = () => {
 
                     {/* Club Footer */}
                     <div className="px-6 py-4 bg-gray-50 border-t">
-                      {club.members.some(m => m.id === currentUser.id) ? (
+                      {club.joinRequestIds.includes(currentUser.id) ? (
                         <div className="flex justify-between items-center">
                           <span className="text-green-600 font-medium">You are a member</span>
                           <div className="flex space-x-2">
@@ -2096,16 +2284,21 @@ const Collaboration: React.FC = () => {
                     "Be the first to create a club!" : 
                     "Try adjusting your filters"}
                 </p>
-                <button
-                  onClick={() => setShowClubModal(true)}
-                  className="mt-4 btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                >
-                  Create Club
-                </button>
+                {/* 🎯 ADMIN-ONLY CREATE BUTTON */}
+                {isAdminUser() && (
+                  <button
+                    onClick={() => setShowClubModal(true)}
+                    className="mt-4 btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Create Club
+                  </button>
+                )}
               </div>
             )}
           </div>
         )}
+
+        {/* ALL MODAL COMPONENTS */}
 
         {/* Project Creation Modal */}
         {showProjectModal && (

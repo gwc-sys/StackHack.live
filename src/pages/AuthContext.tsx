@@ -6,12 +6,24 @@ interface User {
   id: number;
   username: string;
   email: string;
-  is_superuser: boolean; // <-- Add this
-  is_staff: boolean;     // <-- And this
-  fullName?: string;    // camelCase
-  full_name?: string;   // snake_case (backend might send this)
-  name?: string;        // generic fallback
+  is_superuser: boolean;
+  is_staff: boolean;
+  fullName?: string;
+  full_name?: string;
+  name?: string;
   avatar?: string;
+  
+  // 🎯 ADD THESE COLLABORATION-SPECIFIC FIELDS
+  role: 'admin' | 'student' | 'mentor' | 'developer';
+  skills: string[];
+  githubUsername?: string;
+  rating?: number;
+  availability?: boolean;
+  college?: string;
+  year?: string;
+  major?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // ---------------- Session Response type ----------------
@@ -32,6 +44,8 @@ interface AuthContextType {
   logout: () => void;
   getInitials: () => string;
   loading: boolean;
+  // 🎯 ADD isLoading FOR COLLABORATION COMPATIBILITY
+  isLoading: boolean;
 }
 
 // ---------------- Default context ----------------
@@ -44,6 +58,7 @@ export const AuthContext = createContext<AuthContextType>({
   logout: () => {},
   getInitials: () => "?",
   loading: true,
+  isLoading: true, // 🎯 ADD THIS
 });
 
 // ---------------- Configure axios instance ----------------
@@ -56,6 +71,44 @@ const api = axios.create({
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // 🎯 HELPER: Convert backend user to frontend user format
+  const transformUserData = (backendUser: any): User => {
+    // 🎯 MAP BACKEND ROLES TO FRONTEND ROLES
+    let role: 'admin' | 'student' | 'mentor' | 'developer' = 'student';
+    
+    if (backendUser.is_superuser) {
+      role = 'admin';
+    } else if (backendUser.role) {
+      // If backend provides role directly, use it
+      role = backendUser.role;
+    } else if (backendUser.is_staff) {
+      role = 'mentor'; // or whatever makes sense for your app
+    }
+
+    return {
+      id: backendUser.id,
+      username: backendUser.username,
+      email: backendUser.email,
+      is_superuser: backendUser.is_superuser || false,
+      is_staff: backendUser.is_staff || false,
+      fullName: backendUser.fullName || backendUser.full_name || backendUser.name || backendUser.username,
+      name: backendUser.name || backendUser.username,
+      avatar: backendUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(backendUser.username)}&background=random`,
+      
+      // 🎯 ADD COLLABORATION FIELDS WITH DEFAULTS
+      role: role,
+      skills: backendUser.skills || [],
+      githubUsername: backendUser.githubUsername || backendUser.github_username,
+      rating: backendUser.rating || 0,
+      availability: backendUser.availability || false,
+      college: backendUser.college || '',
+      year: backendUser.year || '',
+      major: backendUser.major || '',
+      createdAt: backendUser.createdAt ? new Date(backendUser.createdAt) : new Date(),
+      updatedAt: backendUser.updatedAt ? new Date(backendUser.updatedAt) : new Date(),
+    };
+  };
 
   // ---------------- Set up axios interceptors ----------------
   useEffect(() => {
@@ -98,8 +151,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (sessionCode && savedUser) {
         try {
-          const response = await api.get<User>("/me/");
-          setUser(response.data);
+          const response = await api.get<any>("/me/");
+          // 🎯 TRANSFORM BACKEND USER DATA TO FRONTEND FORMAT
+          const transformedUser = transformUserData(response.data);
+          setUser(transformedUser);
+          
+          // 🎯 UPDATE LOCAL STORAGE WITH TRANSFORMED USER
+          localStorage.setItem("user", JSON.stringify(transformedUser));
         } catch (error) {
           console.error("Session validation failed:", error);
           localStorage.removeItem("session_code");
@@ -123,13 +181,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       const { user: userData, session_code, expires_at } = response.data;
 
+      // 🎯 TRANSFORM BACKEND USER DATA TO FRONTEND FORMAT
+      const transformedUser = transformUserData(userData);
+
       localStorage.setItem("session_code", session_code);
-      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("user", JSON.stringify(transformedUser));
       localStorage.setItem("session_expires", expires_at);
 
       api.defaults.headers.common["X-Session-Code"] = session_code;
 
-      setUser(userData);
+      setUser(transformedUser);
     } catch (error: any) {
       console.error("Login failed:", error.response?.data || error);
       localStorage.removeItem("session_code");
@@ -177,13 +238,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return parts[0][0].toUpperCase();
   };
 
-  // Add isSuperUser and isStaff detection
   const isAuthenticated = !!user;
   const isSuperUser = !!user?.is_superuser;
   const isStaff = !!user?.is_staff;
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isSuperUser, isStaff, login, logout, getInitials, loading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated, 
+      isSuperUser, 
+      isStaff, 
+      login, 
+      logout, 
+      getInitials, 
+      loading,
+      isLoading: loading // 🎯 ADD THIS ALIAS FOR COLLABORATION COMPATIBILITY
+    }}>
       {children}
     </AuthContext.Provider>
   );
@@ -198,4 +268,4 @@ export const useAuth = () => {
   return context;
 };
 
-export { api };
+export { api }; 
