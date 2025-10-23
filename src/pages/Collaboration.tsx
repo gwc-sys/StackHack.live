@@ -216,7 +216,7 @@ type ProjectGroupFormState = {
 
 type ActiveTab = 'projects' | 'showcase' | 'mentorship' | 'community' | 'clubs';
 
-// Backend API Service
+// Backend API Service - FIXED VERSION
 class ApiService {
   private baseUrl: string;
 
@@ -229,24 +229,47 @@ class ApiService {
   }
 
   private async fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const token = localStorage.getItem('authToken');
+    // FIXED: Use session-based authentication instead of token-based
+    const sessionCode = localStorage.getItem('session_code');
+
+    // Default headers
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers as Record<string, string> || {})
+      ...(options.headers as Record<string, string> || {}),
+      ...(sessionCode ? { 'X-Session-Code': sessionCode } : {})
     };
+
+    // Add CSRF token for unsafe methods (Django default cookie name: csrftoken)
+    const unsafeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+    if (unsafeMethods.includes((options.method || 'GET').toUpperCase())) {
+      const match = document.cookie.match(new RegExp('(^| )csrftoken=([^;]+)'));
+      const csrfToken = match ? match[2] : null;
+      if (csrfToken) {
+        headers['X-CSRFToken'] = csrfToken;
+      }
+    }
 
     let response: Response;
     try {
       response = await fetch(`${this.baseUrl}${endpoint}`, {
         ...options,
-        headers
+        headers,
+        credentials: 'include', // important for session-based auth/cookies
       });
-    } catch (err) {
-      throw err;
+    } catch (err: any) {
+      throw new Error(`Network error: ${err?.message ?? String(err)}`);
     }
 
     if (!response.ok) {
+      // Handle 401 specifically - clear auth data
+      if (response.status === 401) {
+        localStorage.removeItem('session_code');
+        localStorage.removeItem('user');
+        localStorage.removeItem('session_expires');
+        // You might want to redirect to login here
+        console.error('Authentication failed - session expired');
+      }
+      
       const errText = await response.text();
       throw new Error(`API Error ${response.status}: ${errText}`);
     }
@@ -261,11 +284,11 @@ class ApiService {
 
   // User APIs
   async getCurrentUser(): Promise<User> {
-    return this.fetchApi<User>('/users/me');
+    return this.fetchApi<User>('/users/me/');
   }
 
   async updateUser(userId: Id, updates: Partial<User>): Promise<User> {
-    return this.fetchApi<User>(`/users/${userId}`, {
+    return this.fetchApi<User>(`/users/${userId}/`, {
       method: 'PUT',
       body: JSON.stringify(updates),
     });
@@ -273,69 +296,69 @@ class ApiService {
 
   // Project APIs
   async getProjects(): Promise<Project[]> {
-    return this.fetchApi<Project[]>('/projects');
+    return this.fetchApi<Project[]>('/projects/');
   }
 
   async createProject(projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<Project> {
-    return this.fetchApi<Project>('/projects', {
+    return this.fetchApi<Project>('/projects/', {
       method: 'POST',
       body: JSON.stringify(projectData),
     });
   }
 
   async joinProject(projectId: Id): Promise<Project> {
-    return this.fetchApi<Project>(`/projects/${projectId}/join`, {
+    return this.fetchApi<Project>(`/projects/${projectId}/join/`, {
       method: 'POST',
     });
   }
 
   // Club APIs
   async getClubs(): Promise<Club[]> {
-    return this.fetchApi<Club[]>('/clubs');
+    return this.fetchApi<Club[]>('/clubs/');
   }
 
   async getClub(clubId: Id): Promise<Club & { members: ClubMember[]; events: ClubEvent[]; resources: ClubResources[] }> {
-    return this.fetchApi(`/clubs/${clubId}`);
+    return this.fetchApi(`/clubs/${clubId}/`);
   }
 
   async createClub(clubData: Omit<Club, 'id' | 'createdAt' | 'updatedAt'>): Promise<Club> {
-    return this.fetchApi<Club>('/clubs', {
+    return this.fetchApi<Club>('/clubs/', {
       method: 'POST',
       body: JSON.stringify(clubData),
     });
   }
 
   async joinClub(clubId: Id): Promise<ClubMember> {
-    return this.fetchApi<ClubMember>(`/clubs/${clubId}/join`, {
+    return this.fetchApi<ClubMember>(`/clubs/${clubId}/join/`, {
       method: 'POST',
     });
   }
 
   // Club Event APIs
   async getClubEvents(clubId: Id): Promise<ClubEvent[]> {
-    return this.fetchApi<ClubEvent[]>(`/clubs/${clubId}/events`);
+    return this.fetchApi<ClubEvent[]>(`/clubs/${clubId}/events/`);
   }
 
   async createClubEvent(clubId: Id, eventData: Omit<ClubEvent, 'id' | 'clubId' | 'createdAt' | 'updatedAt'>): Promise<ClubEvent> {
-    return this.fetchApi<ClubEvent>(`/clubs/${clubId}/events`, {
+    return this.fetchApi<ClubEvent>(`/clubs/${clubId}/events/`, {
       method: 'POST',
       body: JSON.stringify(eventData),
     });
   }
 
   async registerForEvent(eventId: Id): Promise<ClubEvent> {
-    return this.fetchApi<ClubEvent>(`/events/${eventId}/register`, {
+    return this.fetchApi<ClubEvent>(`/events/${eventId}/register/`, {
       method: 'POST',
     });
   }
 
   // Club Post APIs
   async getClubPosts(clubId: Id): Promise<ClubPost[]> {
-    return this.fetchApi<ClubPost[]>(`/clubs/${clubId}/posts`);
+    return this.fetchApi<ClubPost[]>(`/clubs/${clubId}/posts/`);
   }
 
   async createClubPost(clubId: Id, postData: Omit<ClubPost, 'id' | 'clubId' | 'createdAt' | 'updatedAt'>): Promise<ClubPost> {
-    return this.fetchApi<ClubPost>(`/clubs/${clubId}/posts`, {
+    return this.fetchApi<ClubPost>(`/clubs/${clubId}/posts/`, {
       method: 'POST',
       body: JSON.stringify(postData),
     });
@@ -354,18 +377,18 @@ class ApiService {
   }
 
   async joinProjectGroup(groupId: Id): Promise<ProjectGroup> {
-    return this.fetchApi<ProjectGroup>(`/project-groups/${groupId}/join`, {
+    return this.fetchApi<ProjectGroup>(`/project-groups/${groupId}/join/`, {
       method: 'POST',
     });
   }
 
   // Resource APIs
   async getClubResources(clubId: Id): Promise<ClubResources[]> {
-    return this.fetchApi<ClubResources[]>(`/clubs/${clubId}/resources`);
+    return this.fetchApi<ClubResources[]>(`/clubs/${clubId}/resources/`);
   }
 
   async createClubResource(clubId: Id, resourceData: Omit<ClubResources, 'id' | 'clubId' | 'createdAt' | 'updatedAt'>): Promise<ClubResources> {
-    return this.fetchApi<ClubResources>(`/clubs/${clubId}/resources`, {
+    return this.fetchApi<ClubResources>(`/clubs/${clubId}/resources/`, {
       method: 'POST',
       body: JSON.stringify(resourceData),
     });
@@ -373,26 +396,26 @@ class ApiService {
 
   // Mentorship APIs
   async getMentors(): Promise<User[]> {
-    return this.fetchApi<User[]>('/users/mentors');
+    return this.fetchApi<User[]>('/users/mentors/');
   }
 
   async becomeMentor(): Promise<User> {
-    return this.fetchApi<User>('/users/become-mentor', {
+    return this.fetchApi<User>('/users/become-mentor/', {
       method: 'POST',
     });
   }
 
   async getMentorSessions(): Promise<MentorSession[]> {
-    return this.fetchApi<MentorSession[]>('/mentorship/sessions');
+    return this.fetchApi<MentorSession[]>('/mentorship/sessions/');
   }
 
   // Community APIs
   async getCommunities(): Promise<Community[]> {
-    return this.fetchApi<Community[]>('/communities');
+    return this.fetchApi<Community[]>('/communities/');
   }
 
   async createCommunity(communityData: Omit<Community, 'id' | 'createdAt' | 'updatedAt'>): Promise<Community> {
-    return this.fetchApi<Community>('/communities', {
+    return this.fetchApi<Community>('/communities/', {
       method: 'POST',
       body: JSON.stringify(communityData),
     });
@@ -421,7 +444,7 @@ const mockProjects: Project[] = [
 
 const Collaboration: React.FC = () => {
   // 🎯 GET USER FROM AUTHCONTEXT
-  const { user: currentUser, isLoading: authLoading } = useContext(AuthContext);
+  const { user: currentUser, isLoading: authLoading, isAuthenticated } = useContext(AuthContext);
 
   // State
   const [activeTab, setActiveTab] = useState<ActiveTab>('projects');
@@ -543,23 +566,50 @@ const Collaboration: React.FC = () => {
   const isStudent = currentUser?.role === 'student';
   const isMentor = currentUser?.role === 'mentor';
 
-  // Initialize data from backend
+  // Initialize data from backend - FIXED VERSION
   useEffect(() => {
     const loadInitialData = async () => {
-      // Don't load if AuthContext is still loading user
-      if (authLoading || !currentUser) return;
+      // Don't load if AuthContext is still loading user or user is not authenticated
+      if (authLoading || !currentUser || !isAuthenticated) {
+        console.log('Waiting for authentication...', { authLoading, currentUser: !!currentUser, isAuthenticated });
+        return;
+      }
       
       try {
         setLoading(true);
+        console.log('Loading collaboration data...');
         
-        // Load all data in parallel
+        // Load all data in parallel with better error handling
         const [projectsData, clubsData, communitiesData, projectGroupsData, sessionsData] = await Promise.all([
-          apiService.getProjects().catch(() => mockProjects),
-          apiService.getClubs().catch(() => []),
-          apiService.getCommunities().catch(() => []),
-          apiService.getProjectGroups().catch(() => []),
-          apiService.getMentorSessions().catch(() => [])
+          apiService.getProjects().catch((err) => {
+            console.warn('Failed to load projects, using mock data:', err);
+            return mockProjects;
+          }),
+          apiService.getClubs().catch((err) => {
+            console.warn('Failed to load clubs:', err);
+            return [];
+          }),
+          apiService.getCommunities().catch((err) => {
+            console.warn('Failed to load communities:', err);
+            return [];
+          }),
+          apiService.getProjectGroups().catch((err) => {
+            console.warn('Failed to load project groups:', err);
+            return [];
+          }),
+          apiService.getMentorSessions().catch((err) => {
+            console.warn('Failed to load mentor sessions:', err);
+            return [];
+          })
         ]);
+
+        console.log('Data loaded successfully:', {
+          projects: projectsData.length,
+          clubs: clubsData.length,
+          communities: communitiesData.length,
+          projectGroups: projectGroupsData.length,
+          sessions: sessionsData.length
+        });
 
         setProjects(projectsData);
         setClubs(clubsData);
@@ -567,9 +617,14 @@ const Collaboration: React.FC = () => {
         setProjectGroups(projectGroupsData);
         setSessions(sessionsData);
         
-      } catch (err) {
-        setError('Failed to load data');
-        console.error('Error loading data:', err);
+      } catch (err: any) {
+        console.error('Error in loadInitialData:', err);
+        if (err.message.includes('401')) {
+          setError('Authentication failed. Please log in again.');
+        } else {
+          setError('Failed to load data. Please try again later.');
+        }
+        // Fallback to mock data
         setProjects(mockProjects);
       } finally {
         setLoading(false);
@@ -577,7 +632,7 @@ const Collaboration: React.FC = () => {
     };
 
     loadInitialData();
-  }, [currentUser, authLoading]);
+  }, [currentUser, authLoading, isAuthenticated]);
 
   // 🎯 ADMIN-ONLY ACTION BUTTONS
   const renderAdminActionButton = (onClick: () => void, label: string, className: string = "btn btn-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700") => {
@@ -685,14 +740,19 @@ const Collaboration: React.FC = () => {
       return;
     }
     
+    if (!currentUser) {
+      alert('Please log in to create a project');
+      return;
+    }
+    
     try {
       const project = await apiService.createProject({
         title: newProject.title,
         description: newProject.description,
         techStack: newProject.techStack,
         skillsNeeded: newProject.skillsNeeded,
-        ownerId: currentUser!.id,
-        memberIds: [currentUser!.id],
+        ownerId: currentUser.id,
+        memberIds: [currentUser.id],
         isPublic: newProject.isPublic,
         githubRepo: newProject.githubRepo || undefined,
         demoUrl: newProject.demoUrl || undefined,
@@ -702,9 +762,13 @@ const Collaboration: React.FC = () => {
       setProjects(prev => [...prev, project]);
       setShowProjectModal(false);
       resetProjectForm();
-    } catch (error) {
-      alert('Failed to create project');
+    } catch (error: any) {
       console.error('Error creating project:', error);
+      if (error.message.includes('401')) {
+        alert('Authentication failed. Please log in again.');
+      } else {
+        alert('Failed to create project: ' + error.message);
+      }
     }
   };
 
@@ -715,11 +779,16 @@ const Collaboration: React.FC = () => {
       return;
     }
     
+    if (!currentUser) {
+      alert('Please log in to create a community');
+      return;
+    }
+    
     try {
       const community = await apiService.createCommunity({
         name: newCommunity.name,
         description: newCommunity.description,
-        memberIds: [currentUser!.id],
+        memberIds: [currentUser.id],
         isPublic: newCommunity.isPublic,
         topics: newCommunity.topics,
       });
@@ -727,9 +796,13 @@ const Collaboration: React.FC = () => {
       setCommunities(prev => [...prev, community]);
       setShowCommunityModal(false);
       resetCommunityForm();
-    } catch (error) {
-      alert('Failed to create community');
+    } catch (error: any) {
       console.error('Error creating community:', error);
+      if (error.message.includes('401')) {
+        alert('Authentication failed. Please log in again.');
+      } else {
+        alert('Failed to create community: ' + error.message);
+      }
     }
   };
 
@@ -740,12 +813,17 @@ const Collaboration: React.FC = () => {
       return;
     }
     
+    if (!currentUser) {
+      alert('Please log in to create a club');
+      return;
+    }
+    
     try {
       const club = await apiService.createClub({
         name: newClub.name,
         description: newClub.description,
         category: newClub.category,
-        adminId: currentUser!.id,
+        adminId: currentUser.id,
         isPublic: newClub.isPublic,
         joinRequestIds: [],
         tags: newClub.tags,
@@ -758,9 +836,13 @@ const Collaboration: React.FC = () => {
       setClubs(prev => [...prev, club]);
       setShowClubModal(false);
       resetClubForm();
-    } catch (error) {
-      alert('Failed to create club');
+    } catch (error: any) {
       console.error('Error creating club:', error);
+      if (error.message.includes('401')) {
+        alert('Authentication failed. Please log in again.');
+      } else {
+        alert('Failed to create club: ' + error.message);
+      }
     }
   };
 
@@ -780,9 +862,13 @@ const Collaboration: React.FC = () => {
       setClubPosts(prev => [...prev, post]);
       setShowClubPostModal(false);
       resetClubPostForm();
-    } catch (error) {
-      alert('Failed to create club post');
+    } catch (error: any) {
       console.error('Error creating club post:', error);
+      if (error.message.includes('401')) {
+        alert('Authentication failed. Please log in again.');
+      } else {
+        alert('Failed to create club post: ' + error.message);
+      }
     }
   };
 
@@ -805,9 +891,13 @@ const Collaboration: React.FC = () => {
       setProjectGroups(prev => [...prev, group]);
       setShowProjectGroupModal(false);
       resetProjectGroupForm();
-    } catch (error) {
-      alert('Failed to create project group');
+    } catch (error: any) {
       console.error('Error creating project group:', error);
+      if (error.message.includes('401')) {
+        alert('Authentication failed. Please log in again.');
+      } else {
+        alert('Failed to create project group: ' + error.message);
+      }
     }
   };
 
@@ -818,9 +908,13 @@ const Collaboration: React.FC = () => {
     try {
       const updatedProject = await apiService.joinProject(projectId);
       setProjects(prev => prev.map(project => project.id === projectId ? updatedProject : project));
-    } catch (error) {
-      alert('Failed to join project');
+    } catch (error: any) {
       console.error('Error joining project:', error);
+      if (error.message.includes('401')) {
+        alert('Authentication failed. Please log in again.');
+      } else {
+        alert('Failed to join project: ' + error.message);
+      }
     }
   };
 
@@ -839,9 +933,13 @@ const Collaboration: React.FC = () => {
         }
         return club;
       }));
-    } catch (error) {
-      alert('Failed to join club');
+    } catch (error: any) {
       console.error('Error joining club:', error);
+      if (error.message.includes('401')) {
+        alert('Authentication failed. Please log in again.');
+      } else {
+        alert('Failed to join club: ' + error.message);
+      }
     }
   };
 
@@ -854,9 +952,13 @@ const Collaboration: React.FC = () => {
       setProjectGroups(prev => prev.map(group => 
         group.id === groupId ? updatedGroup : group
       ));
-    } catch (error) {
-      alert('Failed to join project group');
+    } catch (error: any) {
       console.error('Error joining project group:', error);
+      if (error.message.includes('401')) {
+        alert('Authentication failed. Please log in again.');
+      } else {
+        alert('Failed to join project group: ' + error.message);
+      }
     }
   };
 
@@ -869,9 +971,13 @@ const Collaboration: React.FC = () => {
       // Note: In a real app, you might want to update AuthContext here
       setShowMentorModal(false);
       alert('You are now a mentor!');
-    } catch (error) {
-      alert('Failed to become mentor');
+    } catch (error: any) {
       console.error('Error becoming mentor:', error);
+      if (error.message.includes('401')) {
+        alert('Authentication failed. Please log in again.');
+      } else {
+        alert('Failed to become mentor: ' + error.message);
+      }
     }
   };
 
@@ -898,9 +1004,13 @@ const Collaboration: React.FC = () => {
       ));
       setShowEventModal(false);
       resetEventForm();
-    } catch (error) {
-      alert('Failed to create event');
+    } catch (error: any) {
       console.error('Error creating event:', error);
+      if (error.message.includes('401')) {
+        alert('Authentication failed. Please log in again.');
+      } else {
+        alert('Failed to create event: ' + error.message);
+      }
     }
   };
 
@@ -913,9 +1023,13 @@ const Collaboration: React.FC = () => {
       setClubEvents(prev => prev.map(event => 
         event.id === eventId ? updatedEvent : event
       ));
-    } catch (error) {
-      alert('Failed to register for event');
+    } catch (error: any) {
       console.error('Error registering for event:', error);
+      if (error.message.includes('401')) {
+        alert('Authentication failed. Please log in again.');
+      } else {
+        alert('Failed to register for event: ' + error.message);
+      }
     }
   };
 
@@ -935,13 +1049,17 @@ const Collaboration: React.FC = () => {
       setClubResources(prev => [...prev, resource]);
       setShowResourceModal(false);
       resetResourceForm();
-    } catch (error) {
-      alert('Failed to add resource');
+    } catch (error: any) {
       console.error('Error adding resource:', error);
+      if (error.message.includes('401')) {
+        alert('Authentication failed. Please log in again.');
+      } else {
+        alert('Failed to add resource: ' + error.message);
+      }
     }
   };
 
-  // Reset forms
+  // Reset forms (keep all your existing reset functions - they're fine)
   const resetProjectForm = (): void => {
     setNewProject({
       title: '',
@@ -1016,7 +1134,7 @@ const Collaboration: React.FC = () => {
     });
   };
 
-  // Add items to forms
+  // Add items to forms (keep all your existing add/remove functions - they're fine)
   const addTech = (): void => {
     if (newTech && !newProject.techStack.includes(newTech)) {
       setNewProject({
@@ -1138,7 +1256,7 @@ const Collaboration: React.FC = () => {
     );
   }
 
-  if (!currentUser) {
+  if (!currentUser || !isAuthenticated) {
     return <div className="flex items-center justify-center min-h-screen">Please log in to continue.</div>;
   }
 
@@ -1930,6 +2048,7 @@ const Collaboration: React.FC = () => {
                                     {tag}
                                   </span>
                                 ))}
+
                               </div>
                             )}
                           </div>
@@ -1949,13 +2068,10 @@ const Collaboration: React.FC = () => {
                       </div>
                     </div>
                   ))}
+
                 </div>
               </div>
             )}
-
-
-
-
 
             {/* Club Filter */}
             <div className="mb-6 p-4 bg-white rounded-lg shadow">
