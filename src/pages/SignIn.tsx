@@ -8,6 +8,9 @@ import {
 import { auth, googleProvider, githubProvider } from "../firebase/config";
 import { useAuth } from "./AuthContext";
 
+// Use Vite env var for backend base URL, fallback to localhost
+const BACKEND_URL: string = (import.meta.env.VITE_API_BASE_URL as string) || "http://localhost:8000";
+
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,7 +28,7 @@ const SignIn = () => {
   // Authenticate user in Django backend and get JWT token
   const authenticateInBackend = async (loginIdentifier: string, password: string) => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login/', {
+      const response = await fetch(`${BACKEND_URL}/api/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,7 +56,7 @@ const SignIn = () => {
     try {
       const idToken = await getIdToken(firebaseUser);
 
-      const response = await fetch('http://localhost:8000/api/auth/firebase-auth/', {
+      const response = await fetch(`${BACKEND_URL}/api/auth/firebase-auth/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

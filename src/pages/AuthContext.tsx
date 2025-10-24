@@ -78,9 +78,12 @@ export const AuthContext = createContext<AuthContextType>({
   updateUserAfterSocialLogin: () => {},
 });
 
+// Add BACKEND_URL (reads Vite env or falls back to localhost)
+const BACKEND_URL: string = (import.meta.env.VITE_API_BASE_URL as string) || "http://localhost:8000";
+
 // ---------------- Configure axios instance ----------------
 const api = axios.create({
-  baseURL: "http://localhost:8000/api", // Updated to match your backend
+  baseURL: `${BACKEND_URL}/api`, // Updated to use env-backed BACKEND_URL
   timeout: 10000,
 });
 

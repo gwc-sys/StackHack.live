@@ -9,6 +9,9 @@ import {
 import { auth, googleProvider, githubProvider } from "../firebase/config"; 
 import { useAuth } from "./AuthContext";
 
+// Use Vite env var for backend base URL, fallback to localhost
+const BACKEND_URL: string = (import.meta.env.VITE_API_BASE_URL as string) || "http://localhost:8000";
+
 const SignUp = () => {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -30,7 +33,7 @@ const SignUp = () => {
   const registerInBackend = async (firebaseUser: any, backendUsername: string, password?: string) => {
     const idToken = await getIdToken(firebaseUser);
 
-    const response = await fetch('http://localhost:8000/api/auth/register/', {
+    const response = await fetch(`${BACKEND_URL}/api/auth/register/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -60,7 +63,7 @@ const SignUp = () => {
     try {
       const idToken = await getIdToken(firebaseUser);
       
-      const response = await fetch('http://localhost:8000/api/auth/firebase-auth/', {
+      const response = await fetch(`${BACKEND_URL}/api/auth/firebase-auth/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
