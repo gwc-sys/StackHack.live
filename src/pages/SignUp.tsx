@@ -7,6 +7,7 @@ import {
   getIdToken
 } from "firebase/auth";
 import { auth, googleProvider, githubProvider } from "../firebase/config"; 
+import { useAuth } from "./AuthContext";
 
 const SignUp = () => {
   const [name, setName] = useState("");
@@ -23,37 +24,35 @@ const SignUp = () => {
   const [loadingGithub, setLoadingGithub] = useState(false);
 
   const navigate = useNavigate();
+  const { updateUserAfterSocialLogin } = useAuth();
 
   // Register user in Django backend and get JWT token
-  const registerInBackend = async (firebaseUser: any, backendUsername: string) => {
-    try {
-      // Get Firebase ID token for verification
-      const idToken = await getIdToken(firebaseUser);
-      
-      const response = await fetch('http://localhost:8000/api/auth/register/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: backendUsername,
-          email: firebaseUser.email,
-          full_name: name.trim(),
-          firebase_uid: firebaseUser.uid,
-          provider: 'email'
-        })
-      });
+  const registerInBackend = async (firebaseUser: any, backendUsername: string, password?: string) => {
+    const idToken = await getIdToken(firebaseUser);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Backend registration failed');
-      }
+    const response = await fetch('http://localhost:8000/api/auth/register/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+        // do NOT put the Firebase idToken in Authorization header unless backend expects it
+      },
+      body: JSON.stringify({
+        username: backendUsername,
+        email: firebaseUser.email,
+        full_name: name.trim(),
+        firebase_uid: firebaseUser.uid,
+        provider: 'email',
+        password: password,            // <- include password
+        confirm_password: password,    // <- include confirm_password (serializer expects it may be present)
+        id_token: idToken
+      })
+    });
 
-      const data = await response.json();
-      return data;
-    } catch (error: any) {
-      throw new Error(error.message || 'Backend registration failed');
+    if (!response.ok) {
+      const e = await response.json();
+      throw new Error(e?.error || JSON.stringify(e) || 'Backend registration failed');
     }
+    return await response.json();
   };
 
   // Sync social user with Django backend
@@ -65,6 +64,7 @@ const SignUp = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
         },
         body: JSON.stringify({
           firebase_uid: firebaseUser.uid,
@@ -72,7 +72,8 @@ const SignUp = () => {
           username: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'user',
           full_name: firebaseUser.displayName || '',
           avatar_url: firebaseUser.photoURL || '',
-          provider: firebaseUser.providerData[0]?.providerId || 'google'
+          provider: firebaseUser.providerData[0]?.providerId || 'google',
+          id_token: idToken
         })
       });
 
@@ -130,7 +131,7 @@ const SignUp = () => {
       });
 
       // 3. Register in Django backend and get JWT token
-      const backendResponse = await registerInBackend(userCredential.user, username.trim());
+      const backendResponse = await registerInBackend(userCredential.user, username.trim(), password);
       
       // 4. Store JWT token and user data
       handleLoginSuccess(backendResponse.token, backendResponse.user);
@@ -189,7 +190,7 @@ const SignUp = () => {
       const backendResponse = await syncSocialUserWithBackend(result.user);
       
       // Store JWT token and user data
-      handleLoginSuccess(backendResponse.token, backendResponse.user);
+      updateUserAfterSocialLogin(backendResponse.token, backendResponse.user);
 
       console.log("Google signup successful:", result.user);
       setSuccess(true);
@@ -225,7 +226,7 @@ const SignUp = () => {
       const backendResponse = await syncSocialUserWithBackend(result.user);
       
       // Store JWT token and user data
-      handleLoginSuccess(backendResponse.token, backendResponse.user);
+      updateUserAfterSocialLogin(backendResponse.token, backendResponse.user);
 
       console.log("GitHub signup successful:", result.user);
       setSuccess(true);

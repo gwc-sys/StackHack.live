@@ -7,7 +7,8 @@ import {
   FaUserCircle,
 } from "react-icons/fa";
 import { useState, useEffect, useRef, useContext } from "react";
-import { AuthContext } from "../pages/AuthContext";
+import { AuthContext } from "../pages/AuthContext"; // Updated import path
+// import { auth } from "../firebase/config";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -15,7 +16,7 @@ export default function Header() {
   const [isMobile, setIsMobile] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const { user, getInitials } = useContext(AuthContext);
+  const { user, getInitials, logout, isAuthenticated } = useContext(AuthContext);
 
   useEffect(() => {
     const checkIfMobile = () => window.innerWidth <= 850;
@@ -52,20 +53,83 @@ export default function Header() {
   const handleMenuToggle = () => setMenuOpen((prev) => !prev);
   const handleLinkClick = () => setMenuOpen(false);
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      handleLinkClick();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   const renderProfile = () => {
     const initials = getInitials();
     const displayName = user?.fullName || user?.full_name || user?.username;
 
     return (
-      <Link
-        to="/profile"
-        className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold hover:bg-gray-600 transition-colors duration-200"
-        title={displayName}
-      >
-        {initials}
-      </Link>
+      <div className="flex items-center space-x-3">
+        <Link
+          to="/profile"
+          className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold hover:bg-gray-600 transition-colors duration-200"
+          title={displayName}
+          onClick={handleLinkClick}
+        >
+          {initials}
+        </Link>
+        {isMobile && (
+          <button
+            onClick={handleLogout}
+            className="text-sm text-gray-300 hover:text-white transition-colors duration-200"
+          >
+            Logout
+          </button>
+        )}
+      </div>
     );
   };
+
+  const renderAuthButtons = () => (
+    <>
+      <Link
+        to="/signin"
+        className="bg-blue-800 text-white px-4 py-2 rounded-lg font-medium border border-blue-700 hover:bg-blue-700 transition-colors duration-200"
+        onClick={handleLinkClick}
+      >
+        Sign In
+      </Link>
+      <Link
+        to="/signup"
+        className="bg-green-800 text-white px-4 py-2 rounded-lg font-medium border border-green-700 hover:bg-green-700 transition-colors duration-200"
+        onClick={handleLinkClick}
+      >
+        Sign Up
+      </Link>
+    </>
+  );
+
+  const renderSocialAuthButtons = () => (
+    <>
+      <Link
+        to="/auth/github"
+        className="flex items-center bg-gray-800 text-white px-3 py-2 rounded-lg font-medium border border-gray-700 hover:bg-gray-700 transition-colors duration-200"
+        onClick={handleLinkClick}
+      >
+        <FaGithub className="w-5 h-5 mr-2" />
+        GitHub
+      </Link>
+      <Link
+        to="/auth/google"
+        className="flex items-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white px-3 py-2 rounded-lg font-medium border border-blue-700 hover:opacity-90 transition-all duration-200 relative overflow-hidden group"
+        onClick={handleLinkClick}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-700 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
+        <FaGoogle className="w-5 h-5 mr-2 text-[#EA4335]" />
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#34A853] to-[#FBBC05]">
+          Google
+        </span>
+      </Link>
+    </>
+  );
 
   return (
     <>
@@ -97,34 +161,21 @@ export default function Header() {
 
             {/* Auth / Profile */}
             <div className="flex items-center space-x-4">
-              {user ? (
-                renderProfile()
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-4">
+                  {renderProfile()}
+                  <button
+                    onClick={handleLogout}
+                    className="text-sm text-gray-300 hover:text-white transition-colors duration-200"
+                  >
+                    Logout
+                  </button>
+                </div>
               ) : (
-                <>
-                  <Link
-                    to="/signin"
-                    className="bg-blue-800 text-white px-4 py-2 rounded-lg font-medium border border-blue-700 hover:bg-blue-700 transition-colors duration-200"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/auth/github"
-                    className="flex items-center bg-gray-800 text-white px-3 py-2 rounded-lg font-medium border border-gray-700 hover:bg-gray-700 transition-colors duration-200"
-                  >
-                    <FaGithub className="w-5 h-5 mr-2" />
-                    GitHub
-                  </Link>
-                  <Link
-                    to="/auth/google"
-                    className="flex items-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white px-3 py-2 rounded-lg font-medium border border-blue-700 hover:opacity-90 transition-all duration-200 relative overflow-hidden group"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-700 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
-                    <FaGoogle className="w-5 h-5 mr-2 text-[#EA4335]" />
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#34A853] to-[#FBBC05]">
-                      Google
-                    </span>
-                  </Link>
-                </>
+                <div className="flex items-center space-x-3">
+                  {renderAuthButtons()}
+                  {renderSocialAuthButtons()}
+                </div>
               )}
             </div>
           </div>
@@ -158,12 +209,17 @@ export default function Header() {
               <Link
                 to="/"
                 className="text-xl font-bold text-white hover:text-gray-300"
+                onClick={handleLinkClick}
               >
                 SᴛᴀᴄᴋHᴀᴄᴋ
               </Link>
 
               {/* Profile (right) */}
-              {user ? renderProfile() : <FaUserCircle className="w-10 h-10 text-gray-300" />}
+              {isAuthenticated ? (
+                renderProfile()
+              ) : (
+                <FaUserCircle className="w-10 h-10 text-gray-300" />
+              )}
             </div>
           </header>
 
@@ -203,34 +259,22 @@ export default function Header() {
                 </nav>
 
                 {/* Auth Buttons (only if not logged in) */}
-                {!user && (
+                {!isAuthenticated && (
                   <div className="px-6 py-4 flex flex-col gap-3 border-t border-blue-800">
-                    <Link
-                      to="/signin"
-                      onClick={handleLinkClick}
-                      className="w-full py-2 px-4 bg-blue-800 text-white border border-blue-700 rounded-lg font-medium hover:bg-blue-700 text-center transition-colors duration-200"
+                    {renderAuthButtons()}
+                    {renderSocialAuthButtons()}
+                  </div>
+                )}
+
+                {/* Logout Button (only if logged in) */}
+                {isAuthenticated && (
+                  <div className="px-6 py-4 border-t border-blue-800">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full py-2 px-4 bg-red-800 text-white border border-red-700 rounded-lg font-medium hover:bg-red-700 text-center transition-colors duration-200"
                     >
-                      Sign In
-                    </Link>
-                    <Link
-                      to="/auth/github"
-                      onClick={handleLinkClick}
-                      className="w-full py-2 px-4 bg-gray-800 text-white border border-gray-700 rounded-lg font-medium hover:bg-gray-700 flex items-center justify-center transition-colors duration-200"
-                    >
-                      <FaGithub className="w-5 h-5 mr-2" />
-                      GitHub
-                    </Link>
-                    <Link
-                      to="/auth/google"
-                      onClick={handleLinkClick}
-                      className="w-full py-2 px-4 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white border border-blue-700 rounded-lg font-medium hover:opacity-90 flex items-center justify-center transition-all duration-200 relative overflow-hidden group"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-700 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
-                      <FaGoogle className="w-5 h-5 mr-2 text-[#EA4335]" />
-                      <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#34A853] to-[#FBBC05]">
-                        Google
-                      </span>
-                    </Link>
+                      Logout
+                    </button>
                   </div>
                 )}
               </aside>
