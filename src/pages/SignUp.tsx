@@ -33,7 +33,7 @@ const SignUp = () => {
   const registerInBackend = async (firebaseUser: any, backendUsername: string, password?: string) => {
     const idToken = await getIdToken(firebaseUser);
 
-    const response = await fetch(`${BACKEND_URL}/api/auth/register/`, {
+    const response = await fetch(`${BACKEND_URL}auth/register/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -63,7 +63,7 @@ const SignUp = () => {
     try {
       const idToken = await getIdToken(firebaseUser);
       
-      const response = await fetch(`${BACKEND_URL}/api/auth/firebase-auth/`, {
+      const response = await fetch(`${BACKEND_URL}auth/firebase-auth/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

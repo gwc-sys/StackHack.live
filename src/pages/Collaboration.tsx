@@ -224,7 +224,7 @@ class ApiService {
     const viteRaw = (import.meta as any)?.env?.VITE_API_BASE_URL as string | undefined;
     const nodeRaw = typeof process !== 'undefined' ? (process as any)?.env?.REACT_APP_API_URL : undefined;
     const raw = viteRaw || nodeRaw || 'http://localhost:8000';
-    this.baseUrl = raw.endsWith('/api') ? raw : `${raw.replace(/\/$/, '')}/api`;
+    this.baseUrl = raw.endsWith('') ? raw : `${raw.replace(/\/$/, '')}/`;
     console.log('ApiService baseUrl =', this.baseUrl);
   }
 
