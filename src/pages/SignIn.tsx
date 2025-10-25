@@ -28,7 +28,7 @@ const SignIn = () => {
   // Authenticate user in Django backend and get JWT token
   const authenticateInBackend = async (loginIdentifier: string, password: string) => {
     try {
-      const response = await fetch(`${BACKEND_URL}auth/login/`, {
+      const response = await fetch(`${BACKEND_URL}/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ const SignIn = () => {
     try {
       const idToken = await getIdToken(firebaseUser);
 
-      const response = await fetch(`${BACKEND_URL}auth/firebase-auth/`, {
+      const response = await fetch(`${BACKEND_URL}/auth/firebase-auth/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

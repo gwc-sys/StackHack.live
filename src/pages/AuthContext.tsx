@@ -83,7 +83,7 @@ const BACKEND_URL: string = (import.meta.env.VITE_API_BASE_URL as string) || "ht
 
 // ---------------- Configure axios instance ----------------
 const api = axios.create({
-  baseURL: `${BACKEND_URL}`, // Updated to use env-backed BACKEND_URL
+  baseURL: `${BACKEND_URL}/`, // Updated to use env-backed BACKEND_URL
   timeout: 10000,
 });
 
