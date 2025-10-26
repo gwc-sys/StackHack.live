@@ -1,7 +1,7 @@
 // src/pages/Collaboration.tsx
-import React, { useState, useEffect, useContext } from 'react';
-import { AuthContext } from '../pages/AuthContext';
-
+import React, { useState, useEffect } from 'react';
+// import { AuthContext } from '../pages/AuthContext';
+import { useAuth, api } from './AuthContext';  // adjust path if needed
 // Database Table Types
 // NOTE: IDs are allowed as number | string to avoid widespread mismatches.
 // You can tighten to number after you update the backend/frontend to a single ID type.
@@ -217,212 +217,136 @@ type ProjectGroupFormState = {
 type ActiveTab = 'projects' | 'showcase' | 'mentorship' | 'community' | 'clubs';
 
 // Backend API Service - FIXED VERSION
-class ApiService {
-  private baseUrl: string;
-
-  constructor() {
-    const viteRaw = (import.meta as any)?.env?.VITE_API_BASE_URL as string | undefined;
-    const nodeRaw = typeof process !== 'undefined' ? (process as any)?.env?.REACT_APP_API_URL : undefined;
-    const raw = viteRaw || nodeRaw || 'http://localhost:8000';
-    this.baseUrl = raw.endsWith('') ? raw : `${raw.replace(/\/$/, '')}/`;
-    console.log('ApiService baseUrl =', this.baseUrl);
-  }
-
-  private async fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    // FIXED: Use session-based authentication instead of token-based
-    const sessionCode = localStorage.getItem('session_code');
-
-    // Default headers
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...(options.headers as Record<string, string> || {}),
-      ...(sessionCode ? { 'X-Session-Code': sessionCode } : {})
-    };
-
-    // Add CSRF token for unsafe methods (Django default cookie name: csrftoken)
-    const unsafeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
-    if (unsafeMethods.includes((options.method || 'GET').toUpperCase())) {
-      const match = document.cookie.match(new RegExp('(^| )csrftoken=([^;]+)'));
-      const csrfToken = match ? match[2] : null;
-      if (csrfToken) {
-        headers['X-CSRFToken'] = csrfToken;
-      }
-    }
-
-    let response: Response;
-    try {
-      response = await fetch(`${this.baseUrl}${endpoint}`, {
-        ...options,
-        headers,
-        credentials: 'include', // important for session-based auth/cookies
-      });
-    } catch (err: any) {
-      throw new Error(`Network error: ${err?.message ?? String(err)}`);
-    }
-
-    if (!response.ok) {
-      // Handle 401 specifically - clear auth data
-      if (response.status === 401) {
-        localStorage.removeItem('session_code');
-        localStorage.removeItem('user');
-        localStorage.removeItem('session_expires');
-        // You might want to redirect to login here
-        console.error('Authentication failed - session expired');
-      }
-      
-      const errText = await response.text();
-      throw new Error(`API Error ${response.status}: ${errText}`);
-    }
-
-    const text = await response.text();
-    try {
-      return text ? JSON.parse(text) : ({} as T);
-    } catch (err) {
-      return text as unknown as T;
-    }
-  }
-
+const apiService = {
   // User APIs
   async getCurrentUser(): Promise<User> {
-    return this.fetchApi<User>('/users/me/');
-  }
+    const res = await api.get('/users/me/');
+    return res.data as User;
+  },
 
   async updateUser(userId: Id, updates: Partial<User>): Promise<User> {
-    return this.fetchApi<User>(`/users/${userId}/`, {
-      method: 'PUT',
-      body: JSON.stringify(updates),
-    });
-  }
+    const res = await api.put(`/users/${userId}/`, updates);
+    return res.data as User;
+  },
 
-  // Project APIs
+  // Projects
   async getProjects(): Promise<Project[]> {
-    return this.fetchApi<Project[]>('/projects/');
-  }
+    const res = await api.get('/projects/');
+    return res.data as Project[];
+  },
 
   async createProject(projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<Project> {
-    return this.fetchApi<Project>('/projects/', {
-      method: 'POST',
-      body: JSON.stringify(projectData),
-    });
-  }
+    const res = await api.post('/projects/', projectData);
+    return res.data as Project;
+  },
 
   async joinProject(projectId: Id): Promise<Project> {
-    return this.fetchApi<Project>(`/projects/${projectId}/join/`, {
-      method: 'POST',
-    });
-  }
+    const res = await api.post(`/projects/${projectId}/join/`);
+    return res.data as Project;
+  },
 
-  // Club APIs
+  // Clubs
   async getClubs(): Promise<Club[]> {
-    return this.fetchApi<Club[]>('/clubs/');
-  }
+    const res = await api.get('/clubs/');
+    return res.data as Club[];
+  },
 
-  async getClub(clubId: Id): Promise<Club & { members: ClubMember[]; events: ClubEvent[]; resources: ClubResources[] }> {
-    return this.fetchApi(`/clubs/${clubId}/`);
-  }
+  async getClub(clubId: Id) {
+    const res = await api.get(`/clubs/${clubId}/`);
+    return res.data;
+  },
 
   async createClub(clubData: Omit<Club, 'id' | 'createdAt' | 'updatedAt'>): Promise<Club> {
-    return this.fetchApi<Club>('/clubs/', {
-      method: 'POST',
-      body: JSON.stringify(clubData),
-    });
-  }
+    const res = await api.post('/clubs/', clubData);
+    return res.data as Club;
+  },
 
   async joinClub(clubId: Id): Promise<ClubMember> {
-    return this.fetchApi<ClubMember>(`/clubs/${clubId}/join/`, {
-      method: 'POST',
-    });
-  }
+    const res = await api.post(`/clubs/${clubId}/join/`);
+    return res.data as ClubMember;
+  },
 
-  // Club Event APIs
+  // Club events
   async getClubEvents(clubId: Id): Promise<ClubEvent[]> {
-    return this.fetchApi<ClubEvent[]>(`/clubs/${clubId}/events/`);
-  }
+    const res = await api.get(`/clubs/${clubId}/events/`);
+    return res.data as ClubEvent[];
+  },
 
   async createClubEvent(clubId: Id, eventData: Omit<ClubEvent, 'id' | 'clubId' | 'createdAt' | 'updatedAt'>): Promise<ClubEvent> {
-    return this.fetchApi<ClubEvent>(`/clubs/${clubId}/events/`, {
-      method: 'POST',
-      body: JSON.stringify(eventData),
-    });
-  }
+    const res = await api.post(`/clubs/${clubId}/events/`, eventData);
+    return res.data as ClubEvent;
+  },
 
   async registerForEvent(eventId: Id): Promise<ClubEvent> {
-    return this.fetchApi<ClubEvent>(`/events/${eventId}/register/`, {
-      method: 'POST',
-    });
-  }
+    const res = await api.post(`/events/${eventId}/register/`);
+    return res.data as ClubEvent;
+  },
 
-  // Club Post APIs
+  // Club posts
   async getClubPosts(clubId: Id): Promise<ClubPost[]> {
-    return this.fetchApi<ClubPost[]>(`/clubs/${clubId}/posts/`);
-  }
+    const res = await api.get(`/clubs/${clubId}/posts/`);
+    return res.data as ClubPost[];
+  },
 
   async createClubPost(clubId: Id, postData: Omit<ClubPost, 'id' | 'clubId' | 'createdAt' | 'updatedAt'>): Promise<ClubPost> {
-    return this.fetchApi<ClubPost>(`/clubs/${clubId}/posts/`, {
-      method: 'POST',
-      body: JSON.stringify(postData),
-    });
-  }
+    const res = await api.post(`/clubs/${clubId}/posts/`, postData);
+    return res.data as ClubPost;
+  },
 
-  // Project Group APIs
+  // Project groups
   async getProjectGroups(): Promise<ProjectGroup[]> {
-    return this.fetchApi<ProjectGroup[]>('/project-groups/');
-  }
+    const res = await api.get('/project-groups/');
+    return res.data as ProjectGroup[];
+  },
 
   async createProjectGroup(groupData: Omit<ProjectGroup, 'id' | 'createdAt' | 'updatedAt'>): Promise<ProjectGroup> {
-    return this.fetchApi<ProjectGroup>('/project-groups/', {
-      method: 'POST',
-      body: JSON.stringify(groupData),
-    });
-  }
+    const res = await api.post('/project-groups/', groupData);
+    return res.data as ProjectGroup;
+  },
 
   async joinProjectGroup(groupId: Id): Promise<ProjectGroup> {
-    return this.fetchApi<ProjectGroup>(`/project-groups/${groupId}/join/`, {
-      method: 'POST',
-    });
-  }
+    const res = await api.post(`/project-groups/${groupId}/join/`);
+    return res.data as ProjectGroup;
+  },
 
-  // Resource APIs
+  // Club resources
   async getClubResources(clubId: Id): Promise<ClubResources[]> {
-    return this.fetchApi<ClubResources[]>(`/clubs/${clubId}/resources/`);
-  }
+    const res = await api.get(`/clubs/${clubId}/resources/`);
+    return res.data as ClubResources[];
+  },
 
   async createClubResource(clubId: Id, resourceData: Omit<ClubResources, 'id' | 'clubId' | 'createdAt' | 'updatedAt'>): Promise<ClubResources> {
-    return this.fetchApi<ClubResources>(`/clubs/${clubId}/resources/`, {
-      method: 'POST',
-      body: JSON.stringify(resourceData),
-    });
-  }
+    const res = await api.post(`/clubs/${clubId}/resources/`, resourceData);
+    return res.data as ClubResources;
+  },
 
-  // Mentorship APIs
+  // Mentorship
   async getMentors(): Promise<User[]> {
-    return this.fetchApi<User[]>('/users/mentors/');
-  }
+    const res = await api.get('/users/mentors/');
+    return res.data as User[];
+  },
 
   async becomeMentor(): Promise<User> {
-    return this.fetchApi<User>('/users/become-mentor/', {
-      method: 'POST',
-    });
-  }
+    const res = await api.post('/users/become-mentor/');
+    return res.data as User;
+  },
 
   async getMentorSessions(): Promise<MentorSession[]> {
-    return this.fetchApi<MentorSession[]>('/mentorship/sessions/');
-  }
+    const res = await api.get('/mentorship/sessions/');
+    return res.data as MentorSession[];
+  },
 
-  // Community APIs
+  // Communities
   async getCommunities(): Promise<Community[]> {
-    return this.fetchApi<Community[]>('/communities/');
-  }
+    const res = await api.get('/communities/');
+    return res.data as Community[];
+  },
 
   async createCommunity(communityData: Omit<Community, 'id' | 'createdAt' | 'updatedAt'>): Promise<Community> {
-    return this.fetchApi<Community>('/communities/', {
-      method: 'POST',
-      body: JSON.stringify(communityData),
-    });
-  }
-}
-
-const apiService = new ApiService();
+    const res = await api.post('/communities/', communityData);
+    return res.data as Community;
+  },
+};
 
 // Mock data for fallback
 const mockProjects: Project[] = [
@@ -443,8 +367,8 @@ const mockProjects: Project[] = [
 ];
 
 const Collaboration: React.FC = () => {
-  // 🎯 GET USER FROM AUTHCONTEXT
-  const { user: currentUser, isLoading: authLoading, isAuthenticated } = useContext(AuthContext);
+  // 🎯 GET USER FROM AUTHCONTEXT (use safe hook)
+  const { user: currentUser, isLoading: authLoading, isAuthenticated } = useAuth();
 
   // State
   const [activeTab, setActiveTab] = useState<ActiveTab>('projects');
@@ -2017,7 +1941,7 @@ const Collaboration: React.FC = () => {
               <div className="flex space-x-3">
                 <button 
                   onClick={() => setShowClubPostModal(true)}
-                  className="btn btn-primary bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                  className="btn btnprimary bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
                 >
                   Create Club Post
                 </button>
