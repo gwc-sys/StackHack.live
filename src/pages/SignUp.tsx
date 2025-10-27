@@ -1,13 +1,18 @@
-import { useState } from "react"; 
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { 
+import { useAuth } from "./AuthContext"; // same folder -> adjust to '../pages/AuthContext' if needed
+
+// Firebase modular SDK imports
+import {
   createUserWithEmailAndPassword,
-  signInWithPopup,
   updateProfile,
-  getIdToken
+  signInWithPopup,
+  getIdToken as firebaseGetIdToken, // optional alternative import
+  // User as FirebaseUserType
 } from "firebase/auth";
-import { auth, googleProvider, githubProvider } from "../firebase/config"; 
-import { useAuth } from "./AuthContext";
+
+// Import your project's firebase exports (auth, providers)
+import { auth, googleProvider, githubProvider } from "../firebase/config"; // adjust path if needed
 
 // Use Vite env var for backend base URL, fallback to localhost
 const BACKEND_URL: string = (import.meta.env.VITE_API_BASE_URL as string) || "http://localhost:8000";
@@ -31,7 +36,7 @@ const SignUp = () => {
 
   // Register user in Django backend and get JWT token
   const registerInBackend = async (firebaseUser: any, backendUsername: string, password?: string) => {
-    const idToken = await getIdToken(firebaseUser);
+    const idToken = await firebaseGetIdToken(firebaseUser);
 
     const response = await fetch(`${BACKEND_URL}/auth/register/`, {
       method: 'POST',
@@ -61,7 +66,7 @@ const SignUp = () => {
   // Sync social user with Django backend
   const syncSocialUserWithBackend = async (firebaseUser: any) => {
     try {
-      const idToken = await getIdToken(firebaseUser);
+      const idToken = await firebaseGetIdToken(firebaseUser);
       
       const response = await fetch(`${BACKEND_URL}/auth/firebase-auth/`, {
         method: 'POST',
