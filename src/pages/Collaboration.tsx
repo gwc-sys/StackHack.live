@@ -168,6 +168,15 @@ const includesId = (arr: Id[] | undefined, id?: Id): boolean => {
   return arr.some(i => idToString(i) === needle);
 };
 
+// Helper to ensure API responses become arrays (handles DRF pagination)
+const normalizeToArray = <T,>(data: any): T[] => {
+  if (!data) return [];
+  if (Array.isArray(data)) return data as T[];
+  if (Array.isArray(data.results)) return data.results as T[];
+  if (Array.isArray(data.data)) return data.data as T[]; // some APIs wrap in .data
+  return [];
+};
+
 // Form state types
 type ProjectFormState = {
   title: string;
@@ -535,11 +544,11 @@ const Collaboration: React.FC = () => {
           sessions: sessionsData.length
         });
 
-        setProjects(projectsData);
-        setClubs(clubsData);
-        setCommunities(communitiesData);
-        setProjectGroups(projectGroupsData);
-        setSessions(sessionsData);
+        setProjects(normalizeToArray<Project>(projectsData));
+        setClubs(normalizeToArray<Club>(clubsData));
+        setCommunities(normalizeToArray<Community>(communitiesData));
+        setProjectGroups(normalizeToArray<ProjectGroup>(projectGroupsData));
+        setSessions(normalizeToArray<MentorSession>(sessionsData));
         
       } catch (err: any) {
         console.error('Error in loadInitialData:', err);
@@ -570,7 +579,7 @@ const Collaboration: React.FC = () => {
   };
 
   // Filter logic
-  const filteredProjects = projects.filter((project) => {
+  const filteredProjects = (projects || []).filter((project) => {
     const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTechStack = selectedTechStack.length === 0 ||
