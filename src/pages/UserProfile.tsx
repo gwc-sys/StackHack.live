@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext, api } from "./AuthContext"; // Import the AuthContext and api
 
+// Update User interface to match AuthContext's User type
 interface User {
-  id: string;
+  id: number; // Changed from string to number to match AuthContext
   username: string;
   full_name?: string;
   email: string;
   phone?: string;
   profile_image?: string;
+  avatar?: string; // Added to match AuthContext
   bio?: string;
   location?: string;
   social_links?: {
@@ -18,10 +20,21 @@ interface User {
   };
   skills?: string[];
   interests?: string[];
+  // Add fields from AuthContext User
+  is_superuser?: boolean;
+  is_staff?: boolean;
+  role?: 'admin' | 'student' | 'mentor' | 'developer';
+  githubUsername?: string;
+  rating?: number;
+  availability?: boolean;
+  college?: string;
+  year?: string;
+  major?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const UserProfile: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,19 +42,32 @@ const UserProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"profile" | "settings" | "security">("profile");
   const [tempUserData, setTempUserData] = useState<Partial<User>>({});
   
-  // Use the AuthContext for logout functionality
-  const { logout: authLogout } = useContext(AuthContext);
+  // Use the AuthContext for user data and logout functionality
+  const { 
+    user: authUser, 
+    logout: authLogout, 
+    getInitials,
+    isAuthenticated,
+    updateUserAfterSocialLogin 
+  } = useContext(AuthContext);
 
-  // Fetch user data on component mount
+  // Use authUser from context instead of local state
+  const user = authUser as User | null;
+
+  // Fetch user data on component mount if not already in context
   useEffect(() => {
-    fetchUserProfile();
-  }, []);
+    if (!user && isAuthenticated) {
+      fetchUserProfile();
+    } else {
+      setLoading(false);
+    }
+  }, [user, isAuthenticated]);
 
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/me/");
-      setUser(response.data);
+      await api.get("/auth/me/"); // Updated endpoint to match AuthContext
+      // User data is already handled by AuthContext, but we can update if needed
       setError(null);
     } catch (err: any) {
       setError("Failed to fetch user profile. Please check your session.");
@@ -83,7 +109,16 @@ const UserProfile: React.FC = () => {
       });
       
       if (response.data) {
-        setUser({ ...user, ...response.data });
+        // Update both local state and AuthContext if needed
+        const updatedUser = { ...user, ...response.data };
+        
+        // If you want to update the AuthContext user, you might need to refresh the token
+        // or call updateUserAfterSocialLogin with current token
+        const token = localStorage.getItem("jwt_token");
+        if (token) {
+          updateUserAfterSocialLogin(token, updatedUser);
+        }
+        
         setIsEditing(false);
         setSuccessMessage("Profile updated successfully!");
         setTempUserData({});
@@ -115,10 +150,19 @@ const UserProfile: React.FC = () => {
       });
       
       if (response.data) {
-        setUser({
+        const profileImageUrl = response.data.profile_picture_url || response.data.profileImageUrl;
+        const updatedUser = {
           ...user,
-          profile_image: response.data.profile_picture_url || response.data.profileImageUrl,
-        });
+          profile_image: profileImageUrl,
+          avatar: profileImageUrl // Update both fields for consistency
+        };
+        
+        // Update AuthContext
+        const token = localStorage.getItem("jwt_token");
+        if (token) {
+          updateUserAfterSocialLogin(token, updatedUser);
+        }
+        
         setSuccessMessage("Profile picture updated successfully!");
         setTimeout(() => setSuccessMessage(null), 3000);
       }
@@ -138,10 +182,18 @@ const UserProfile: React.FC = () => {
       const response = await api.delete("/profile/picture/");
       
       if (response.status === 200 || response.status === 204) {
-        setUser({
+        const updatedUser = {
           ...user,
           profile_image: undefined,
-        });
+          avatar: undefined
+        };
+        
+        // Update AuthContext
+        const token = localStorage.getItem("jwt_token");
+        if (token) {
+          updateUserAfterSocialLogin(token, updatedUser);
+        }
+        
         setSuccessMessage("Profile picture removed successfully!");
         setTimeout(() => setSuccessMessage(null), 3000);
       }
@@ -162,7 +214,7 @@ const UserProfile: React.FC = () => {
   const handleLogout = async () => {
     try {
       setLoading(true);
-      // Use the logout function from AuthContext which handles session code
+      // Use the logout function from AuthContext which handles both Firebase and backend logout
       await authLogout();
       // Redirect to login page after logout
       window.location.href = "/login";
@@ -178,18 +230,19 @@ const UserProfile: React.FC = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      // This would be implemented with your backend API
-      const response = await api.put("/change-password/", {
-        current_password: (e.target as any).current_password.value,
-        new_password: (e.target as any).new_password.value,
-        confirm_password: (e.target as any).confirm_password.value,
+      const form = e.target as HTMLFormElement;
+      const formData = new FormData(form);
+      
+      const response = await api.put("/auth/change-password/", {
+        current_password: formData.get("current_password"),
+        new_password: formData.get("new_password"),
+        confirm_password: formData.get("confirm_password"),
       });
       
       if (response.status === 200) {
         setSuccessMessage("Password updated successfully!");
         setTimeout(() => setSuccessMessage(null), 3000);
-        // Reset the form
-        (e.target as HTMLFormElement).reset();
+        form.reset();
       }
     } catch (err: any) {
       setError("Failed to update password: " + (err.response?.data?.message || err.message));
@@ -199,7 +252,11 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  if (loading && !user) {
+  // Use loading state from AuthContext as well
+  const { loading: authLoading } = useContext(AuthContext);
+  const isLoading = loading || authLoading;
+
+  if (isLoading && !user) {
     return (
       <div className="flex justify-center items-center h-screen bg-gradient-to-br from-gray-900 to-gray-800">
         <div className="text-white flex flex-col items-center">
@@ -214,21 +271,31 @@ const UserProfile: React.FC = () => {
     return (
       <div className="flex justify-center items-center h-screen bg-gradient-to-br from-gray-900 to-gray-800">
         <div className="text-red-400 bg-gray-800 p-6 rounded-xl shadow-lg">
-          {error || "Failed to load user profile."}
+          {error || "Failed to load user profile. Please log in again."}
+          <button 
+            onClick={() => window.location.href = "/login"}
+            className="ml-4 px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Go to Login
+          </button>
         </div>
       </div>
     );
   }
 
+  // Use avatar from AuthContext user if available, otherwise use profile_image
   const displayName = user.full_name || user.username;
-  const profileImage = user.profile_image;
+  const profileImage = user.avatar || user.profile_image;
 
   // Get social links from temp data or user data
   const socialLinks = {
-    github: tempUserData.social_links?.github || user.social_links?.github || "",
+    github: tempUserData.social_links?.github || user.social_links?.github || user.githubUsername || "",
     linkedin: tempUserData.social_links?.linkedin || user.social_links?.linkedin || "",
     twitter: tempUserData.social_links?.twitter || user.social_links?.twitter || "",
   };
+
+  // Use skills from AuthContext if available
+  const userSkills = user.skills || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white p-4 md:p-8">
@@ -242,12 +309,19 @@ const UserProfile: React.FC = () => {
             <h1 className="text-2xl font-bold">SᴛᴀᴄᴋHᴀᴄᴋ<span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Profile</span></h1>
           </div>
           
+          {/* User role badge */}
+          {user.role && (
+            <div className="mr-4 px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm">
+              {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+            </div>
+          )}
+          
           <button 
             onClick={handleLogout}
             className="flex items-center py-2 px-4 rounded-lg bg-gray-800 hover:bg-red-500/20 transition-all group"
-            disabled={loading}
+            disabled={isLoading}
           >
-            {loading ? (
+            {isLoading ? (
               <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin mr-2"></div>
             ) : (
               <i className="fas fa-sign-out-alt mr-2 text-red-400 group-hover:text-red-300"></i>
@@ -283,7 +357,7 @@ const UserProfile: React.FC = () => {
                       />
                     ) : (
                       <span className="text-5xl font-bold text-gray-300">
-                        {displayName?.charAt(0).toUpperCase() || "U"}
+                        {getInitials()}
                       </span>
                     )}
                     
@@ -304,7 +378,7 @@ const UserProfile: React.FC = () => {
                             onClick={handleRemoveProfilePicture}
                             className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-red-600 transition-colors"
                             title="Remove profile picture"
-                            disabled={loading}
+                            disabled={isLoading}
                           >
                             <i className="fas fa-trash text-white text-sm"></i>
                           </button>
@@ -317,11 +391,16 @@ const UserProfile: React.FC = () => {
                 <h2 className="text-2xl font-bold mt-4">{displayName}</h2>
                 <p className="text-gray-400">{user.email}</p>
                 
-                {user.skills && user.skills.length > 0 && (
+                {/* Additional user info from AuthContext */}
+                {(user.role === 'student' || user.role === 'mentor') && user.college && (
+                  <p className="text-gray-400 text-sm mt-1">{user.college}</p>
+                )}
+                
+                {userSkills.length > 0 && (
                   <div className="mt-6 w-full">
                     <h3 className="font-semibold mb-3">Skills</h3>
                     <div className="flex flex-wrap gap-2">
-                      {user.skills.map((skill, index) => (
+                      {userSkills.map((skill, index) => (
                         <span key={index} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm">
                           {skill}
                         </span>
@@ -343,7 +422,7 @@ const UserProfile: React.FC = () => {
                   </div>
                 )}
                 
-                {(user.social_links || isEditing) && (
+                {(user.social_links || user.githubUsername || isEditing) && (
                   <div className="mt-6 w-full">
                     <h3 className="font-semibold mb-3">Social Links</h3>
                     {isEditing && activeTab === "profile" ? (
@@ -381,8 +460,13 @@ const UserProfile: React.FC = () => {
                       </div>
                     ) : (
                       <div className="flex justify-around">
-                        {user.social_links?.github && (
-                          <a href={user.social_links.github} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-blue-500 transition-colors">
+                        {(user.social_links?.github || user.githubUsername) && (
+                          <a 
+                            href={user.social_links?.github || `https://github.com/${user.githubUsername}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-blue-500 transition-colors"
+                          >
                             <i className="fab fa-github text-white"></i>
                           </a>
                         )}
@@ -444,9 +528,9 @@ const UserProfile: React.FC = () => {
                       <button
                         className="py-2 px-4 rounded-lg bg-gradient-to-r from-green-500 to-green-600 flex items-center hover:from-green-600 hover:to-green-700 transition-all"
                         onClick={handleSave}
-                        disabled={loading}
+                        disabled={isLoading}
                       >
-                        {loading ? (
+                        {isLoading ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                             Saving...
@@ -460,7 +544,7 @@ const UserProfile: React.FC = () => {
                       <button
                         className="py-2 px-4 rounded-lg bg-gray-700 flex items-center hover:bg-gray-600 transition-all"
                         onClick={handleCancelEdit}
-                        disabled={loading}
+                        disabled={isLoading}
                       >
                         <i className="fas fa-times mr-2"></i>Cancel
                       </button>
@@ -595,9 +679,9 @@ const UserProfile: React.FC = () => {
                     <button 
                       onClick={handleLogout}
                       className="w-full py-3 px-4 rounded-lg bg-red-500/20 text-red-400 border border-red-500 flex items-center justify-center hover:bg-red-500/30 transition-all"
-                      disabled={loading}
+                      disabled={isLoading}
                     >
-                      {loading ? (
+                      {isLoading ? (
                         <>
                           <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin mr-2"></div>
                           Logging out...
@@ -656,9 +740,9 @@ const UserProfile: React.FC = () => {
                       <button 
                         type="submit"
                         className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all"
-                        disabled={loading}
+                        disabled={isLoading}
                       >
-                        {loading ? (
+                        {isLoading ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                             Updating...
