@@ -7,8 +7,7 @@ import {
   FaUserCircle,
 } from "react-icons/fa";
 import { useState, useEffect, useRef, useContext } from "react";
-import { AuthContext } from "../pages/AuthContext"; // Updated import path
-// import { auth } from "../firebase/config";
+import { AuthContext } from "../pages/AuthContext";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -62,19 +61,49 @@ export default function Header() {
     }
   };
 
-  const renderProfile = () => {
+  const renderProfileImage = () => {
+    // Use avatar first, then profile_image as fallback (use type assertion to avoid TS error)
+    const profileImage = user?.avatar || (user as any)?.profile_image;
     const initials = getInitials();
-    const displayName = user?.fullName || user?.full_name || user?.username;
+    const displayName = user?.full_name || user?.username;
+
+    if (profileImage) {
+      return (
+        <img
+          src={profileImage}
+          alt={displayName}
+          className="w-10 h-10 rounded-full object-cover border-2 border-gray-600 hover:border-gray-500 transition-colors duration-200"
+          title={displayName}
+        />
+      );
+    }
+
+    return (
+      <div
+        className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold hover:opacity-90 transition-opacity duration-200"
+        title={displayName}
+      >
+        {initials}
+      </div>
+    );
+  };
+
+  const renderProfile = () => {
+    const displayName = user?.full_name || user?.username;
 
     return (
       <div className="flex items-center space-x-3">
         <Link
           to="/profile"
-          className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold hover:bg-gray-600 transition-colors duration-200"
-          title={displayName}
+          className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200"
           onClick={handleLinkClick}
         >
-          {initials}
+          {renderProfileImage()}
+          {!isMobile && (
+            <span className="text-white font-medium max-w-32 truncate">
+              {displayName}
+            </span>
+          )}
         </Link>
         {isMobile && (
           <button
@@ -216,7 +245,12 @@ export default function Header() {
 
               {/* Profile (right) */}
               {isAuthenticated ? (
-                renderProfile()
+                <Link
+                  to="/profile"
+                  onClick={handleLinkClick}
+                >
+                  {renderProfileImage()}
+                </Link>
               ) : (
                 <FaUserCircle className="w-10 h-10 text-gray-300" />
               )}
@@ -248,6 +282,21 @@ export default function Header() {
                   </Link>
                 </div>
 
+                {/* User Info (if authenticated) */}
+                {isAuthenticated && (
+                  <div className="px-6 py-4 border-b border-blue-800 flex items-center space-x-3">
+                    {renderProfileImage()}
+                    <div className="flex flex-col">
+                      <span className="text-white font-medium">
+                        {user?.full_name || user?.username}
+                      </span>
+                      <span className="text-gray-400 text-sm">
+                        {user?.email}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Navigation */}
                 <nav className="px-6 py-6 flex flex-col space-y-4">
                   <Link to="/" onClick={handleLinkClick} className="text-white hover:text-gray-300">Home</Link>
@@ -266,9 +315,16 @@ export default function Header() {
                   </div>
                 )}
 
-                {/* Logout Button (only if logged in) */}
+                {/* Profile Link & Logout Button (only if logged in) */}
                 {isAuthenticated && (
-                  <div className="px-6 py-4 border-t border-blue-800">
+                  <div className="px-6 py-4 border-t border-blue-800 flex flex-col gap-3">
+                    <Link
+                      to="/profile"
+                      onClick={handleLinkClick}
+                      className="w-full py-2 px-4 bg-blue-800 text-white border border-blue-700 rounded-lg font-medium hover:bg-blue-700 text-center transition-colors duration-200"
+                    >
+                      My Profile
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="w-full py-2 px-4 bg-red-800 text-white border border-red-700 rounded-lg font-medium hover:bg-red-700 text-center transition-colors duration-200"
