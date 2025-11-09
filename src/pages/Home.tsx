@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FaStar, FaSearch, FaRobot, FaTrophy,
-  FaCode, FaRoad, FaPlay, FaTerminal, FaCog, FaChevronRight
+  FaCode, FaRoad, FaPlay, FaTerminal, FaCog, FaChevronRight, FaCoffee
 } from 'react-icons/fa';
 import { SiGooglescholar, SiTypescript, SiJavascript } from 'react-icons/si';
 import { FaGithub, FaTwitter, FaLinkedin, FaEnvelope } from "react-icons/fa";
@@ -280,7 +280,14 @@ export class Game {
       title: "AI Mentor",
       description: "24/7 AI assistant to answer questions and provide guidance",
       gradient: "from-indigo-500 to-blue-500"
-    }
+    },
+    // New Java Practical feature
+        {
+          icon: <FaCoffee className="w-6 h-6 text-white" />,
+          title: "Java Practical",
+          description: "Hands-on Java projects and labs to build real-world backend and OOP skills",
+          gradient: "from-red-500 to-rose-500"
+        }
   ];
 
   const testimonials: Testimonial[] = [
@@ -373,7 +380,8 @@ export class Game {
     "InstantIDE": "/online-ide",
     "Hackathons & Competitions": "/events-hackathons",
     "Learning Resources": "/resources",
-    "AI Mentor": "/ai-mentor"
+    "AI Mentor": "/ai-mentor",
+    "Java Practical": "/java-practical" // <-- corrected key (matches feature.title)
   };
 
   return (

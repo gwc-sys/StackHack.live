@@ -21,6 +21,7 @@ import AILearningRoadmap from "./pages/AILearningRoadmap.tsx";
 import AIMentor from "./pages/AIMentor.tsx"; 
 import ProblemDetailPage from "./DSAChallenges/ProblemDetailPage";
 import OnlineIDE from "./pages/OnlineIDE.tsx";
+import JavaPracticals from "./pages/Javapratical.tsx"; // <-- new import
 
 function MainApp() {
   return (
@@ -29,6 +30,7 @@ function MainApp() {
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/java-practical" element={<JavaPracticals />} />  {/* new route */}
           <Route path="/about" element={<About />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
