@@ -510,7 +510,7 @@ const JavaPracticals: React.FC = () => {
 
         {/* Footer */}
         <footer className="text-center text-gray-600 mt-12 pt-8 border-t border-gray-200">
-          <p>© {new Date().getFullYear()} Java Practical Programs | Designed for Learning</p>
+          <p>© {new Date().getFullYear()} Java Practical Programs | Designed By Mahesh Raskar</p>
           <p className="text-sm mt-2">All programs are tested and ready to run in Eclipse IDE</p>
         </footer>
       </div>
