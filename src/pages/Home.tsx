@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FaStar, FaSearch, FaRobot, FaTrophy,
-  FaCode, FaRoad, FaPlay, FaTerminal, FaCog, FaChevronRight, FaCoffee
+  FaCode, FaRoad, FaPlay, FaTerminal, FaCog, FaChevronRight, FaCoffee, FaSignal
 } from 'react-icons/fa';
 import { SiGooglescholar, SiTypescript, SiJavascript } from 'react-icons/si';
 import { FaGithub, FaTwitter, FaLinkedin, FaEnvelope } from "react-icons/fa";
@@ -287,6 +287,12 @@ export class Game {
           title: "Java Practical",
           description: "Hands-on Java projects and labs to build real-world backend and OOP skills",
           gradient: "from-red-500 to-rose-500"
+        },
+        {
+          icon: <FaSignal className="w-6 h-6 text-white" />,
+          title: "Digital Communication",
+          description: "Hands-on labs and courses on modulation, encoding, and digital signal processing",
+          gradient: "from-indigo-500 to-blue-500"
         }
   ];
 
@@ -381,7 +387,8 @@ export class Game {
     "Hackathons & Competitions": "/events-hackathons",
     "Learning Resources": "/resources",
     "AI Mentor": "/ai-mentor",
-    "Java Practical": "/java-practical" // <-- corrected key (matches feature.title)
+    "Java Practical": "/java-practical", // <-- corrected key (matches feature.title)
+    "Digital Communication": "/digital-communication"
   };
 
   return (

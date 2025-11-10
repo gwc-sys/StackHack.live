@@ -21,7 +21,8 @@ import AILearningRoadmap from "./pages/AILearningRoadmap.tsx";
 import AIMentor from "./pages/AIMentor.tsx"; 
 import ProblemDetailPage from "./DSAChallenges/ProblemDetailPage";
 import OnlineIDE from "./pages/OnlineIDE.tsx";
-import JavaPracticals from "./pages/Javapratical.tsx"; // <-- new import
+import JavaPracticals from "./pages/DigitalCommunication.tsx"; // <-- new import
+import DigitalCommunication from "./pages/DigitalCommunication";
 
 function MainApp() {
   return (
@@ -49,6 +50,7 @@ function MainApp() {
           <Route path="/ai-mentor" element={<AIMentor />} />
           <Route path="/dsa-challenges/problems/:id" element={<Problems />} />
           <Route path="/online-ide" element={<OnlineIDE/>} />
+          <Route path="/digital-communication" element={<DigitalCommunication />} />
         </Routes>
       </Layout>
     </AuthProvider>
