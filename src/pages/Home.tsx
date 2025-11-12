@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FaStar, FaSearch, FaRobot, FaTrophy,
-  FaCode, FaRoad, FaPlay, FaTerminal, FaCog, FaChevronRight, FaCoffee, FaSignal
+  FaCode, FaRoad, FaPlay, FaTerminal, FaCog, FaChevronRight, FaCoffee, FaSignal, FaMicrochip
 } from 'react-icons/fa';
 import { SiGooglescholar, SiTypescript, SiJavascript } from 'react-icons/si';
 import { FaGithub, FaTwitter, FaLinkedin, FaEnvelope } from "react-icons/fa";
@@ -293,6 +293,18 @@ export class Game {
           title: "Digital Communication",
           description: "Hands-on labs and courses on modulation, encoding, and digital signal processing",
           gradient: "from-indigo-500 to-blue-500"
+        },
+        {
+          icon: <SiJavascript className="w-6 h-6 text-white" />,
+          title: "JavaScript Experiments",
+          description: "Interactive JS experiments and small projects — console, DOM, async and visual demos",
+          gradient: "from-yellow-400 to-yellow-600"
+        },
+        {
+          icon: <FaMicrochip className="w-6 h-6 text-white" />,
+          title: "VLSI Design",
+          description: "VLSI labs: VHDL programs, CMOS layouts, and batch schedules — hands-on practicals.",
+          gradient: "from-indigo-600 to-indigo-400"
         }
   ];
 
@@ -388,7 +400,9 @@ export class Game {
     "Learning Resources": "/resources",
     "AI Mentor": "/ai-mentor",
     "Java Practical": "/java-practical", // <-- corrected key (matches feature.title)
-    "Digital Communication": "/digital-communication"
+    "Digital Communication": "/digital-communication",
+    "JavaScript Experiments": "/javascript-experiments",
+    "VLSI Design": "/vlsi-design"
   };
 
   return (

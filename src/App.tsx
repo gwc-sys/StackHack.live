@@ -23,6 +23,8 @@ import ProblemDetailPage from "./DSAChallenges/ProblemDetailPage";
 import OnlineIDE from "./pages/OnlineIDE.tsx";
 import JavaPracticals from "./pages/DigitalCommunication.tsx"; // <-- new import
 import DigitalCommunication from "./pages/DigitalCommunication";
+import JavaScriptExperiments from "./pages/JavaScriptExperiments";
+import VLSIDesignComplete from "./pages/VLSIDesignComplete";
 
 function MainApp() {
   return (
@@ -51,6 +53,8 @@ function MainApp() {
           <Route path="/dsa-challenges/problems/:id" element={<Problems />} />
           <Route path="/online-ide" element={<OnlineIDE/>} />
           <Route path="/digital-communication" element={<DigitalCommunication />} />
+          <Route path="/javascript-experiments" element={<JavaScriptExperiments />} />
+          <Route path="/vlsi-design" element={<VLSIDesignComplete />} />
         </Routes>
       </Layout>
     </AuthProvider>
