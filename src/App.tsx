@@ -25,6 +25,8 @@ import JavaPracticals from "./pages/DigitalCommunication.tsx"; // <-- new import
 import DigitalCommunication from "./pages/DigitalCommunication";
 import JavaScriptExperiments from "./pages/JavaScriptExperiments";
 import VLSIDesignComplete from "./pages/VLSIDesignComplete";
+import JAVA_Fundamentals_lession_1 from "./Java/JAVA_Fundamentals_lession_1";
+import Lesson1Page from "./Java/Lesson1Page";
 
 function MainApp() {
   return (
@@ -43,6 +45,7 @@ function MainApp() {
           <Route path="/DevCourses" element={<DevCourses />} />
           <Route path="/events-hackathons" element={<EventsHackathons />} />
           <Route path="/roadmaps/role/frontend" element={<FrontendRoadmapsPage />} />
+          <Route path="/roadmaps/skill/s13" element={<JAVA_Fundamentals_lession_1 />} />
           <Route path="/collaboration" element={<Collaboration />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/dsa-challenges" element={<AppProvider />} />
@@ -55,6 +58,7 @@ function MainApp() {
           <Route path="/digital-communication" element={<DigitalCommunication />} />
           <Route path="/javascript-experiments" element={<JavaScriptExperiments />} />
           <Route path="/vlsi-design" element={<VLSIDesignComplete />} />
+          <Route path="/lesson/:id" element={<Lesson1Page />} />
         </Routes>
       </Layout>
     </AuthProvider>
