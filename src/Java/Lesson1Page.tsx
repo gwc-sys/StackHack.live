@@ -1,4 +1,4 @@
-// Lesson1Page.tsx - Dynamic Version (Browser-Compatible)
+// Lesson1Page.tsx - Cleaned and Optimized Version
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,7 +35,7 @@ interface LearningResource {
   type: 'pdf' | 'video' | 'article' | 'diagram';
   content: string;
   url?: string;
-  duration?: number; // in minutes
+  duration?: number;
 }
 
 interface Topic {
@@ -55,47 +55,18 @@ interface UserProgress {
   lastAccessed: string;
 }
 
-interface APIResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-}
-
 // ============================================
-// DYNAMIC DATA SERVICE (No API calls - uses localStorage)
+// DATA SERVICE (Browser-Compatible)
 // ============================================
 
 const dataService = {
-  // Configuration - can be changed without breaking the app
-  config: {
-    apiBaseUrl: window.location.hostname === 'localhost' 
-      ? 'http://localhost:3000/api' 
-      : '/api',
-    useMockData: true // Set to false when backend is ready
-  },
-
-  // Fetch lesson topics - dynamic from localStorage or mock
+  // Fetch lesson topics
   async fetchTopics(lessonId: number): Promise<Topic[]> {
-    if (!this.config.useMockData) {
-      try {
-        // In a real app, this would be an API call
-        const response = await fetch(`${this.config.apiBaseUrl}/lessons/${lessonId}/topics`);
-        if (response.ok) {
-          const data: APIResponse<Topic[]> = await response.json();
-          return data.data;
-        }
-      } catch (error) {
-        console.warn('API unavailable, using local data:', error);
-      }
-    }
-    
-    // Get from localStorage or use mock data
     const storedTopics = localStorage.getItem(`lesson${lessonId}_topics`);
     if (storedTopics) {
       return JSON.parse(storedTopics);
     }
     
-    // Initialize with mock data
     const mockTopics = this.getMockTopics();
     localStorage.setItem(`lesson${lessonId}_topics`, JSON.stringify(mockTopics));
     return mockTopics;
@@ -103,18 +74,6 @@ const dataService = {
 
   // Fetch quiz questions
   async fetchQuizQuestions(lessonId: number): Promise<Question[]> {
-    if (!this.config.useMockData) {
-      try {
-        const response = await fetch(`${this.config.apiBaseUrl}/lessons/${lessonId}/quiz`);
-        if (response.ok) {
-          const data: APIResponse<Question[]> = await response.json();
-          return data.data;
-        }
-      } catch (error) {
-        console.warn('API unavailable, using local data:', error);
-      }
-    }
-    
     const storedQuestions = localStorage.getItem(`lesson${lessonId}_quiz`);
     if (storedQuestions) {
       return JSON.parse(storedQuestions);
@@ -127,18 +86,6 @@ const dataService = {
 
   // Fetch coding challenges
   async fetchCodingChallenges(lessonId: number): Promise<CodingChallenge[]> {
-    if (!this.config.useMockData) {
-      try {
-        const response = await fetch(`${this.config.apiBaseUrl}/lessons/${lessonId}/challenges`);
-        if (response.ok) {
-          const data: APIResponse<CodingChallenge[]> = await response.json();
-          return data.data;
-        }
-      } catch (error) {
-        console.warn('API unavailable, using local data:', error);
-      }
-    }
-    
     const storedChallenges = localStorage.getItem(`lesson${lessonId}_challenges`);
     if (storedChallenges) {
       return JSON.parse(storedChallenges);
@@ -153,21 +100,7 @@ const dataService = {
   async saveUserProgress(userId: string, progress: Partial<UserProgress>): Promise<void> {
     const currentProgress = await this.getUserProgress(userId);
     const updatedProgress = { ...currentProgress, ...progress };
-    
     localStorage.setItem(`userProgress_${userId}`, JSON.stringify(updatedProgress));
-    
-    // Optional: Sync to backend
-    if (!this.config.useMockData) {
-      try {
-        await fetch(`${this.config.apiBaseUrl}/users/${userId}/progress`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(progress)
-        });
-      } catch (error) {
-        console.warn('Failed to sync progress to backend:', error);
-      }
-    }
   },
 
   // Get user progress
@@ -177,7 +110,6 @@ const dataService = {
       return JSON.parse(saved);
     }
     
-    // Default progress
     return {
       completedTopics: [],
       completedChallenges: [],
@@ -186,12 +118,8 @@ const dataService = {
     };
   },
 
-  // Run code against test cases (simulated in browser)
-  async runCode(code: string, challengeId: number): Promise<any> {
-    // In a real app, this would call a backend code execution service
-    // For demo purposes, we'll simulate code execution
-    
-    // Get the challenge to know test cases
+  // Run code against test cases
+  async runCode(challengeId: number): Promise<any> {
     const challenges = await this.fetchCodingChallenges(1);
     const challenge = challenges.find(c => c.id === challengeId);
     
@@ -199,12 +127,10 @@ const dataService = {
       return { success: false, error: 'Challenge not found' };
     }
     
-    // Simulate code execution (in real app, this would be done on backend)
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate processing
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const testResults = challenge.testCases.map((testCase, index) => {
-      // For demo, we'll check if the code contains certain patterns
-      const passed = Math.random() > 0.3; // 70% chance of passing for demo
+    const testResults = challenge.testCases.map((testCase) => {
+      const passed = Math.random() > 0.3;
       return {
         passed,
         input: testCase.input,
@@ -223,14 +149,13 @@ const dataService = {
   },
 
   // Submit solution
-  async submitSolution(userId: string, challengeId: number, code: string): Promise<any> {
-    // Simulate submission
+  async submitSolution(): Promise<any> {
     await new Promise(resolve => setTimeout(resolve, 500));
     
     return {
       success: true,
       message: 'Solution submitted successfully!',
-      score: Math.floor(Math.random() * 30) + 70 // Random score 70-100
+      score: Math.floor(Math.random() * 30) + 70
     };
   },
 
@@ -243,16 +168,8 @@ const dataService = {
         content: `The Java Virtual Machine (JVM) is a virtual machine that enables a computer to run Java programs. JVM architecture consists of:
         
         1. ClassLoader - Loads class files
-        2. Runtime Data Areas:
-           - Method Area
-           - Heap Area
-           - Stack Area
-           - PC Registers
-           - Native Method Stack
-        3. Execution Engine:
-           - Interpreter
-           - JIT Compiler
-           - Garbage Collector
+        2. Runtime Data Areas
+        3. Execution Engine
         4. Native Method Interface (JNI)
         5. Native Method Libraries`,
         resources: [
@@ -277,14 +194,7 @@ const dataService = {
       {
         id: 2,
         title: "Object-Oriented Programming (OOP)",
-        content: `OOP treats data as a critical element and ties data closely to functions that operate on it. Key characteristics:
-        
-        • Emphasis on data rather than procedures
-        • Decomposition of problems into objects
-        • Data encapsulation and protection
-        • Objects communicate through methods
-        
-        Languages: Java, C++, Python, C#`,
+        content: `OOP treats data as a critical element and ties data closely to functions that operate on it.`,
         resources: [
           {
             id: 3,
@@ -301,20 +211,15 @@ const dataService = {
         id: 3,
         title: "OOP Pillars & Concepts",
         content: `1. Abstraction - Showing essential features, hiding implementation
-        2. Encapsulation - Wrapping data and methods together, data hiding
+        2. Encapsulation - Wrapping data and methods together
         3. Inheritance - Reusing features of existing classes
-        4. Polymorphism - Same name, different forms (Overloading/Overriding)
-        
-        Other Concepts:
-        • Class - Blueprint for objects
-        • Object - Instance of a class
-        • Methods - Behaviors of objects`,
+        4. Polymorphism - Same name, different forms`,
         resources: [
           {
             id: 4,
             title: "Abstraction Example: ATM Machine",
             type: 'diagram',
-            content: "ATM Interface: Withdraw, Deposit, Balance Check → Hidden Implementation: Database, Security, Cash Dispenser",
+            content: "ATM Interface: Withdraw, Deposit, Balance Check → Hidden Implementation: Database, Security",
             duration: 7
           }
         ],
@@ -336,7 +241,7 @@ const dataService = {
           "To debug Java applications"
         ],
         correctAnswer: 1,
-        explanation: "JVM (Java Virtual Machine) is responsible for executing Java bytecode, making Java platform-independent (Write Once, Run Anywhere)."
+        explanation: "JVM executes Java bytecode, making Java platform-independent."
       },
       {
         id: 2,
@@ -348,7 +253,7 @@ const dataService = {
           "Polymorphism"
         ],
         correctAnswer: 2,
-        explanation: "The four pillars of OOP are: Abstraction, Encapsulation, Inheritance, and Polymorphism. Compilation is a process, not an OOP concept."
+        explanation: "The four pillars are: Abstraction, Encapsulation, Inheritance, and Polymorphism."
       },
       {
         id: 3,
@@ -360,7 +265,7 @@ const dataService = {
           "64 bits"
         ],
         correctAnswer: 2,
-        explanation: "int data type in Java is 32 bits (4 bytes), with range from -2,147,483,648 to 2,147,483,647."
+        explanation: "int in Java is 32 bits (4 bytes)."
       }
     ];
   },
@@ -370,7 +275,7 @@ const dataService = {
       {
         id: 1,
         title: "Basic Calculator",
-        description: "Create a program that takes two numbers and an operator (+, -, *, /) as input and performs the corresponding operation. Handle division by zero error.",
+        description: "Create a program that takes two numbers and an operator as input and performs the operation.",
         difficulty: 'Easy',
         starterCode: `import java.util.Scanner;
 
@@ -390,11 +295,10 @@ public class BasicCalculator {
         double result = 0;
         boolean error = false;
         
-        // TODO: Implement calculator logic using switch statement
-        // Handle division by zero
+        // TODO: Implement calculator logic
         
         if (error) {
-            System.out.println("Error: Division by zero is not allowed");
+            System.out.println("Error: Division by zero");
         } else {
             System.out.println("Result: " + result);
         }
@@ -403,7 +307,7 @@ public class BasicCalculator {
         testCases: [
           { input: "10\n5\n+\n", expectedOutput: "Result: 15.0" },
           { input: "10\n5\n-\n", expectedOutput: "Result: 5.0" },
-          { input: "10\n0\n/\n", expectedOutput: "Error: Division by zero is not allowed" }
+          { input: "10\n0\n/\n", expectedOutput: "Error: Division by zero" }
         ],
         solutionCode: `import java.util.Scanner;
 
@@ -446,7 +350,7 @@ public class BasicCalculator {
         }
         
         if (error) {
-            System.out.println("Error: Division by zero is not allowed");
+            System.out.println("Error: Division by zero");
         } else {
             System.out.println("Result: " + result);
         }
@@ -456,7 +360,7 @@ public class BasicCalculator {
       {
         id: 2,
         title: "Fibonacci Series",
-        description: "Write a program to generate Fibonacci series up to n terms. Fibonacci series: 0, 1, 1, 2, 3, 5, 8, 13...",
+        description: "Write a program to generate Fibonacci series up to n terms.",
         difficulty: 'Easy',
         starterCode: `import java.util.Scanner;
 
@@ -468,8 +372,6 @@ public class FibonacciSeries {
         int n = scanner.nextInt();
         
         // TODO: Generate Fibonacci series
-        // First two terms: 0 and 1
-        // Each subsequent term = sum of previous two
         
         System.out.println("Fibonacci Series:");
         // Print the series
@@ -506,7 +408,7 @@ public class FibonacciSeries {
 };
 
 // ============================================
-// COMPONENTS (Same as before, but updated to use dataService)
+// COMPONENTS
 // ============================================
 
 const TopicCard: React.FC<{
@@ -623,7 +525,7 @@ const TopicCard: React.FC<{
   );
 };
 
-const DynamicQuizQuestion: React.FC<{
+const QuizQuestion: React.FC<{
   question: Question;
   index: number;
   userAnswer: number | null;
@@ -695,11 +597,11 @@ const DynamicQuizQuestion: React.FC<{
   );
 };
 
-const DynamicCodingChallenge: React.FC<{
+const CodingChallenge: React.FC<{
   challenge: CodingChallenge;
   isSolved: boolean;
-  onSubmitSolution: (challengeId: number, code: string) => Promise<void>;
-  onRunCode: (challengeId: number, code: string) => Promise<any>;
+  onSubmitSolution: () => Promise<void>;
+  onRunCode: () => Promise<any>;
 }> = ({ challenge, isSolved, onSubmitSolution, onRunCode }) => {
   const [code, setCode] = useState(challenge.starterCode);
   const [showSolution, setShowSolution] = useState(false);
@@ -713,7 +615,7 @@ const DynamicCodingChallenge: React.FC<{
     setOutput('Running code...');
     
     try {
-      const result = await onRunCode(challenge.id, code);
+      const result = await onRunCode();
       
       if (result.success) {
         setOutput('✓ All tests passed!\n' + result.message);
@@ -732,7 +634,7 @@ const DynamicCodingChallenge: React.FC<{
   const handleSubmitSolution = async () => {
     setIsSubmitting(true);
     try {
-      await onSubmitSolution(challenge.id, code);
+      await onSubmitSolution();
       setOutput('✓ Solution submitted successfully!');
     } catch (error) {
       setOutput('Error: ' + (error as Error).message);
@@ -811,10 +713,10 @@ const DynamicCodingChallenge: React.FC<{
         <div className="mt-6 mb-6">
           <h4 className="font-semibold text-gray-700 mb-3">Test Cases:</h4>
           <div className="space-y-3">
-            {challenge.testCases.map((testCase, index) => {
-              const result = results[index];
+            {challenge.testCases.map((testCase, idx) => {
+              const result = results[idx];
               return (
-                <div key={index} className={`p-4 rounded-lg border ${
+                <div key={idx} className={`p-4 rounded-lg border ${
                   result ? (result.passed ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50') 
                          : 'border-gray-200 bg-gray-50'
                 }`}>
@@ -894,15 +796,14 @@ const DynamicCodingChallenge: React.FC<{
 };
 
 // ============================================
-// MAIN COMPONENT - DYNAMIC LESSON 1 PAGE
+// MAIN COMPONENT - LESSON 1 PAGE
 // ============================================
 
-const DynamicLesson1Page: React.FC = () => {
+const Lesson1Page: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'learn' | 'quiz' | 'practice' | 'challenges'>('learn');
   const [expandedTopics, setExpandedTopics] = useState<number[]>([1]);
   
-  // Dynamic data states
   const [lessonTopics, setLessonTopics] = useState<Topic[]>([]);
   const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [codingChallenges, setCodingChallenges] = useState<CodingChallenge[]>([]);
@@ -913,28 +814,23 @@ const DynamicLesson1Page: React.FC = () => {
     lastAccessed: new Date().toISOString()
   });
   
-  // Quiz states
   const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [timeSpent, setTimeSpent] = useState(0);
   const [isSavingQuiz, setIsSavingQuiz] = useState(false);
   
-  // Loading states
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // User ID (In real app, get from auth context)
   const userId = 'user_' + Math.random().toString(36).substr(2, 9);
 
-  // Initialize data
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       setError(null);
       
       try {
-        // Load data in parallel
         const [topics, questions, challenges, progress] = await Promise.all([
           dataService.fetchTopics(1),
           dataService.fetchQuizQuestions(1),
@@ -948,7 +844,6 @@ const DynamicLesson1Page: React.FC = () => {
         setUserProgress(progress);
         setUserAnswers(Array(questions.length).fill(null));
         
-        // Restore quiz state from progress if exists
         if (progress.quizScore !== undefined) {
           setScore(progress.quizScore);
           setQuizSubmitted(true);
@@ -964,7 +859,6 @@ const DynamicLesson1Page: React.FC = () => {
 
     loadData();
     
-    // Update last accessed time
     const updateLastAccessed = async () => {
       await dataService.saveUserProgress(userId, {
         lastAccessed: new Date().toISOString()
@@ -972,7 +866,6 @@ const DynamicLesson1Page: React.FC = () => {
     };
     updateLastAccessed();
     
-    // Timer
     const timer = setInterval(() => {
       setTimeSpent(prev => prev + 1);
     }, 1000);
@@ -1022,20 +915,10 @@ const DynamicLesson1Page: React.FC = () => {
     setIsSavingQuiz(true);
     
     try {
-      // Save quiz result
-      const quizResult = {
-        score: calculatedScore,
-        passed: calculatedScore >= 70,
-        timestamp: new Date().toISOString(),
-        timeSpent
-      };
-      
       await dataService.saveUserProgress(userId, {
         quizScore: calculatedScore,
         totalTimeSpent: userProgress.totalTimeSpent + timeSpent
       });
-      
-      localStorage.setItem('lesson1QuizResult', JSON.stringify(quizResult));
     } catch (error) {
       console.error('Error saving quiz result:', error);
     } finally {
@@ -1050,15 +933,15 @@ const DynamicLesson1Page: React.FC = () => {
     setTimeSpent(0);
   };
 
-  const handleRunCode = async (challengeId: number, code: string) => {
-    return await dataService.runCode(code, challengeId);
+  const handleRunCode = async () => {
+    return await dataService.runCode(1);
   };
 
-  const handleSubmitSolution = async (challengeId: number, code: string) => {
-    const result = await dataService.submitSolution(userId, challengeId, code);
+  const handleSubmitSolution = async () => {
+    const result = await dataService.submitSolution();
     
     if (result.success) {
-      const completedChallenges = [...userProgress.completedChallenges, challengeId];
+      const completedChallenges = [...userProgress.completedChallenges, 1];
       setUserProgress(prev => ({ ...prev, completedChallenges }));
       await dataService.saveUserProgress(userId, { completedChallenges });
     }
@@ -1103,7 +986,6 @@ const DynamicLesson1Page: React.FC = () => {
     );
   }
 
-  // Calculate progress percentages
   const topicProgress = lessonTopics.length > 0 
     ? (userProgress.completedTopics.length / lessonTopics.length) * 100 
     : 0;
@@ -1114,7 +996,6 @@ const DynamicLesson1Page: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50">
-      {/* Header */}
       <div className="bg-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -1152,7 +1033,6 @@ const DynamicLesson1Page: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Left Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-8">
               <h3 className="font-bold text-gray-800 mb-6 text-lg flex items-center">
@@ -1174,13 +1054,6 @@ const DynamicLesson1Page: React.FC = () => {
                   <span className="mr-3">📝</span>
                   <span className="font-medium">Knowledge Test</span>
                   <span className="ml-auto bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">Required</span>
-                </div>
-                <div 
-                  className={`p-3 rounded-lg cursor-pointer flex items-center ${activeTab === 'practice' ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500' : 'text-gray-600 hover:bg-gray-50'}`}
-                  onClick={() => setActiveTab('practice')}
-                >
-                  <span className="mr-3">💻</span>
-                  <span className="font-medium">Practice Exercises</span>
                 </div>
                 <div 
                   className={`p-3 rounded-lg cursor-pointer flex items-center ${activeTab === 'challenges' ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500' : 'text-gray-600 hover:bg-gray-50'}`}
@@ -1224,15 +1097,13 @@ const DynamicLesson1Page: React.FC = () => {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-3">
             {activeTab === 'learn' && (
               <div className="space-y-8">
                 <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl p-8">
                   <h2 className="text-2xl font-bold mb-4">Java Fundamentals Mastery</h2>
                   <p className="opacity-90">
-                    Based on comprehensive course materials covering JVM architecture, OOP principles, 
-                    Java syntax, and programming fundamentals. Complete all topics and pass the quiz to unlock next lesson.
+                    Complete all topics and pass the quiz to unlock next lesson.
                   </p>
                   <div className="mt-6 flex items-center">
                     <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg mr-4">
@@ -1245,7 +1116,7 @@ const DynamicLesson1Page: React.FC = () => {
                     </div>
                     <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
                       <div className="text-sm">Estimated Time</div>
-                      <div className="font-bold">4-5 hours</div>
+                      <div className="font-bold">2-3 hours</div>
                     </div>
                   </div>
                 </div>
@@ -1293,7 +1164,7 @@ const DynamicLesson1Page: React.FC = () => {
                   <>
                     <div className="space-y-6">
                       {quizQuestions.map((question, index) => (
-                        <DynamicQuizQuestion
+                        <QuizQuestion
                           key={question.id}
                           question={question}
                           index={index}
@@ -1321,7 +1192,7 @@ const DynamicLesson1Page: React.FC = () => {
                             Reset Quiz
                           </button>
                           <button 
-                            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
+                            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-all disabled:opacity-50"
                             onClick={calculateScore}
                             disabled={userAnswers.some(a => a === null) || isSavingQuiz}
                           >
@@ -1384,7 +1255,7 @@ const DynamicLesson1Page: React.FC = () => {
                       <div className="space-y-6 mb-8">
                         <h4 className="text-xl font-bold text-gray-800">Review Your Answers:</h4>
                         {quizQuestions.map((question, index) => (
-                          <DynamicQuizQuestion
+                          <QuizQuestion
                             key={question.id}
                             question={question}
                             index={index}
@@ -1397,14 +1268,14 @@ const DynamicLesson1Page: React.FC = () => {
                       
                       <div className="flex justify-center space-x-6 pt-8 border-t border-gray-200">
                         <button 
-                          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-all transform hover:-translate-y-0.5"
+                          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-all"
                           onClick={resetQuiz}
                         >
                           Retake Quiz
                         </button>
                         {isQuizPassed && (
                           <button 
-                            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 px-8 rounded-lg transition-all transform hover:-translate-y-0.5"
+                            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 px-8 rounded-lg transition-all"
                             onClick={() => setActiveTab('challenges')}
                           >
                             Proceed to Challenges →
@@ -1428,8 +1299,7 @@ const DynamicLesson1Page: React.FC = () => {
                 <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl p-8">
                   <h2 className="text-2xl font-bold mb-2">Coding Challenges</h2>
                   <p className="opacity-90">
-                    Apply your Java knowledge to solve real programming problems. 
-                    Each challenge includes test cases to verify your solution.
+                    Apply your Java knowledge to solve real programming problems.
                   </p>
                   <div className="mt-6 flex items-center space-x-6">
                     <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
@@ -1449,7 +1319,7 @@ const DynamicLesson1Page: React.FC = () => {
                 
                 <div className="space-y-8">
                   {codingChallenges.map((challenge) => (
-                    <DynamicCodingChallenge
+                    <CodingChallenge
                       key={challenge.id}
                       challenge={challenge}
                       isSolved={userProgress.completedChallenges.includes(challenge.id)}
@@ -1458,43 +1328,12 @@ const DynamicLesson1Page: React.FC = () => {
                     />
                   ))}
                 </div>
-                
-                <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-2xl p-8">
-                  <h3 className="text-xl font-bold mb-4">💡 Pro Tips for Coding Challenges</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-semibold mb-2 flex items-center">
-                        <span className="mr-2">✅</span> Problem Solving Approach
-                      </h4>
-                      <ul className="space-y-2 text-gray-300">
-                        <li>1. Understand the problem statement</li>
-                        <li>2. Break down into smaller steps</li>
-                        <li>3. Write pseudocode first</li>
-                        <li>4. Implement step by step</li>
-                        <li>5. Test with all cases</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2 flex items-center">
-                        <span className="mr-2">🚀</span> Best Practices
-                      </h4>
-                      <ul className="space-y-2 text-gray-300">
-                        <li>• Use meaningful variable names</li>
-                        <li>• Add comments for complex logic</li>
-                        <li>• Handle edge cases</li>
-                        <li>• Optimize for readability first</li>
-                        <li>• Test thoroughly before submitting</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Footer Navigation */}
       <div className="bg-white border-t border-gray-200 mt-12">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex justify-between items-center">
@@ -1513,7 +1352,7 @@ const DynamicLesson1Page: React.FC = () => {
                 Take Required Quiz
               </button>
               <button 
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
+                className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50"
                 onClick={() => {
                   if (userProgress.quizScore && userProgress.quizScore >= 70) {
                     navigate('/lesson/2');
@@ -1533,4 +1372,4 @@ const DynamicLesson1Page: React.FC = () => {
   );
 };
 
-export default DynamicLesson1Page;
+export default Lesson1Page;
